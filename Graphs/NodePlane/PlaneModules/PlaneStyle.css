@@ -1,0 +1,559 @@
+/* ── Page layout ─────────────────────────────────────────────────── */
+.layout {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Left control panel (wider) ─────────────────────────────────── */
+.controls {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Main view area ──────────────────────────────────────────────── */
+#view-area {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+/* ── Canvas ──────────────────────────────────────────────────────── */
+#plane {
+  display: block;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* ── Matrix view ─────────────────────────────────────────────────── */
+#matrix-view {
+  display: none;
+  width: 100%;
+  overflow: auto;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#matrix-view.active { display: block; }
+
+/* ── Panel section toggle (Node/Edge tabs) ──────────────────────── */
+.panel-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.panel-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.panel-tab:hover {
+  color: #6366f1;
+}
+
+.panel-tab.active {
+  color: #6366f1;
+  border-bottom-color: #6366f1;
+}
+
+/* ── Panel section content (shown/hidden via tabs) ──────────────── */
+.panel-section {
+  display: none;
+}
+
+.panel-section.active {
+  display: block;
+}
+
+/* ── Sub-toggle header (Add/Remove toggle inside each section) ─── */
+.sub-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sub-toggle-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.sub-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.sub-lbl {
+  color: #94a3b8;
+  font-weight: 400;
+  transition: color 0.15s, font-weight 0.15s;
+  cursor: default;
+}
+
+.sub-lbl.active {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+/* Smaller toggle track for sub-toggles */
+.sub-toggle-track {
+  width: 32px;
+  height: 16px;
+  background: #cbd5e1;
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.sub-toggle-track.on {
+  background: #6366f1;
+}
+
+.sub-toggle-track .toggle-thumb {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.sub-toggle-track.on .toggle-thumb {
+  left: 18px;
+}
+
+/* ── Horizontal input rows for X/Y ──────────────────────────────── */
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.input-row label {
+  font-size: 11px;
+  color: #64748b;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.input-row input[type="text"],
+.input-row input[type="number"] {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+  min-width: 0;
+}
+
+.input-row input[type="text"]:focus,
+.input-row input[type="number"]:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+/* Double input row for X/Y side by side */
+.input-row-double {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.input-row-double .input-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-row-double .input-field label {
+  font-size: 11px;
+  color: #64748b;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.input-row-double .input-field input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+  width: 0;
+  min-width: 0;
+}
+
+.input-row-double .input-field input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+/* ── Select dropdowns ───────────────────────────────────────────── */
+select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+}
+
+select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #6366f1;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+button:hover {
+  background: #4f46e5;
+}
+
+button.secondary {
+  background: #64748b;
+}
+
+button.secondary:hover {
+  background: #475569;
+}
+
+/* ── Hint/error messages ───────────────────────────────────────── */
+.hint {
+  font-size: 10px;
+  color: #ef4444;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* ── Hidden utility class ───────────────────────────────────────── */
+.sub-hidden {
+  display: none;
+}
+
+/* Panels hidden when in matrix mode */
+.plot-only.hidden {
+  display: none;
+}
+
+/* ── Matrix styles (unchanged from before) ──────────────────────── */
+
+/* Scroll wrapper */
+.mat-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 78vh;
+  padding-bottom: 8px;
+}
+
+/* Table base */
+.mat-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'Segoe UI', sans-serif;
+  white-space: nowrap;
+}
+
+/* Column headers (x, y, node, A, B, C …) */
+.mat-table .mat-hdr {
+  padding: 5px 10px;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+.mat-table .mat-coord { color: #94a3b8; font-weight: 400; }
+.mat-table .mat-node-hdr { color: #475569; }
+.mat-table .mat-col-hdr {
+  color: #6366f1;
+  font-weight: 700;
+  min-width: 52px;
+}
+
+/* All cells common */
+.mat-table td {
+  padding: 2px 4px;
+  border: none;
+}
+
+/* Row hover highlight */
+.mat-table tbody tr:hover td {
+  background: #f8faff;
+}
+
+/* Coordinate cells (x, y) */
+.mat-table .mat-coord-cell input {
+  width: 46px;
+  text-align: right;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Node name cell */
+.mat-table .mat-name-cell {
+  padding-left: 8px;
+  padding-right: 12px;
+  border-right: 2px solid #e2e8f0;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.mat-table .mat-name-cell input {
+  font-weight: 700;
+  color: #1e293b;
+  width: 48px;
+}
+
+/* Weight cells */
+.mat-table .mat-weight {
+  text-align: center;
+}
+
+.mat-table .mat-weight input {
+  width: 44px;
+  text-align: center;
+}
+
+/* Lower triangle — editable, normal text */
+.mat-table .mat-lower input {
+  color: #1e293b;
+}
+
+/* Upper triangle — read-only mirror, muted */
+.mat-table .mat-upper {
+  background: #f8fafc;
+}
+
+.mat-table .mat-upper input {
+  color: #94a3b8;
+  background: transparent;
+  cursor: default;
+}
+
+/* Zero weights — very faint, not distracting */
+.mat-table .mat-zero input {
+  color: #cbd5e1;
+}
+
+/* Diagonal — node@node = 0, distinct background */
+.mat-table .mat-diag {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  user-select: none;
+  min-width: 44px;
+}
+
+/* Shared input reset for all matrix inputs */
+.mat-table input[type="text"],
+.mat-table input[type="number"] {
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 4px 2px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 13px;
+  transition: background 0.1s, outline 0.1s;
+}
+
+.mat-table input:focus {
+  background: #eff6ff;
+  outline: 2px solid #6366f1 !important;
+  outline-offset: -1px;
+}
+
+.mat-table input[readonly]:focus {
+  background: transparent;
+  outline: none !important;
+}
+
+/* Add-new row */
+.mat-add-row td {
+  border-top: 1px dashed #cbd5e1;
+  padding: 6px 4px;
+}
+
+.mat-add-cell {
+  text-align: left;
+  padding-left: 12px !important;
+}
+
+.mat-add-input {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+  width: 120px;
+  padding: 2px 4px !important;
+}
+
+.mat-add-input:focus {
+  color: #475569;
+  font-style: normal;
+  background: #f8fafc !important;
+  border-radius: 3px;
+}
+
+.mat-add-input::placeholder { color: #cbd5e1; }
+
+/* Empty state */
+.mat-empty {
+  padding: 32px 24px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.mat-empty p {
+  margin: 0 0 12px;
+}
+
+.mat-empty-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mat-empty-add input {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  width: 100px;
+  outline: none;
+}
+
+.mat-empty-add input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+
+.mat-empty-add button {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #6366f1;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  width: auto;
+}
+
+.mat-empty-add button:hover { background: #4f46e5; }
+
+/* Wider panel adjustments */
+.controls {
+  width: 340px;
+  min-width: 340px;
+}
+
+.input-row-double {
+  gap: 12px;
+}
+
+.control-group {
+  margin-bottom: 16px;
+}
+
+
+/* View Toggle Slider */
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-track {
+  width: 44px;
+  height: 22px;
+  background-color: #e2e8f0; /* Default Gray */
+  border-radius: 999px;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* State when Matrix is active */
+.toggle-track.on {
+  background-color: #6366f1; /* Indigo */
+}
+
+.toggle-track.on .toggle-thumb {
+  transform: translateX(22px);
+}

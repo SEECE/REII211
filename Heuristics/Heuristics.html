@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Heuristics Visualiser</title>
+
+    <link rel="stylesheet" href="../style.css" />
+</head>
+
+<body>
+
+    <h2>Heuristics – Point Plane</h2>
+
+    <div class="container">
+        <div class="controls">
+            <div class="control-group">
+                <h3>Generate Points</h3>
+                <label>
+                    Random points:
+                    <input type="number" id="numPoints" value="10" min="1" max="200">
+                </label>
+                <button id="generateBtn">Generate</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Algorithms</h3>
+                <button id="nnBtn" class="algo-btn">Nearest Neighbor</button>
+                <div id="nnOptions" style="display: none; margin-top: 8px;">
+                    <label style="font-size: 12px;">
+                        Start node:
+                        <input type="number" id="nnStartNode" value="1" min="1" style="width: 60px;">
+                    </label>
+                </div>
+                <button id="cpBtn" class="algo-btn">Closest Pair</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Visualisation</h3>
+                <label>
+                    <input type="checkbox" id="visualiseCheck">
+                    Step-by-step mode
+                </label>
+                <div id="stepControls" style="display: none;">
+                    <button id="stepBackBtn">← Back</button>
+                    <button id="stepForwardBtn">Forward →</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Actions</h3>
+                <button id="resetBtn">Reset Lines</button>
+                <button id="clearBtn">Clear All</button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div>
+                <canvas id="plane" width="580" height="580"></canvas>
+                <div class="canvas-info">
+                    <p><strong>Instructions:</strong></p>
+                    <p>• Click to add points • Hold 0.5s on a point to remove it</p>
+                    <p>• Algorithms auto-generate points if none exist</p>
+                    <p>• Choose start node for Nearest Neighbor</p>
+                    <p>• Range: −100 to +100</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="info-box">
+                <span id="distanceLabel"></span>
+            </div>
+            <div class="info-box">
+                <p id="coordDisplay"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

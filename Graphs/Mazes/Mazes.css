@@ -1,0 +1,174 @@
+/* The main wrapper */
+.container {
+    display: flex;
+    flex-direction: row; /* Keep them side-by-side */
+    justify-content: flex-start; /* Align items to the start of the row */
+    align-items: flex-start; 
+    gap: 30px; /* Space between the panel and the maze */
+    padding: 20px;
+    
+    /* Allow the page to scroll horizontally if the maze is wider than the screen */
+    overflow-x: auto; 
+    width: fit-content; 
+    min-width: 100%;
+}
+
+/* The Left Control Panel */
+#controls-panel {
+    /* Lock the width of the panel so it never squishes */
+    width: 300px;
+    min-width: 300px;
+    flex-shrink: 0; /* Prevents the maze from 'crushing' the panel */
+    
+    background: #ffffff; /* Or your preferred color */
+    z-index: 10;
+}
+
+/* The Centre: Grid Canvas Wrapper */
+#grid-wrapper {
+    flex-shrink: 0; /* Prevents the canvas from being squished */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#grid-wrapper {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+#mazeCanvas {
+    background: white;
+    border: 3px solid #a78bfa;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    display: block;
+    cursor: default;
+    image-rendering: pixelated;
+}
+
+.legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.radio-option:hover {
+    border-color: #a78bfa;
+    background: #faf5ff;
+}
+
+.radio-option input[type="radio"] {
+    accent-color: #8b5cf6;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.radio-option.selected {
+    border-color: #8b5cf6;
+    background: #ede9fe;
+}
+
+.radio-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.radio-label strong {
+    font-size: 13px;
+    color: #374151;
+}
+
+.radio-label span {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+#stepControls {
+    display: none;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+#stepControls button {
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 12px;
+}
+
+#stepPill {
+    display: none;
+    background: #6b21a8;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* Two-column dimension inputs */
+.dim-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dim-row label {
+    font-size: 12px;
+    margin: 0;
+    color: #4b5563;
+    min-width: 36px;
+}
+
+.dim-row input[type="number"] {
+    width: 68px;
+    flex-shrink: 0;
+}

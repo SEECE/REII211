@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Algorithms – Node Plane</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="PlaneModules/PlaneStyle.css" />
+  <style>
+    /* ── Generator size-toggle labels ─────────────────────────────────── */
+    .gen-size-lbl {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 400;
+      transition: color .2s, font-weight .2s;
+    }
+    .gen-size-lbl.active {
+      color: #6366f1;
+      font-weight: 600;
+    }
+    .gen-size-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Graph Algorithms – Node Plane</h2>
+
+  <div class="layout">
+
+    <!-- ══════════════════════════════════════════════════════════
+         LEFT CONTROLS
+         ══════════════════════════════════════════════════════════ -->
+    <div class="controls" style="width: 340px; min-width: 340px;">
+
+      <!-- Algorithm selector -->
+      <div class="control-group" id="algo-selector-group">
+        <h3>Algorithm</h3>
+        <div class="input-row">
+          <select id="algo-select" style="width:100%;">
+            <option value="bfs">Breadth-First Search (BFS)</option>
+            <option value="dfs">Depth-First Search (DFS)</option>
+            <option value="prim">Prim's MST</option>
+            <option value="dijkstra">Dijkstra</option>
+            <option value="kruskal">Kruskal's MST</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- View toggle + Generator (side by side) -->
+      <div class="control-group view-toggle-group" style="display:flex;gap:24px;align-items:flex-start;">
+
+        <!-- View -->
+        <div style="flex:1;">
+          <h3>View</h3>
+          <div class="view-toggle">
+            <span id="lbl-plot" style="font-weight:600;color:#6366f1;">Plot</span>
+            <div class="toggle-track" id="view-toggle-track">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="lbl-matrix">Matrix</span>
+          </div>
+        </div>
+
+        <!-- Generate -->
+        <div style="flex:1;">
+          <h3>Generate</h3>
+          <div class="gen-size-toggle">
+            <span id="lbl-gen-small" class="gen-size-lbl active">Small</span>
+            <div class="toggle-track" id="gen-size-track">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="lbl-gen-large" class="gen-size-lbl">Large</span>
+          </div>
+          <button id="generate-btn" style="margin-top:10px;width:100%;">Generate</button>
+        </div>
+
+      </div>
+
+      <!-- Main Nodes / Edges Toggle -->
+      <div class="control-group">
+        <div class="sub-toggle-header" style="margin-bottom: 12px;">
+          <h3>Graph Elements</h3>
+          <div class="sub-toggle">
+            <span id="lbl-main-nodes" class="sub-lbl active">Nodes</span>
+            <div class="sub-toggle-track" id="main-mode-toggle">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="lbl-main-edges" class="sub-lbl">Edges</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Node Section -->
+      <div id="panel-node" class="panel-section active">
+        <div class="sub-toggle-header">
+          <h3>Manage Nodes</h3>
+          <div class="sub-toggle">
+            <span id="lbl-add-node" class="sub-lbl active">Add</span>
+            <div class="sub-toggle-track" id="node-mode-toggle">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="lbl-remove-node" class="sub-lbl">Remove</span>
+          </div>
+        </div>
+
+        <div id="sub-add-node">
+          <div class="input-row-double">
+            <div class="input-field">
+              <label>Name</label>
+              <input type="text" id="node-name" placeholder="e.g. A" maxlength="4" />
+            </div>
+          </div>
+          <div class="input-row-double">
+            <div class="input-field">
+              <label>X</label>
+              <input type="number" id="node-x" placeholder="0–100" min="0" max="100" />
+            </div>
+            <div class="input-field">
+              <label>Y</label>
+              <input type="number" id="node-y" placeholder="0–50" min="0" max="50" />
+            </div>
+          </div>
+          <div class="hint" id="node-hint"></div>
+          <button id="add-node-btn">+ Add Node</button>
+        </div>
+
+        <div id="sub-remove-node" class="sub-hidden">
+          <div class="input-row">
+            <select id="remove-node-sel">
+              <option value="">– select node –</option>
+            </select>
+          </div>
+          <button id="remove-node-btn" class="secondary">Remove Node</button>
+        </div>
+      </div>
+
+      <!-- Edge Section -->
+      <div id="panel-edge" class="panel-section">
+        <div class="sub-toggle-header">
+          <h3>Manage Edges</h3>
+          <div class="sub-toggle">
+            <span id="lbl-add-edge" class="sub-lbl active">Add</span>
+            <div class="sub-toggle-track" id="edge-mode-toggle">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="lbl-remove-edge" class="sub-lbl">Remove</span>
+          </div>
+        </div>
+
+        <div id="sub-add-edge">
+          <div class="input-row">
+            <label>From</label>
+            <select id="edge-from">
+              <option value="">– select node –</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <label>To</label>
+            <select id="edge-to">
+              <option value="">– select node –</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <label>Weight</label>
+            <input type="number" id="edge-weight" placeholder="1" min="0" value="1" />
+          </div>
+          <div class="hint" id="edge-hint"></div>
+          <button id="add-edge-btn">+ Add Edge</button>
+        </div>
+
+        <div id="sub-remove-edge" class="sub-hidden">
+          <div class="input-row">
+            <select id="remove-edge-sel">
+              <option value="">– select edge –</option>
+            </select>
+          </div>
+          <button id="remove-edge-btn" class="secondary">Remove Edge</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="control-group" style="margin-top: 24px;">
+        <button id="clear-btn" class="secondary">Clear All</button>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         MAIN VIEW
+         ══════════════════════════════════════════════════════════ -->
+    <div id="view-area">
+      <canvas id="plane"></canvas>
+      <div id="matrix-view">
+        <div id="mat-container">
+          <span style="color:#cbd5e1;font-size:13px;">
+            No nodes yet — switch to Plot view and add some nodes first.
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="PlaneModules/PlaneScript.js"></script>
+  <script src="PlaneModules/PlaneGenerate.js"></script>
+  <script src="ApplyAlgorithm.js"></script>
+  <script src="Algorithms/BFS.js"></script>
+  <script src="Algorithms/DFS.js"></script>
+  <script src="Algorithms/Prim.js"></script>
+  <script src="Algorithms/Dijkstra.js"></script>
+  <script src="Algorithms/Kruskal.js"></script>
+  <script>
+    /* ── Algorithm panel switcher ─────────────────────────────────────────── */
+    (function () {
+      const ALGOS = ['bfs', 'dfs', 'prim', 'dijkstra', 'kruskal'];
+      const sel   = document.getElementById('algo-select');
+
+      function switchAlgo(selected) {
+        for (const prefix of ALGOS) {
+          const panel = document.getElementById(prefix + '-panel');
+          if (panel) panel.style.display = prefix === selected ? '' : 'none';
+        }
+      }
+
+      const observer = new MutationObserver(() => {
+        switchAlgo(sel.value);
+      });
+      observer.observe(document.querySelector('.controls'), {
+        childList: true,
+        subtree: false,
+      });
+
+      sel.addEventListener('change', () => switchAlgo(sel.value));
+    })();
+
+    /* ── Generator wiring ─────────────────────────────────────────────────── */
+    (function () {
+      let isLarge = false;
+      const track    = document.getElementById('gen-size-track');
+      const lblSmall = document.getElementById('lbl-gen-small');
+      const lblLarge = document.getElementById('lbl-gen-large');
+      const genBtn   = document.getElementById('generate-btn');
+
+      track.addEventListener('click', () => {
+        isLarge = !isLarge;
+        track.classList.toggle('on', isLarge);
+        lblSmall.classList.toggle('active', !isLarge);
+        lblLarge.classList.toggle('active',  isLarge);
+      });
+
+      genBtn.addEventListener('click', () => {
+        if (!window.Plane || !window.Plane.generate) return;
+        if (isLarge) {
+          window.Plane.generate.generateLarge();
+        } else {
+          window.Plane.generate.generateSmall();
+        }
+      });
+    })();
+  </script>
+
+</body>
+
+</html>

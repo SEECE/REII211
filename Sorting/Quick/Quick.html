@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Sort Visualizer</title>
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../Sort.css" />
+</head>
+
+<body>
+    <h2>Quick Sort Visualizer</h2>
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="controls">
+            <div class="control-group">
+                <h3>Array</h3>
+                <label>Entries: <span class="range-val" id="val-n">50</span></label>
+                <input type="range" id="slider-n" min="1" max="250" value="50" />
+            </div>
+            <div class="control-group">
+                <h3>Speed</h3>
+                <label>Speed: <span class="range-val" id="val-speed">10×</span></label>
+                <input type="range" id="slider-speed" min="1" max="100" value="10" />
+            </div>
+            <div class="control-group">
+                <h3>Options</h3>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="chk-stepwise" />
+                    <label for="chk-stepwise">Stepwise mode</label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="btn-group">
+                    <button id="btn-reset">⟳ Reset</button>
+                    <button id="btn-shuffle">⇄ Shuffle</button>
+                    <button id="btn-reverse" style="background:#f97316;">↕ Reverse</button>
+                    <button id="btn-solve">▶ Solve</button>
+                    <button id="btn-prev" style="display:none;">◀ Prev Step</button>
+                    <button id="btn-next" style="display:none;">▶ Next Step</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>Stats</h3>
+                <div class="stats">
+                    Comparisons: <span id="stat-cmp">0</span><br />
+                    Swaps: <span id="stat-swaps">0</span><br />
+                    Status: <span id="stat-status">Ready</span>
+                </div>
+            </div>
+        </div>
+        <!-- Canvas -->
+        <div id="visualizer">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="dot dot-default"></div>
+            <div class="legend-text"><span class="legend-label">Unsorted</span><span class="legend-desc">Not yet
+                    reached</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot" style="background:#a855f7;"></div>
+            <div class="legend-text"><span class="legend-label">Pivot</span><span class="legend-desc">Last element
+                    chosen</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot" style="background:#38bdf8;"></div>
+            <div class="legend-text"><span class="legend-label">Scanner (i)</span><span class="legend-desc">Comparing to
+                    pivot</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot" style="background:#f472b6;"></div>
+            <div class="legend-text"><span class="legend-label">firsthigh</span><span class="legend-desc">Partition
+                    boundary</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot" style="background:#2dd4bf;"></div>
+            <div class="legend-text"><span class="legend-label">Less than pivot</span><span class="legend-desc">Placed
+                    left of boundary</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot" style="background:#4ade80;"></div>
+            <div class="legend-text"><span class="legend-label">Swapped</span><span class="legend-desc">Just moved into
+                    place</span></div>
+        </div>
+        <div class="legend-item">
+            <div class="dot dot-sorted"></div>
+            <div class="legend-text"><span class="legend-label">Sorted</span><span class="legend-desc">Final position
+                    confirmed</span></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="../Sort.js"></script>
+</body>
+
+</html>

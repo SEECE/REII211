@@ -1,0 +1,243 @@
+/* ── DataStructs.css ──────────────────────────────────────────────
+   Shared local stylesheet for all Data Structure visualisers.
+   Loaded alongside the global style.css.
+   ──────────────────────────────────────────────────────────────── */
+
+/* ── Radio group ───────────────────────────────────────────────── */
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 0;
+}
+
+.radio-label:hover {
+  background: #f5f3ff;
+  border-color: #a78bfa;
+}
+
+.radio-label input[type="radio"] {
+  accent-color: #7c3aed;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.radio-label:has(input:checked) {
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #6b21a8;
+}
+
+/* ── Value input ────────────────────────────────────────────────── */
+
+#valueInput {
+  padding: 6px 10px;
+  border: 2px solid #a78bfa;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#valueInput:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+/* ── Step message ───────────────────────────────────────────────── */
+
+.step-msg {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #ede9fe;
+  border-radius: 6px;
+  color: #6b21a8;
+  font-size: 12px;
+  font-weight: 500;
+  min-height: 36px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Main display wrapper ───────────────────────────────────────── */
+
+.ds-display-wrapper {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+/* ── Main memory grid display ────────────────────────────────────────── */
+
+#dsDisplay {
+  background: white;
+  border: 3px solid #a78bfa;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  padding: 22px;
+
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 9px;
+
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  height: 720px;           /* Increased height a bit for bigger cells */
+  min-height: 720px;
+
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Bigger, more comfortable memory cells */
+.mem-cell {
+  border: 2px solid #ddd6fe;
+  border-radius: 12px;
+  background: #faf9ff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+
+  transition: all 0.2s ease;
+  padding: 4px;
+
+  aspect-ratio: 1 / 1;   /* clean square cells */
+}
+
+/* Address — subtle, background-like */
+.mem-addr {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+
+  font-size: 9px;
+  font-weight: 600;
+  color: #7f5fff;
+
+  opacity: 0.6;
+  user-select: none;
+}
+
+/* Value — main focus */
+.mem-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: #6b21a8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+}
+
+/* Pointer label (will be used later for linked lists) */
+.mem-ptr {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a78bfa;
+  margin-top: 6px;
+  line-height: 1;
+}
+
+/* Occupied cell styling */
+.mem-cell.occupied {
+  background: #f5f3ff;
+  border-color: #7c3aed;
+}
+
+.mem-cell.occupied .mem-addr {
+  color: #a78bfa;
+}
+
+/* ── Shared state classes ───────────────────────────────────────── */
+
+.mem-cell.state-comparing {
+  background: #fef9c3 !important;
+  border-color: #f59e0b !important;
+}
+.mem-cell.state-comparing .mem-value { color: #92400e !important; }
+
+.mem-cell.state-swap {
+  background: #ffedd5 !important;
+  border-color: #f97316 !important;
+}
+.mem-cell.state-swap .mem-value { color: #9a3412 !important; }
+
+.mem-cell.state-inserted,
+.mem-cell.state-found {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+}
+.mem-cell.state-inserted .mem-value,
+.mem-cell.state-found .mem-value { color: #14532d !important; }
+
+.mem-cell.state-deleted {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  opacity: 0.75;
+}
+
+/* ── Legacy array-row / node classes kept for reference ─────────── */
+/* These are no longer rendered but kept so partial JS refs don't   */
+/* throw errors during migration.                                    */
+
+.node-arrow,
+.node-null,
+.node-label {
+  display: none;
+}
+
+.container {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 20px;
+}
+
+/* Singly Linked List pointer styling */
+.mem-ptr {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: #7c3aed;
+    background: rgba(255,255,255,0.85);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Make cells a bit taller if needed for pointer */
+.mem-cell {
+    padding-bottom: 26px;   /* space for pointer */
+}

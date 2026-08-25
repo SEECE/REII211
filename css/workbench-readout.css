@@ -55,3 +55,6 @@
 .legend-text { min-width: 0; }
 .legend-label { display: block; font-size: 12px; font-weight: 650; color: var(--text-dim); }
 .legend-desc { display: block; font-size: 11px; line-height: 1.45; color: var(--text-faint); }
+
+/* a captioned block inside the scrolling part of the workbench (the legend, a page's notes) */
+.wb-group { display: flex; flex-direction: column; gap: var(--sp-2); }

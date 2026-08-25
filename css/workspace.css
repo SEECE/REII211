@@ -123,3 +123,7 @@
   .workspace { gap: var(--sp-2); padding: var(--sp-2); }
   :root { --ribbon-h: 44px; }
 }
+
+/* js/core/rail.js appends its fields here, so a page can still carry static rail markup of
+   its own around them. The spacer field needs a flexible parent to push against. */
+.rail-fields { display: flex; flex-direction: column; gap: var(--sp-4); flex: 1 1 auto; min-height: 0; }

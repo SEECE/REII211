@@ -1,0 +1,13 @@
+/* The top ribbon — one row, fixed height, on every page: brand · page title · topic nav ·
+   panel toggles. It replaces the old per-page <h2> heading, which cost ~70px of vertical
+   space on a laptop and was the main reason a canvas could not fit above the fold.
+
+   Kept as an index rather than one long stylesheet so each part stays readable on its own:
+     ribbon-shell.css    the bar itself, the brand and the page title
+     ribbon-nav.css      the topic nav and its drop-downs
+     ribbon-panels.css   the panel toggles, and how the ribbon gives way when it narrows
+   @import is load-order significant, so these stay in this order — later parts override
+   earlier ones, which is why the importing file carries no rules of its own. */
+@import url('ribbon-shell.css');
+@import url('ribbon-nav.css');
+@import url('ribbon-panels.css');

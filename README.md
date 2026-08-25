@@ -1,38 +1,75 @@
 # REII 211 Visualisation Playground
 
-This repository holds the interactive algorithm visualisations for REII 211 at the North-West University. It used to live inside the course GitBook, but the two have very different jobs, the GitBook is written material that gets read top to bottom while this is a set of small browser tools that get poked at, so they have been split apart and this repository now only serves the visualisations.
+Interactive algorithm visualisations for REII 211 at the North-West University. The written
+course material lives in the GitBook and gets read top to bottom; this is the other half — a set
+of small browser tools that get poked at.
 
-The playground is hosted at https://seece.github.io/REII211/ and covers sorting, data structures, graphs, scheduling and heuristics.
+Hosted at <https://seece.github.io/REII211/>.
 
 ## Running it locally
 
-Everything runs client side, there is no build step, no package manager and no server side code, so the only thing needed is a browser. Cloning the repository and opening `index.html` directly is enough for almost everything. A few pages load their scripts as modules, and browsers refuse to do that over `file://`, so if a page comes up blank serve the folder over HTTP instead:
+Everything runs client side. There is no build step, no package manager and no server-side code,
+and no ES modules either, so opening `index.html` straight off the filesystem works:
+
+```bash
+git clone … && open index.html
+```
+
+Or serve it, if you prefer:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000` and pick a visualisation from the index.
+`test.html` runs every self-check in the browser.
+
+## How a page works
+
+All fourteen pages are laid out the same way, and it is worth knowing which third does what:
+
+- **the rail**, on the left — the **input**. How much data, in what order, which algorithm.
+- **the stage**, in the middle — the state of that problem right now.
+- **the workbench**, on the right — the **run**. Play walks the whole thing, Prev and Next move
+  one step, the legend decodes the colours and the counts at the bottom are what the algorithm
+  has spent so far.
+
+Either side panel folds away with the two buttons at the right of the ribbon.
+
+## What is in it
+
+| Section | Pages |
+|---|---|
+| Sorting | selection, insertion, bubble, exchange, merge, quick — on one bar graph |
+| Recursion trees | merge and quick again, drawn as the call tree |
+| Data structures | arrays and linked lists in one memory grid; binary search trees |
+| Graphs | node plane (BFS · DFS · Dijkstra · Prim · Kruskal, editable); maze search |
+| Heuristics | nearest-neighbour tour and closest pair; greedy job scheduling |
 
 ## Layout
 
-The index page is the entry point and links to every visualisation with relative paths, which is what keeps the whole thing portable, the same files work from a local folder, a local server or GitHub Pages without any configuration. Each visualisation lives in its own directory with its markup, script and styling kept together:
-
 ```
-index.html              Entry point, links to everything below
-style.css               Shared styling for the index
-Sorting/                Bar graph sorts, one directory per algorithm
-ComplexSorting/         Merge and quick sort with the recursion made visible
-DataStructures/         Linked lists and binary search trees
-Graphs/                 Traversals, spanning trees and shortest paths
-Scheduling/             Job selection and interval scheduling
-Heuristics/             Nearest neighbour and closest pair on a tour
+index.html          home — the card sections are generated from the sitemap
+about.html          what this is, and what it is not
+test.html           the self-checks
+css/                split by scope, ≤200 lines each; tokens.css reskins everything
+js/core/            the runtime: trace, player, workbench, surface, rail, legend, palette
+js/ui/              sitemap (the only place a page is named), nav, cards, panel state
+js/sorting/ …       the algorithms, one area per folder
+js/pages/           one small script per page kind
+js/tests/           the self-checks, run by test.html
+topics/<slug>/      one folder per visualiser
+structure/          the architecture decisions — read these before changing anything
 ```
 
 ## Adding a visualisation
 
-Make a directory for it, keep the markup, script and any styling inside that directory, then add a card to `index.html` pointing at the new page. There is no registry to update and nothing to rebuild, the index is the only file that knows about the rest.
+One entry in `js/ui/sitemap.js`, a `topics/<slug>/index.html` copied from the nearest existing
+page, a bundle in `js/deps.js`, a page script, the algorithm, and its self-checks.
+[structure/PAGES.md](structure/PAGES.md) has the detail.
 
 ## Notes
 
-These tools are meant for building intuition and not for proving anything. Small inputs show more than large ones, and changing a single parameter at a time is usually the fastest way to see what an algorithm is actually doing. The written course material lives in the GitBook and this repository is only the interactive companion to it.
+These build intuition; they do not prove anything. Small inputs show more than large ones, and
+changing a single parameter at a time is the fastest way to see what an algorithm is actually
+doing — run the same sort on a shuffled array and then on a reversed one and watch the counts
+move.

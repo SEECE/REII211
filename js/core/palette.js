@@ -34,10 +34,32 @@
     all: function () { if (!cache) cache = read(); return cache; },
     refresh: function () { cache = null; return this.all(); },
 
-    /* the same colour at a lower weight — a fill behind a stroke, a bar that is off-focus.
-       Returned as a colour-mix so it stays in the theme rather than being a second hex. */
-    soft: function (name, amount) {
-      return 'color-mix(in srgb, ' + this.get(name) + ' ' + (amount == null ? 26 : amount) + '%, transparent)';
+    /* The same colour at a lower weight — a fill behind a stroke, a node that is off-focus.
+       Blended numerically rather than with CSS color-mix(): a canvas fillStyle goes through the
+       CSS colour parser, and a value the browser cannot parse is silently IGNORED, leaving the
+       previous fill in place. A wrong colour that only appears on older browsers is exactly the
+       bug nobody finds, so this returns a plain rgb(). */
+    mix: function (colour, percent, onto) {
+      var a = rgb(colour), b = rgb(onto || this.get('paper'));
+      if (!a || !b) return colour;
+      var w = Math.max(0, Math.min(100, percent)) / 100;
+      return 'rgb(' + [0, 1, 2].map(function (i) {
+        return Math.round(a[i] * w + b[i] * (1 - w));
+      }).join(',') + ')';
     },
   };
+
+  /* #rgb / #rrggbb / rgb(…) → [r, g, b]. Every value in tokens.css is a hex literal, so this
+     covers what Palette actually reads; anything else falls through and is used unchanged. */
+  function rgb(value) {
+    if (!value) return null;
+    var hex = String(value).trim();
+    if (hex.charAt(0) === '#') {
+      if (hex.length === 4) hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+      if (hex.length !== 7) return null;
+      return [1, 3, 5].map(function (i) { return parseInt(hex.substr(i, 2), 16); });
+    }
+    var m = hex.match(/rgba?\(([^)]+)\)/);
+    return m ? m[1].split(',').slice(0, 3).map(function (n) { return parseInt(n, 10); }) : null;
+  }
 })();

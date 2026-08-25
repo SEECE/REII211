@@ -4,124 +4,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Algorithms & Optimisation — Visualisation Playground</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#e6f2f8" />
+  <title>REII 211 — Introduction to Algorithms · Visualisation Playground</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/ribbon.css" />
+  <link rel="stylesheet" href="css/home.css" />
 </head>
 
-<body>
-  <header>
-    <h2>Algorithms &amp; Optimisation</h2>
-    <p>Select a visualisation to launch</p>
+<body class="doc">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="ribbon">
+    <a class="ribbon-brand" href="index.html">
+      <span class="ribbon-mark" aria-hidden="true"></span>
+      <span class="ribbon-name" translate="no">REII&nbsp;211</span>
+    </a>
+    <span class="ribbon-sep" aria-hidden="true"></span>
+    <span class="ribbon-title">Introduction to Algorithms</span>
+    <nav class="ribbon-nav" data-nav data-base="" data-current="home" aria-label="Sections"></nav>
   </header>
 
-  <div style="width:100%;max-width:860px;">
-
-    <!-- ── Sorting bar graphs ────────────────────────── -->
-    <div class="section-label">Sorting bar graphs</div>
-    <div class="grid">
-
-      <a class="card" href="./Sorting/Selection/Selection.html">
-        <div class="card-title">Selection Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-
-      <a class="card" href="./Sorting/Insertion/Insertion.html">
-        <div class="card-title">Insertion Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-
-      <a class="card" href="./Sorting/Bubble/Bubble.html">
-        <div class="card-title">Bubble Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-
-      <a class="card" href="./Sorting/Exchange/Exchange.html">
-        <div class="card-title">Exchange Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-      
-     <a class="card" href="./Sorting/Merge/Merge.html">
-        <div class="card-title">Merge Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-
-      <a class="card" href="./Sorting/Quick/Quick.html">
-        <div class="card-title">Quick Sort</div>
-        <div class="card-sub">Bar graph</div>
-      </a>
-
+  <main class="doc-main" id="main">
+    <div class="hero">
+      <p class="hero-eyebrow">North-West University</p>
+      <h1>Introduction to Algorithms — Visualisation Playground</h1>
+      <p class="hero-sub">Pick an algorithm, set the problem up on the left, then walk it one
+        step at a time on the right. Every page runs the same way: the drawing in the middle is
+        the state, the workbench narrates what just happened to it, and the counts are the price
+        you paid to get there.</p>
     </div>
 
-    <!-- ── Efficient Sorts O(n log n) — complex + basic ────────────────── -->
-    <div class="section-label">Spanning trees</div>
-    <div class="grid">
+    <!-- The sections are generated from js/ui/sitemap.js, the same map the ribbon nav reads,
+         so a visualiser cannot exist in one and be missing from the other. -->
+    <div data-cards></div>
+  </main>
 
-      <!-- Merge Sort -->
-      <a class="card" href="./ComplexSorting/Merge/Merge.html">
-        <div class="card-title">Merge Sort</div>
-        <div class="card-sub">Divide &amp; Conquer tree</div>
-      </a>
- 
+  <footer class="site-foot">REII 211 — Introduction to Algorithms · North-West University</footer>
 
-      <!-- Quick Sort -->
-      <a class="card" href="./ComplexSorting/Quick/Quick.html">
-        <div class="card-title">Quick Sort</div>
-        <div class="card-sub">Partition tree</div>
-      </a>
-
-
-    </div>
-
-
-    <!-- ── Heuristics ──────────────────────────────────────────────────── -->
-    <div class="section-label">Heuristics</div>
-    <div class="grid">
-
-      <a class="card" href="./Heuristics/Heuristics.html">
-        <div class="card-title">Closed route finding</div>
-        <div class="card-sub">Approximation</div>
-      </a>
-
-      <a class="card" href="./Scheduling/Scheduling.html">
-        <div class="card-title">Scheduling</div>
-        <div class="card-sub">Optimisation</div>
-      </a>
-
-    </div>
-
-    <!-- ── Datastructs ──────────────────────────────────────────────────── -->
-    <div class="section-label">Data Structures</div>
-    <div class="grid">
-
-      <a class="card" href="./DataStructures/LinkedLists/LinkedLists.html">
-        <div class="card-title">Arrays and Linked Lists</div>
-        <div class="card-sub">Memory blocks </div>
-
-      </a>
-      <a class="card" href="./DataStructures/BinarySearchTrees/BinarySearchTrees.html">
-        <div class="card-title">Binary search trees</div>
-        <div class="card-sub">Trees</div>
-      </a>
-
-    </div>
-
-    <!-- ── Graphs ──────────────────────────────────────────────────── -->
-    <div class="section-label">Graph traversal</div>
-    <div class="grid">
-
-      <a class="card" href="./Graphs/NodePlane/NodePlane.html">
-        <div class="card-title">Graph Algorithms Visualisation</div>
-        <div class="card-sub">Graph plane</div>
-      </a>
-
-      <a class="card" href="./Graphs/Mazes/Mazes.html">
-        <div class="card-title">Graph Algorithms Mazes</div>
-        <div class="card-sub">Mazes</div>
-      </a>
-
-    </div>
-
-    <footer>REII 211 — Introduction to Algorithms</footer>
+  <script src="js/ui/sitemap.js"></script>
+  <script src="js/ui/cards.js"></script>
+  <script src="js/ui/nav.js"></script>
 </body>
 
 </html>

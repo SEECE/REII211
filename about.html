@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#e6f2f8" />
+  <title>About — REII 211 Visualisation Playground</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/ribbon.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+
+<body class="doc">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="ribbon">
+    <a class="ribbon-brand" href="index.html">
+      <span class="ribbon-mark" aria-hidden="true"></span>
+      <span class="ribbon-name" translate="no">REII&nbsp;211</span>
+    </a>
+    <span class="ribbon-sep" aria-hidden="true"></span>
+    <span class="ribbon-title">About</span>
+    <nav class="ribbon-nav" data-nav data-base="" data-current="about" aria-label="Sections"></nav>
+  </header>
+
+  <main class="doc-main" id="main">
+    <div class="hero">
+      <p class="hero-eyebrow">Colophon</p>
+      <h1>About this playground</h1>
+    </div>
+
+    <div class="prose">
+      <p>These are the interactive companions to the REII&nbsp;211 course material. The written
+        notes live in the course GitBook and get read top to bottom; this is the other half — a
+        set of small tools that get poked at. They were split apart because the two have very
+        different jobs.</p>
+
+      <h2>How to use them</h2>
+      <p>Every page has the same three regions. The <b>rail</b> on the left sets the problem up:
+        how much data, in what order, which algorithm. The <b>stage</b> in the middle is the
+        state of that problem right now. The <b>workbench</b> on the right walks it — Play runs
+        the whole thing, Prev and Next move one step, and the counts at the bottom are what the
+        algorithm has spent so far. Either side panel folds away with the two buttons at the
+        right of the ribbon when you want the drawing bigger.</p>
+
+      <h2>What they are not</h2>
+      <p>They build intuition; they do not prove anything. A visualisation of one input tells
+        you about that input. Small inputs show more than large ones, and changing a single
+        parameter at a time is the fastest way to see what an algorithm is actually doing —
+        run the same sort on a shuffled array and then on a reversed one and watch the counts.</p>
+
+      <h2>Under the hood</h2>
+      <p>Static, dependency-free and with no build step: clone it and open
+        <code>index.html</code>, or serve the folder with
+        <code>python3 -m http.server</code>. Every algorithm is written as a generator that
+        yields one narrated step at a time and touches nothing else — no canvas, no timer, no
+        colours — which is why the same code drives both the animation and the step buttons,
+        and why each one can be checked on its own in
+        <a href="test.html">the self-checks</a>.</p>
+
+      <h2>Acknowledgements</h2>
+      <p>Built for the School of Electrical, Electronic and Computer Engineering at the
+        North-West University. The scheduling page follows the interval-scheduling treatment in
+        Skiena's <i>The Algorithm Design Manual</i>; the sorts and the graph algorithms are the
+        standard ones from the course notes.</p>
+    </div>
+  </main>
+
+  <footer class="site-foot">REII 211 — Introduction to Algorithms · North-West University</footer>
+
+  <script src="js/ui/sitemap.js"></script>
+  <script src="js/ui/nav.js"></script>
+</body>
+
+</html>

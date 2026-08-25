@@ -1,0 +1,164 @@
+/* Control primitives — the field/select/button/slider vocabulary the rail is built from,
+   shared by every page. js/core/rail.js emits exactly these classes from a declarative field
+   list, so a page never writes control markup by hand and every page's rail looks the same.
+   Compact on purpose: the rail is a ~220px column holding a whole page's setup. */
+
+.field { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.field-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--aqua-700);
+}
+.field-row { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.field-row > .ctl { flex: 1 1 0; min-width: 0; }
+.field-note { font-size: 11.5px; line-height: 1.45; color: var(--text-faint); }
+.field-note--error { color: var(--danger); }
+
+/* the live value next to a slider's label */
+.field-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
+.field-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── select / text / number input ── */
+.ctl {
+  width: 100%;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  background-color: var(--panel-hi);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.ctl:hover { border-color: var(--line-hi); }
+.ctl:disabled { opacity: 0.45; cursor: default; }
+
+/* native arrow replaced so the control matches on every platform; the chevron is a data URI so
+   the page still works straight off the filesystem with no asset requests */
+select.ctl {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 2 6 6.2 10.5 2' fill='none' stroke='%235a7686' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  background-size: 10px;
+  text-overflow: ellipsis;
+}
+
+input.ctl { cursor: text; font-variant-numeric: tabular-nums; }
+
+/* ── range ── */
+.ctl-range {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.ctl-range::-webkit-slider-runnable-track { height: 4px; border-radius: var(--radius-pill); background: var(--line-hi); }
+.ctl-range::-moz-range-track { height: 4px; border-radius: var(--radius-pill); background: var(--line-hi); }
+.ctl-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px; height: 15px;
+  margin-top: -5.5px;
+  border-radius: 50%;
+  background: var(--aqua-600);
+  border: 2px solid var(--panel);
+  box-shadow: var(--shadow-sm);
+}
+.ctl-range::-moz-range-thumb {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--aqua-600);
+  border: 2px solid var(--panel);
+}
+.ctl-range:disabled { opacity: 0.45; cursor: default; }
+
+/* ── check / radio row ── */
+.check-row { display: flex; align-items: center; gap: var(--sp-2); font-size: 12.5px; color: var(--text-dim); cursor: pointer; }
+.check-row input { accent-color: var(--aqua-600); width: 15px; height: 15px; cursor: pointer; }
+.check-row:hover { color: var(--text); }
+
+/* ── buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.38; cursor: default; }
+
+/* the gradient runs aqua → sky → iris; every stop clears 5:1 against white text */
+.btn--primary {
+  background: linear-gradient(135deg, var(--aqua-700), var(--sky-700) 56%, var(--iris-600));
+  border-color: var(--sky-700);
+  color: #fff;
+  box-shadow: var(--glow);
+}
+.btn--primary:hover:not(:disabled) { filter: brightness(1.1) saturate(1.05); }
+
+.btn--soft {
+  background-color: var(--panel-hi);
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+.btn--soft:hover:not(:disabled) { color: var(--text); background-color: var(--tint); border-color: var(--line-hi); }
+
+.btn--ghost {
+  background-color: transparent;
+  border-color: var(--line);
+  color: var(--text-faint);
+}
+.btn--ghost:hover:not(:disabled) { color: var(--text); background-color: var(--tint); border-color: var(--line-hi); }
+
+/* the chosen one of a set — an algorithm, a structure, a heuristic */
+.btn[aria-pressed='true'] {
+  color: var(--aqua-700);
+  background-color: var(--tint-hi);
+  border-color: var(--aqua-500);
+}
+
+.btn--block { width: 100%; }
+.btn--sm { padding: 6px 10px; font-size: 12px; }
+
+.btn-row { display: flex; gap: var(--sp-2); }
+.btn-row > .btn { flex: 1 1 0; min-width: 0; }
+.btn-stack { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* ── small labelled well, for standing information in the rail ── */
+.well {
+  background-color: var(--panel-hi);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.well b { color: var(--aqua-700); font-weight: 650; }
+
+/* pushes the last rail group to the bottom when there is spare height */
+.rail-spacer { margin-top: auto; }

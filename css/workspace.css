@@ -1,0 +1,125 @@
+/* The workspace — the three regions every visualiser page is built from:
+
+     rail      (left)   the INPUT: what to generate, how big, which algorithm
+     stage     (middle) the drawing — the point of the page, so it gets the 1fr
+     workbench (right)  the RUN: narration, the running counts, the legend, the transport
+
+   That split is the reason the workbench exists. The old pages put the run controls, the
+   counters and the legend in the same left column as the array size and the shuffle button,
+   which made a column too tall for a laptop and mixed "set the problem up" with "walk it".
+   Setup on the left, the walk on the right, the drawing between them.
+
+   The whole thing is ONE grid inside a bounded row of body.app, so nothing can push the page
+   taller than the viewport. Each region owns its overflow: the rail scrolls, the workbench
+   scrolls its narration, and the stage never scrolls at all (the canvas is sized to its box).
+   Regions cannot overlap — they are grid tracks, not floated cards.
+
+   Either side panel collapses (ribbon toggles, wired by js/ui/shell.js): on a wide screen the
+   track is removed and the drawing grows into it; under 1080px the panels become overlay
+   drawers so the stage always has the full width. */
+
+.workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--wb-w);
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* pages that need a roomier rail (the node plane builds a graph by hand) */
+.workspace--wide-rail { --rail-w: clamp(250px, 24vw, 320px); }
+
+/* ── collapsed panels: drop the track entirely, don't leave a gap behind ── */
+.workspace[data-rail='closed'] { grid-template-columns: minmax(0, 1fr) var(--wb-w); }
+.workspace[data-workbench='closed'] { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+.workspace[data-rail='closed'][data-workbench='closed'] { grid-template-columns: minmax(0, 1fr); }
+.workspace[data-rail='closed'] > .rail,
+.workspace[data-workbench='closed'] > .workbench { display: none; }
+
+/* ── rail ── */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+}
+
+/* ── stage: the sheet a visualisation is drawn on ── */
+.stage {
+  position: relative;
+  background: var(--paper);
+  display: grid;
+  padding: var(--sp-3);
+  overflow: hidden;
+}
+/* Canvas and SVG both fill the track and are sized to it by the layout, never the other way
+   round. js/core/surface.js matches the canvas backing store to this box on resize. */
+.stage > canvas,
+.stage > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+/* a stage whose content is DOM rather than a canvas (the linked-list memory blocks) */
+.stage--flow { display: block; overflow: auto; padding: var(--sp-4); }
+
+/* ── workbench: head / scrolling narration / pinned readout / transport. Four grid rows, so
+   the readout can never ride over the text the way a sticky panel would. ── */
+.workbench {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  overflow: hidden;
+}
+
+/* ── overlay scrim, drawer mode only ── */
+.scrim {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  border: 0;
+  padding: 0;
+  background: rgba(13, 36, 48, 0.34);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+/* ── narrow: side panels become drawers over a full-width stage ── */
+@media (max-width: 1080px) {
+  .workspace,
+  .workspace[data-rail='closed'],
+  .workspace[data-workbench='closed'],
+  .workspace[data-rail='closed'][data-workbench='closed'] { grid-template-columns: minmax(0, 1fr); }
+
+  /* the wide rules above hide a closed panel; in drawer mode it stays laid out and slides */
+  .workspace[data-rail='closed'] > .rail { display: flex; }
+  .workspace[data-workbench='closed'] > .workbench { display: grid; }
+
+  .workspace > .rail,
+  .workspace > .workbench {
+    position: absolute;
+    top: var(--sp-3);
+    bottom: var(--sp-3);
+    width: min(340px, 86vw);
+    z-index: 20;
+    box-shadow: 0 24px 60px rgba(13, 36, 48, 0.28);
+    transition: transform var(--dur) var(--ease);
+  }
+  .workspace > .rail { left: var(--sp-3); transform: translateX(calc(-100% - var(--sp-4))); }
+  .workspace > .workbench { right: var(--sp-3); transform: translateX(calc(100% + var(--sp-4))); }
+  .workspace[data-rail='open'] > .rail,
+  .workspace[data-workbench='open'] > .workbench { transform: none; }
+
+  .workspace[data-rail='open'] > .scrim,
+  .workspace[data-workbench='open'] > .scrim { display: block; }
+}
+
+/* ── short screens: trim the chrome so the stage keeps its height ── */
+@media (max-height: 620px) {
+  .workspace { gap: var(--sp-2); padding: var(--sp-2); }
+  :root { --ribbon-h: 44px; }
+}

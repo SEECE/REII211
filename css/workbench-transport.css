@@ -1,0 +1,39 @@
+/* Workbench — the footer row: speed, and Prev / Play / Next. Part of workbench.css.
+
+   This is the other half of what moved out of the old control panel. Play, step and speed
+   drive the trace, so they sit with the trace rather than next to "how many bars". */
+
+.wb-transport {
+  padding: var(--sp-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  background: var(--panel-hi);
+}
+
+.transport-speed { display: flex; align-items: center; gap: var(--sp-3); }
+.transport-speed .field-label { flex: none; }
+.transport-speed .ctl-range { flex: 1 1 0; }
+.transport-speed .field-value { flex: none; min-width: 42px; text-align: right; }
+
+.transport-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--sp-2); }
+.transport-row > .btn { min-width: 0; }
+
+/* Play and Pause are one button — a separate Pause would be dead half the time */
+.btn--play { gap: var(--sp-2); }
+.btn--play::before {
+  content: '';
+  width: 0; height: 0;
+  border: 6px solid transparent;
+  border-left-color: currentColor;
+  margin-left: 2px;
+}
+.btn--play[data-playing='true']::before {
+  width: 9px; height: 10px;
+  border: 0;
+  margin-left: 0;
+  background: currentColor;
+  /* two bars from one box, so pause needs no extra element */
+  clip-path: polygon(0 0, 34% 0, 34% 100%, 0 100%, 0 0, 66% 0, 100% 0, 100% 100%, 66% 100%, 66% 0);
+}

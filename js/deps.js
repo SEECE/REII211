@@ -50,8 +50,8 @@
     /* heuristics: points on a plane, and intervals on a timeline */
     tour: ['core', 'heuristics/points.js', 'heuristics/tour-draw.js', 'heuristics/nearest.js',
       'heuristics/closest-pair.js', 'pages/tour.js'],
-    scheduling: ['core', 'heuristics/jobs.js', 'heuristics/jobs-draw.js',
-      'heuristics/greedy.js', 'pages/scheduling.js'],
+    scheduling: ['core', 'heuristics/jobs.js', 'heuristics/greedy.js',
+      'heuristics/jobs-draw.js', 'pages/scheduling.js'],
 
     /* browser-run self-checks (test.html) */
     tests: ['core', 'sorting/tape.js', 'sorting/algorithms.js', 'sorting/selection.js',

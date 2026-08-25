@@ -35,6 +35,18 @@ All fourteen pages are laid out the same way, and it is worth knowing which thir
 
 Either side panel folds away with the two buttons at the right of the ribbon.
 
+## Saving and opening
+
+At the foot of every rail is **Open or Save**. Saving writes a `.reii` file — the problem the
+page is set up on, not the run: the array, the graph you drew, the maze, the offers. Opening one
+puts it back.
+
+A file says which kind of subject it holds, so it opens on every page that can use it and is
+turned away with a plain sentence on the ones that cannot. An array saved from bubble sort opens
+on the other five sorts and on both recursion trees, which is the only honest way to compare two
+algorithms: the same input, twice. The format is one envelope for all seven subjects —
+[structure/FORMATS.md](structure/FORMATS.md).
+
 ## What is in it
 
 | Section | Pages |
@@ -53,6 +65,7 @@ about.html          what this is, and what it is not
 test.html           the self-checks
 css/                split by scope, ≤200 lines each; tokens.css reskins everything
 js/core/            the runtime: trace, player, workbench, surface, rail, legend, palette
+js/io/              the .reii file — one envelope, one validator per subject
 js/ui/              sitemap (the only place a page is named), nav, cards, panel state
 js/sorting/ …       the algorithms, one area per folder
 js/pages/           one small script per page kind

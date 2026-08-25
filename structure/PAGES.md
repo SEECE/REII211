@@ -27,8 +27,21 @@ Playground({
   build:  function (rail) { return { subject, gen, title }; },
   render: function (surface, frame, colours) { … },
   onField: function (id, value, api) { … },        // optional
+
+  file: {                                          // optional — Open or Save, in the rail
+    kind:   'graph',                               // what this page saves (js/io/reii.js)
+    accept: ['graph'],                             // what it will open; defaults to [kind]
+    name:   function () { return 'graph-9'; },     // the filename, slugified for you
+    get:    function () { return graph.view(); },  // or null when there is nothing to save
+    open:   function (data, name, api) { … },      // may throw; the message is for a student
+  },
 });
 ```
+
+`file.open` applies the file and nothing else — `Playground` rebuilds afterwards, because every
+open is a new problem by definition. Throwing out of it is how a page refuses a file it cannot
+draw (an array of 90 on a page whose tree tops out at 28); the message goes straight to the
+student, so it should read like a sentence. See [FORMATS.md](FORMATS.md).
 
 `build` is called on every rebuild and must return a **fresh generator**. `render` draws one
 frame and is also called on resize, so it must be pure with respect to the frame it is given —
@@ -70,6 +83,8 @@ version worked the positions out twice and the two drifted apart on every resize
 4. **`js/pages/<name>.js`** with the `Playground` call.
 5. **The algorithm** under `js/<area>/`, plus its checks in `js/tests/` — see
    [RUNTIME.md](RUNTIME.md#adding-an-algorithm).
+6. **A `file` block**, so the page can save what it is set up on and open it again. If the
+   subject is a new shape, that is a kind in `js/io/reii.js` too — [FORMATS.md](FORMATS.md).
 
 ## Page markup, in order
 

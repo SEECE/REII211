@@ -39,6 +39,10 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
   BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/maze/`,
   `js/heuristics/` (tour, closest pair, interval scheduling).
+- **Files** ([js/io/reii.js](js/io/reii.js)) — the `.reii` file. One envelope for all seven
+  subjects, where the payload is exactly the subject's `view()`; the control that writes and
+  reads it is `js/core/files.js`, appended to the rail by `Playground`. See
+  [structure/FORMATS.md](structure/FORMATS.md).
 - **UI** ([js/ui/](js/ui/)) — `sitemap.js` (the only place a page is named), `nav.js`,
   `cards.js`, `shell.js` (panel state, and nothing else).
 - **CSS** ([css/](css/)) — split by scope, ≤200 lines each. **`tokens.css` is the only file to
@@ -61,7 +65,10 @@ change if the decision itself moves.
   give a region a magic-number height.
 - [structure/PAGES.md](structure/PAGES.md) — **required** before adding a page or changing a
   page script. The `Playground` call, the two kinds of page (fresh each run against a standing
-  subject), and the five steps to add a visualiser.
+  subject), and the six steps to add a visualiser.
+- [structure/FORMATS.md](structure/FORMATS.md) — **required** before changing what a page saves
+  or adding a file kind. Why the payload is the subject's `view()` and not a second description
+  of it, and why everything read off a disk is validated field by field.
 
 ## Conventions
 
@@ -72,7 +79,8 @@ change if the decision itself moves.
 - Colours come from roles, never from literals. Blend with `Palette.mix()`, never CSS
   `color-mix()` — an unparseable canvas `fillStyle` is silently ignored.
 - Adding a visualiser = one sitemap entry + one topic folder + one bundle + one page script +
-  the algorithm + its self-checks. That is the definition of done.
+  the algorithm + its self-checks + a `file` block so the page can be saved and reopened. That
+  is the definition of done.
 - Narration should teach, not label. Say *why* the step happened and what it cost — and if a
   step claims something is provable, there must be a check in `js/tests/` that makes the claim
   trustworthy.

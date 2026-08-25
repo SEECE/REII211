@@ -34,6 +34,10 @@ owes the runtime exactly two methods:
 | `view()` | an immutable snapshot the renderer can draw |
 | `stats()` | the counters to pin in the workbench, as `{ Label: value }` |
 
+A subject may also carry a `load()` that rebuilds it from a saved `view()`. That is **not**
+part of this contract — the runtime never calls it, only a page opening a `.reii` does. See
+[FORMATS.md](FORMATS.md).
+
 `view()` should reuse one object until something is written — a run of pure comparisons then
 costs no memory at all, which is most of a sort's frames (see `js/sorting/tape.js`).
 

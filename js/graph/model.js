@@ -91,6 +91,15 @@
 
   window.Graph.edgeKey = key;
 
+  /* Rebuild a graph from a saved view(). Ids are handed out fresh rather than trusted from the
+     file, so an edge is only ever wired between two nodes this graph actually made. */
+  window.Graph.load = function (saved) {
+    var g = window.Graph(), id = {};
+    saved.nodes.forEach(function (n) { id[n.id] = g.addNode(n.label, n.x, n.y); });
+    (saved.edges || []).forEach(function (e) { g.addEdge(id[e.a], id[e.b], e.w); });
+    return g;
+  };
+
   /* A random graph that LOOKS like a map: nodes on a jittered grid, edges only between near
      neighbours. A uniformly random graph is a hairball at any useful size and teaches nothing
      about traversal order, because everything is two hops from everything. */

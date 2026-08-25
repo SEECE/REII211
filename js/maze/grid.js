@@ -72,5 +72,18 @@
     };
     return api;
   };
+  /* Rebuild a maze from a saved view(). The gaps are re-opened through `open` rather than by
+     writing the walls, so the two cells either side of a gap cannot end up disagreeing and the
+     Gaps counter comes out at the maze's real gap count. */
+  window.MazeGrid.load = function (saved) {
+    var grid = window.MazeGrid(saved.cols, saved.rows);
+    saved.cells.forEach(function (c, i) {
+      grid.around(i).forEach(function (n) {
+        if (!c[n.dir.name] && grid.cell(i)[n.dir.name]) grid.open(i, n);
+      });
+    });
+    return grid;
+  };
+
   window.MazeGrid.DIRS = DIRS;
 })();

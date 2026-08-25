@@ -49,6 +49,12 @@
     return api;
   };
 
+  window.PointSet.load = function (saved) {
+    var set = window.PointSet();
+    (saved.points || []).forEach(function (p) { set.add(p.x, p.y); });
+    return set;
+  };
+
   /* Scatter, with a minimum separation so no two points land on top of each other — a pair a
      student cannot tell apart makes every answer on the page look wrong. */
   window.PointSet.random = function (n) {

@@ -53,4 +53,19 @@
     };
     return api;
   };
+
+  /* Rebuild a tree from a saved view(). The SHAPE is what is saved, not the values in order —
+     the shape is what the insertion order produced and the whole argument of the page. */
+  window.BST.load = function (saved) {
+    var tree = window.BST();
+    tree.setRoot(function build(n) {
+      if (!n) return null;
+      var node = tree.make(n.value);
+      var left = build(n.left), right = build(n.right);
+      if (left) tree.attach(node, 'left', left);
+      if (right) tree.attach(node, 'right', right);
+      return node;
+    }(saved.root));
+    return tree;
+  };
 })();

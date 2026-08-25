@@ -43,6 +43,14 @@
     return api;
   };
 
+  /* Rebuild an offer set from a saved view(). Ids are renumbered from the file's order, since
+     every rule reports the jobs it took by id and a gap in them would read as a missing offer. */
+  window.JobSet.load = function (saved) {
+    return window.JobSet(saved.jobs.map(function (j, i) {
+      return { id: i, studio: j.studio, row: j.row, start: j.start, end: j.end };
+    }), saved.span);
+  };
+
   window.JobSet.random = function (studios, span) {
     var jobs = [];
     for (var s = 0; s < studios; s++) {

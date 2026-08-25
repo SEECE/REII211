@@ -59,6 +59,9 @@
       },
       used: function () { return used; },
 
+      /* opening a saved block is not work the student did, so it does not go on their bill */
+      resetCounters: function () { cmp = 0; writes = 0; hops = 0; },
+
       /* ── the Trace subject contract ── */
       view: function () {
         if (snapshot) return snapshot;
@@ -86,5 +89,16 @@
       },
     };
     return api;
+  };
+
+  /* Rebuild a block from a saved view() — slot for slot, pointer for pointer, because WHERE a
+     value sits is the entire lesson of this page and re-inserting the values would put them
+     somewhere else. js/io/reii.js has already checked every index is in range. */
+  window.Store.load = function (saved) {
+    var store = window.Store(saved.cells.length);
+    saved.cells.forEach(function (c, i) { if (c) store.put(i, c.value, c.next, c.prev); });
+    store.setHead(saved.head == null ? null : saved.head);
+    store.resetCounters();
+    return store;
   };
 })();

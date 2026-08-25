@@ -126,7 +126,14 @@
       graph: function () { return graph; },
       tool: function () { return page.rail.get('tool'); },
       weight: function () { return page.rail.get('weight'); },
-      nextLabel: function () { return LETTERS[graph.nodes().length % 26] || String(graph.nodes().length + 1); },
+      // the first letter nobody is using — counting the nodes hands out a duplicate label
+      // as soon as one has been erased, and the Start-at dropdown resolves nodes BY label
+      nextLabel: function () {
+        var used = {};
+        graph.nodes().forEach(function (n) { used[n.label] = true; });
+        for (var i = 0; i < 26; i++) if (!used[LETTERS[i]]) return LETTERS[i];
+        return String(graph.nodes().length + 1);
+      },
       repaint: function () { page.repaint(); },
       select: function (id) { selected = id; page.repaint(); },
       commit: function (text) {

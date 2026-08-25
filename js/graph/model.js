@@ -15,14 +15,17 @@
 
   window.Graph = function () {
     var nodes = [], edges = [], adj = {}, extras = {}, snapshot = null;
-    var checked = 0, visited = 0;
+    var checked = 0, visited = 0, uid = 0;
 
     function dirty() { snapshot = null; }
 
     var api = {
       /* ── building ── */
+      /* The id comes from a counter, never from nodes.length: erase a node in the middle and
+         the length drops, so the next node would be handed an id that is still in use — which
+         silently wiped the older node's adjacency and made `node(id)` ambiguous. */
       addNode: function (label, x, y) {
-        var id = nodes.length;
+        var id = uid++;
         nodes.push({ id: id, label: label, x: x, y: y });
         adj[id] = [];
         dirty();

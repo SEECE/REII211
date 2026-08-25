@@ -58,6 +58,18 @@
     var d = T.run(window.GraphShortest.run(chain, 0));
     C.equal(d[2], 2, 'Dijkstra prefers two cheap hops over one expensive edge');
     C.equal(d[3], 3, 'and carries that saving down the chain');
+
+    /* Erasing a node and adding another is what the plane's Erase tool does all day. Ids are
+       handed out by a counter, so the new node cannot land on top of a surviving one. */
+    var edited = G();
+    ['A', 'B', 'C'].forEach(function (l, i) { edited.addNode(l, i / 3, 0.5); });
+    edited.addEdge(0, 2, 3);
+    edited.removeNode(1);
+    var fresh = edited.addNode('D', 0.9, 0.5);
+    C.ok(edited.nodes().every(function (n) { return n.id === fresh ? n.label === 'D' : true; }),
+      'a new node after an erase does not take a live id');
+    C.equal(edited.nodes().length, 3, 'the erase left two nodes and the add made a third');
+    C.equal(edited.peek(2).length, 1, 'and the surviving node kept its edge');
   });
 
   window.Check.suite('graphs — mazes', function () {

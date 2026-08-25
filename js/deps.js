@@ -35,10 +35,10 @@
       'recursion/draw.js', 'recursion/merge.js', 'recursion/quick.js', 'pages/recursion.js'],
 
     /* containers: the array/list memory model, and the binary search tree */
-    lists: ['core', 'structures/store.js', 'structures/list-ops.js', 'structures/list-draw.js',
-      'pages/lists.js'],
-    bst: ['core', 'structures/bst.js', 'structures/bst-ops.js', 'structures/bst-draw.js',
-      'pages/bst.js'],
+    lists: ['core', 'structures/store.js', 'structures/list-array.js',
+      'structures/list-linked.js', 'structures/list-draw.js', 'pages/lists.js'],
+    bst: ['core', 'sorting/tape.js', 'structures/bst.js', 'structures/bst-ops.js',
+      'structures/bst-draw.js', 'pages/bst.js'],
 
     /* graphs: the shared model and renderer, then the two pages over it */
     graph: ['core', 'graph/model.js', 'graph/draw.js', 'graph/traverse.js',
@@ -59,8 +59,9 @@
       'sorting/quick.js', 'graph/model.js', 'graph/traverse.js', 'graph/shortest.js',
       'graph/spanning.js', 'heuristics/points.js', 'heuristics/nearest.js',
       'heuristics/closest-pair.js', 'heuristics/jobs.js', 'heuristics/greedy.js',
-      'structures/store.js', 'structures/list-ops.js', 'structures/bst.js',
-      'structures/bst-ops.js', 'maze/grid.js', 'maze/carve.js', 'maze/search.js',
+      'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
+      'structures/bst.js', 'structures/bst-ops.js',
+      'maze/grid.js', 'maze/carve.js', 'maze/search.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
       'tests/structures.js', 'tests/core.js'],
   };

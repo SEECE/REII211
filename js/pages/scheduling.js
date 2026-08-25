@@ -28,6 +28,13 @@
           'take the most jobs — and it is often not the one that books the most months.' },
       ],
 
+      file: {
+        kind: 'jobs',
+        name: function () { return 'offers-' + set.count(); },
+        get: function () { return set.count() ? set.view() : null; },
+        open: function (data) { set = window.JobSet.load(data); },
+      },
+
       onField: function (id, value, api) {
         // changing the rule re-runs on the same offers; anything else is a new problem
         if (id === 'rule') return;

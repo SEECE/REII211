@@ -141,7 +141,15 @@
       get: function (id) { return values[id]; },
       set: function (id, v) {
         var input = inputs[id];
-        if (!input || input.tagName === 'DIV') return;
+        if (!input) return;
+        /* a choice is a strip of buttons, so setting it is pressing the right one — which
+           fires, exactly as a student pressing it would */
+        if (input.classList.contains('btn-stack')) {
+          var chosen = input.querySelector('[data-value="' + v + '"]');
+          if (chosen) chosen.click();
+          return;
+        }
+        if (input.tagName === 'DIV') return;
         input.value = v;
         values[id] = input.type === 'range' || input.type === 'number' ? Number(v) : v;
         input.dispatchEvent(new Event(input.tagName === 'SELECT' ? 'change' : 'input'));

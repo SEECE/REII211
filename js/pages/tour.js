@@ -31,6 +31,17 @@
           'fewer the tour is also solved exactly, so you can see how far off greedy was.' },
       ],
 
+      file: {
+        kind: 'points',
+        name: function () { return 'points-' + set.count(); },
+        get: function () { return set.count() ? set.view() : null; },
+        open: function (data, name) {
+          set = window.PointSet.load(data);
+          message = 'Opened <b>' + name + '</b> — ' + set.count() +
+            ' points. Press an algorithm to run it on the plane as it stands.';
+        },
+      },
+
       onField: function (id, value, api) {
         message = null;
         if (id === 'generate') { set = window.PointSet.random(api.rail.get('size')); return; }

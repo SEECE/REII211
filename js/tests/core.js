@@ -31,4 +31,39 @@
       C.equal(window.Palette.mix('#fff', 100, '#000'), 'rgb(255,255,255)', 'palette expands short hex');
     }
   });
+
+  /* The Open-or-Save control is the one part of the file feature that is DOM, so it is checked
+     where the DOM is — in the browser, and skipped under node. Everything the control does to
+     the FILE is checked in tests/io.js; what matters here is that it builds, that its wording
+     comes out of the format rather than being typed twice, and that it opens and closes.
+     Saving is not clicked: a passing self-check that downloads a file is a nuisance. */
+  window.Check.suite('core — the Open-or-Save control', function () {
+    var C = window.Check;
+    if (typeof document === 'undefined' || !window.Files) return;
+
+    var rail = document.createElement('div');
+    var control = window.Files(rail, {
+      kind: 'graph', accept: ['graph'],
+      name: function () { return 'g'; },
+      get: function () { return null; },              // nothing to save yet
+      open: function () { C.ok(false, 'open was called by nothing'); },
+    });
+    C.ok(control, 'the control builds');
+
+    var btn = rail.querySelector('[aria-expanded]');
+    var list = rail.querySelector('.file-actions');
+    var note = rail.querySelector('.field-note');
+    C.ok(/a graph/.test(rail.textContent), 'it names the kind it opens, from js/io/reii.js');
+    C.ok(list.hidden, 'it starts closed');
+    btn.click();
+    C.ok(!list.hidden && btn.getAttribute('aria-expanded') === 'true', 'the toggle opens it');
+    btn.click();
+    C.ok(list.hidden && btn.getAttribute('aria-expanded') === 'false', 'and closes it again');
+
+    rail.querySelectorAll('.file-action')[1].click();
+    C.ok(/nothing/.test(note.textContent), 'saving an empty page says so instead of writing a file');
+    C.ok(note.classList.contains('field-note--error'), 'and says it as a problem');
+
+    C.ok(window.Files(rail, { kind: 'not-a-thing' }) === null, 'it refuses a kind the format has never heard of');
+  });
 })();

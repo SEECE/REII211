@@ -13,13 +13,18 @@
     { value: 'reversed', label: 'Reversed' },
   ];
 
+  /* capped well below the bar-graph pages on purpose: past about thirty elements the tree is
+     wider than the stage and stops being the thing you can read */
+  var SIZE = { min: 4, max: 28, value: 16 };
+
   window.RecursionPage = function (which) {
     var algo = window[ALGOS[which]];
+    var values = null;
+
+    function regenerate(rail) { values = window.Tape.build(rail.get('n'), rail.get('order')); }
 
     var fields = [
-      /* capped well below the bar-graph pages on purpose: past about thirty elements the tree
-         is wider than the stage and stops being the thing you can read */
-      { id: 'n', kind: 'range', label: 'Entries', min: 4, max: 28, value: 16 },
+      { id: 'n', kind: 'range', label: 'Entries', min: SIZE.min, max: SIZE.max, value: SIZE.value },
       { id: 'order', kind: 'select', label: 'Start from', options: ORDERS },
     ];
     if (which === 'quick') {
@@ -45,8 +50,28 @@
       legend: algo.roles,
       legendNotes: algo.notes,
 
+      file: {
+        kind: 'array',
+        name: function () { return 'array-' + values.length; },
+        get: function () { return values; },
+        open: function (data, name, api) {
+          if (data.length < SIZE.min || data.length > SIZE.max) {
+            throw new Error('that array has ' + data.length + ' entries — this page draws ' +
+              SIZE.min + ' to ' + SIZE.max + ', because a wider tree stops being readable');
+          }
+          api.rail.set('n', data.length);
+          values = data.slice();
+        },
+      },
+
+      /* the hint on the quick page asks for two pivot rules on the SAME array, so changing
+         the pivot must not quietly shuffle it */
+      onField: function (id, value, api) {
+        if (id === 'n' || id === 'order' || id === 'again') regenerate(api.rail);
+      },
+
       build: function (rail) {
-        var values = window.Tape.build(rail.get('n'), rail.get('order'));
+        if (!values) regenerate(rail);
         var tape = window.Tape(values);
         var tree = window.CallTree(tape);
         return {

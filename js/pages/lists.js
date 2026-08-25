@@ -34,6 +34,14 @@
       return Number.isFinite(v) ? v : Math.floor(Math.random() * 99) + 1;
     }
 
+    /* Which structure a saved block IS, read off the block itself: only the list operations
+       ever set a head, and only a doubly linked one ever writes a back pointer. Getting this
+       wrong would run array operations over a list, so it is derived rather than remembered. */
+    function detect(saved) {
+      if (saved.head == null) return 'array';
+      return saved.cells.some(function (c) { return c && c.prev != null; }) ? 'doubly' : 'singly';
+    }
+
     reset();
 
     return window.Playground({
@@ -64,6 +72,20 @@
           'Insert the same handful of values into an array and then into a list, and compare ' +
           'the Hops and Writes counters.' },
       ],
+
+      file: {
+        kind: 'memory',
+        name: function () { return 'memory-' + kind; },
+        get: function () { return store.used() ? store.view() : null; },
+        open: function (data, name, api) {
+          api.rail.set('kind', detect(data));      // switching structure clears the block…
+          store = window.Store.load(data);         // …and this is the block that replaces it
+          pending = function () {
+            return intro('Opened <b>' + name + '</b> — the same values in the same slots they ' +
+              'were saved in. Insert one more and watch where it has to go.');
+          };
+        },
+      },
 
       onField: function (id, v, api) {
         var rail = api.rail;

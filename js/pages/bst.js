@@ -70,6 +70,20 @@
           'Fill in order, then fill shuffled at the same size, and compare Height with Ideal.' },
       ],
 
+      file: {
+        kind: 'bst',
+        name: function () { return 'tree-' + tree.stats().Nodes; },
+        get: function () { return tree.stats().Nodes ? tree.view() : null; },
+        open: function (data, name) {
+          tree = window.BST.load(data);
+          pending = function () {
+            return intro('Opened <b>' + name + '</b>. Height is <b>' + tree.height() +
+              '</b> against an ideal of <b>' + tree.stats().Ideal + '</b> — the shape the ' +
+              'original insertion order produced, saved as it stood.');
+          };
+        },
+      },
+
       onField: function (id, v, api) {
         var rail = api.rail;
         if (id === 'clear') { reset('Cleared.'); return; }

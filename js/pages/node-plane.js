@@ -66,6 +66,18 @@
           'Dijkstra on the same graph and compare the routes.' },
       ],
 
+      file: {
+        kind: 'graph',
+        name: function () { return 'graph-' + graph.nodes().length; },
+        get: function () { return graph.nodes().length ? graph.view() : null; },
+        open: function (data, name, api) {
+          graph = window.Graph.load(data);
+          refreshStarts(api.rail);
+          message = 'Opened <b>' + name + '</b> — ' + graph.nodes().length + ' nodes and ' +
+            graph.edges().length + ' edges. Press an algorithm to run it on this graph.';
+        },
+      },
+
       onField: function (id, value, api) {
         if (id === 'generate') {
           graph = window.Graph.random(api.rail.get('size'), Math.round(api.rail.get('size') / 2));

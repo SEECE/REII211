@@ -42,6 +42,17 @@
           'identical — a perfect maze has only one.' },
       ],
 
+      file: {
+        kind: 'maze',
+        name: function () { return grid ? 'maze-' + grid.cols + 'x' + grid.rows : 'maze'; },
+        get: function () { return grid && grid.view(); },
+        open: function (data, name, api) {
+          // watching the carve re-carves from scratch, which would throw the file away
+          if (api.rail.get('watch') === 'carve') api.rail.set('watch', 'bfs');
+          grid = window.MazeGrid.load(data);
+        },
+      },
+
       onField: function (id, value, api) {
         // anything that changes the MAZE makes a new one; changing what you watch does not
         if (id === 'watch') return;

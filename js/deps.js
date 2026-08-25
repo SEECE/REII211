@@ -22,7 +22,7 @@
     core: [
       'core/palette.js', 'core/roles.js', 'core/trace.js', 'core/player.js',
       'core/surface.js', 'core/rail.js', 'core/legend.js', 'core/workbench.js',
-      'core/page.js', 'io/reii.js', 'ui/shell.js',
+      'core/page.js', 'io/reii.js', 'core/files.js', 'ui/shell.js',
     ],
 
     /* the six bar-graph sorts: one instrumented array, one renderer, one file per algorithm */

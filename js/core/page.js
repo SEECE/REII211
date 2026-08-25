@@ -12,7 +12,7 @@
    Everything else — sizing the canvas, counting comparisons, pausing a timer, disabling Prev
    at frame zero, keeping the legend honest — belongs to the runtime and happens for free.
 
-       Playground({ fields, legend, build, render })
+       Playground({ fields, legend, build, render, file })
 
    Returns the live parts so an interactive page (the node plane, the point plane) can drive
    the model from its own pointer handlers and call `rebuild()` when the input really changed. */
@@ -67,6 +67,14 @@
       repaint: paint,
       frame: function () { return current; },
     };
+
+    /* Open or Save, if the page declared what it saves. The rebuild after an open belongs
+       here rather than in eight page scripts — every open is a new problem by definition. */
+    if (o.file) {
+      window.Files(railEl, Object.assign({}, o.file, {
+        open: function (data, name) { o.file.open(data, name, api); api.rebuild(); },
+      }));
+    }
 
     api.rebuild();
     return api;

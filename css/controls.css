@@ -1,7 +1,11 @@
 /* Control primitives — the field/select/button/slider vocabulary the rail is built from,
    shared by every page. js/core/rail.js emits exactly these classes from a declarative field
    list, so a page never writes control markup by hand and every page's rail looks the same.
-   Compact on purpose: the rail is a ~220px column holding a whole page's setup. */
+   Compact on purpose: the rail is a ~220px column holding a whole page's setup.
+
+   The Open-or-Save control is its own part so this file stays under the line ceiling; @import
+   must precede any rule, so it sits here rather than at the bottom where it reads. */
+@import url('controls-file.css');
 
 .field { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
 .field-label {

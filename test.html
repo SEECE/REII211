@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self-checks — REII 211</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/ribbon.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <style>
+    /* the only page on the site with styling of its own: it is a diagnostic, not a topic */
+    #out p { font-size: 13px; padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-sm);
+      border: 1px solid var(--line); background: var(--panel); margin-bottom: var(--sp-2); }
+    #out .good { color: var(--aqua-700); }
+    #out .bad { color: var(--danger); border-color: var(--danger); }
+    #out h2 { font-size: 18px; margin-bottom: var(--sp-4); }
+    #out .detail { color: var(--text-faint); font-size: 11.5px; font-family: var(--font-mono); }
+  </style>
+</head>
+
+<body class="doc">
+  <header class="ribbon">
+    <a class="ribbon-brand" href="index.html">
+      <span class="ribbon-mark" aria-hidden="true"></span>
+      <span class="ribbon-name" translate="no">REII&nbsp;211</span>
+    </a>
+    <span class="ribbon-sep" aria-hidden="true"></span>
+    <span class="ribbon-title">Self-checks</span>
+    <nav class="ribbon-nav" data-nav data-base="" data-current="tests" aria-label="Sections"></nav>
+  </header>
+
+  <main class="doc-main">
+    <div class="hero">
+      <p class="hero-eyebrow">Diagnostics</p>
+      <h1>Self-checks</h1>
+      <p class="hero-sub">Every algorithm on this site is a generator that touches no DOM, owns
+        no timer and knows nothing about colour — so each one can be run here on its own and
+        checked against a reference. These run the real files, not copies of them.</p>
+    </div>
+    <div id="out"></div>
+  </main>
+
+  <script src="js/deps.js" data-load="tests"></script>
+  <script>
+    window.addEventListener('load', function () { Check.run(document.getElementById('out')); });
+  </script>
+  <script src="js/ui/sitemap.js"></script>
+  <script src="js/ui/nav.js"></script>
+</body>
+
+</html>

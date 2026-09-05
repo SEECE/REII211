@@ -10,6 +10,10 @@
   padding: var(--sp-2) var(--sp-3);
   background: var(--panel-hi);
   max-height: 26vh;
+  /* The cap was here without this, so a counter holding a long VALUE — the visit order of a
+     search, which on a real street map is two hundred street names — grew straight out of the
+     box and pushed the legend off the panel instead of scrolling inside it. */
+  overflow: auto;
 }
 .wb-readout:empty { display: none; }
 

@@ -53,7 +53,9 @@
     /* applications: the same graph algorithms on something not drawn as a graph */
     maze: ['core', 'graph/model.js', 'graph/traverse.js', 'maze/grid.js', 'maze/carve.js',
       'maze/draw.js', 'maze/search.js', 'pages/maze.js'],
-    manhattan: ['graph', 'city/grid.js', 'city/draw.js', 'pages/city.js'],
+    /* the extract goes first: js/city/osm-index.js reads the global it defines */
+    manhattan: ['graph', 'city/grid.js', 'city/osm-manhattan.js', 'city/osm-index.js',
+      'city/osm-graph.js', 'city/source.js', 'city/draw.js', 'pages/city.js'],
 
     /* heuristics: points on a plane, and intervals on a timeline */
     tour: ['core', 'heuristics/points.js', 'heuristics/tour-draw.js', 'heuristics/nearest.js',

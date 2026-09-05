@@ -56,22 +56,42 @@
 
   /* What a crossing is called: the streets that meet at it. OSM has no name for the junction
      itself, and "Broadway × W 42nd St" is what a person would say — so the narration comes out
-     reading like directions instead of like node ids. */
+     reading like directions instead of like node ids.
+
+     Abbreviated the way a street sign is. It is not only tidier: the searches pin their visit
+     ORDER as a counter, and two hundred crossings written out in full is several kilobytes of
+     "West Forty-Sixth Street" in a panel four inches wide. */
+  var SHORT = [
+    [/\bStreet\b/g, 'St'], [/\bAvenue\b/g, 'Ave'], [/\bBoulevard\b/g, 'Blvd'],
+    [/\bPlace\b/g, 'Pl'], [/\bTerrace\b/g, 'Terr'], [/\bParkway\b/g, 'Pkwy'],
+    [/\bDrive\b/g, 'Dr'], [/\bRoad\b/g, 'Rd'], [/\bSquare\b/g, 'Sq'],
+    [/\bLane\b/g, 'Ln'], [/\bCourt\b/g, 'Ct'], [/\bBridge\b/g, 'Br'],
+    [/\bTunnel\b/g, 'Tnl'], [/\bHighway\b/g, 'Hwy'],
+    [/^West /, 'W '], [/^East /, 'E '], [/^North /, 'N '], [/^South /, 'S '],
+  ];
+
+  function short(name) {
+    SHORT.forEach(function (rule) { name = name.replace(rule[0], rule[1]); });
+    return name;
+  }
+
   function label(n) {
     if (!n.names.length) return 'a corner';
-    if (n.names.length === 1) return n.names[0];
-    return n.names[0] + ' × ' + n.names[1];
+    if (n.names.length === 1) return short(n.names[0]);
+    return short(n.names[0]) + ' × ' + short(n.names[1]);
   }
 
   window.OsmGraph = {
     /* Windows worth looking at. They are here rather than in the page because which parts of
        this extract are interesting is a fact about the extract. */
     DISTRICTS: [
-      { id: 'midtown', label: 'Midtown — the grid at its most regular', lat: 40.7561, lon: -73.9845 },
-      { id: 'village', label: 'Greenwich Village — where the grid gives up', lat: 40.7336, lon: -74.0027 },
-      { id: 'financial', label: 'Financial District — streets older than the grid', lat: 40.7075, lon: -74.0100 },
-      { id: 'ues', label: 'Upper East Side — long avenues, short blocks', lat: 40.7736, lon: -73.9566 },
-      { id: 'harlem', label: 'Harlem — the grid, turned', lat: 40.8090, lon: -73.9460 },
+      /* Labels are short because the rail's select is narrow and truncates — what is
+         interesting about each of these is visible on the map the moment it draws. */
+      { id: 'midtown', label: 'Midtown', lat: 40.7561, lon: -73.9845 },
+      { id: 'village', label: 'Greenwich Village', lat: 40.7336, lon: -74.0027 },
+      { id: 'financial', label: 'Financial District', lat: 40.7075, lon: -74.0100 },
+      { id: 'ues', label: 'Upper East Side', lat: 40.7736, lon: -73.9566 },
+      { id: 'harlem', label: 'Harlem', lat: 40.8090, lon: -73.9460 },
     ],
 
     ready: function () { return window.OsmIndex.ready(); },

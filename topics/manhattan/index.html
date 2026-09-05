@@ -42,6 +42,9 @@
     <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it. -->
     <section class="stage panel" aria-label="The street map">
       <canvas id="canvas"></canvas>
+      <!-- ODbL wants the credit where the data is shown. It is absolutely positioned, so
+           js/core/surface.js measures exactly the box it measured before. -->
+      <p class="stage-credit" data-credit></p>
     </section>
 
     <!-- workbench: the RUN. Head / narration + legend / pinned counts / transport. -->

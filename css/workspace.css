@@ -64,6 +64,23 @@
   min-width: 0;
   min-height: 0;
 }
+/* A credit line over the stage, for a page drawing somebody else's data. Absolute, so the
+   canvas track is exactly the size it would have been without it — js/core/surface.js sizes
+   the backing store from that box and a sibling in the flow would shrink the drawing. */
+.stage-credit {
+  position: absolute;
+  right: var(--sp-3);
+  bottom: var(--sp-2);
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-faint);
+  text-align: right;
+  pointer-events: auto;
+}
+.stage-credit a { color: inherit; text-decoration: underline; }
+.stage-credit a:hover { color: var(--text); }
+
 /* a stage whose content is DOM rather than a canvas (the linked-list memory blocks) */
 .stage--flow { display: block; overflow: auto; padding: var(--sp-4); }
 

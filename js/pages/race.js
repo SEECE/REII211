@@ -77,7 +77,12 @@
       build: function (rail) {
         if (!values) regenerate(rail);
         var lanes = entered(rail);
-        var race = window.Race(values, lanes, { pivot: rail.get('pivot') });
+        /* A quadratic lane at n=1000 can bill half a million operations; charged one per frame
+           that is half a million snapshots kept alive in the trace — the slowdown and the
+           truncated run the size slider now makes possible. Scale the charge with n² so the
+           worst lane still finishes in a few thousand frames, whatever n is. */
+        var per = Math.max(1, Math.round(values.length * values.length / 4000));
+        var race = window.Race(values, lanes, { pivot: rail.get('pivot'), per: per });
         return {
           subject: race,
           gen: window.Race.run(race),

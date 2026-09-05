@@ -43,9 +43,15 @@
     },
     {
       id: 'graphs', label: 'Graphs', short: 'Graph',
-      blurb: 'Traversal, shortest path and minimum spanning trees, on a plane you build yourself or on a maze.',
+      blurb: 'Traversal, shortest path and minimum spanning trees, on a plane you draw yourself — nodes and edges and nothing else, which is what all five algorithms actually see.',
       items: [
         { id: 'node-plane', label: 'Node Plane', note: 'BFS · DFS · Dijkstra · Prim · Kruskal' },
+      ],
+    },
+    {
+      id: 'applied', label: 'Applications', short: 'Apply',
+      blurb: 'The same graph algorithms again, on something that is not drawn as a graph. A maze and a street map are both nodes and edges wearing a disguise, and finding that out is most of the lesson.',
+      items: [
         { id: 'maze-search', label: 'Maze Search', note: 'BFS against DFS on a generated maze' },
       ],
     },

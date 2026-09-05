@@ -75,8 +75,25 @@ The trace is capped at `Trace.MAX` frames. A badly chosen input can produce mill
 and a tab that dies is worse than a walk that stops early and says so — which the last frame
 does.
 
+`Trace.live(start, opts)` is the same list **discovered as it is walked**, and exists for the
+one page where building it up front is not merely slow but impossible: a 128 × 128 colour block
+sorted one operation at a time is tens of millions of beats, each recording a 16,384-long
+snapshot. `start()` returns a *fresh* `{ subject, gen }` and may be called again, because a
+generator cannot be rewound — so going back past the kept window replays the run, bounded by
+`opts.rewind` so that one Prev press can never freeze the tab. `total` is `null` until the run
+ends, and `oldest` is the earliest frame still reachable. **Use `build` unless you have measured
+that you cannot**; a live trace trades a known length and free rewind for a run that has neither.
+
 `Player` is the only clock on the site. It walks a frame list, and `step()` pauses first so a
-Next press never fights a running animation.
+Next press never fights a running animation. It reads frames through **`.at(k)`** and asks
+"did `at(i + 1)` give me anything" rather than "is `i` the last index" — the second question has
+no answer while a trace is still growing, and a plain Array already has `.at()`.
+
+**The speed slider is a rate, not a delay.** Mapping it onto a shrinking `setTimeout` looked
+right and was a lie at the top: a browser clamps a nested timer to about 4 ms, so every setting
+above roughly 70 asked for the same speed. Past the floor the player advances several frames per
+paint instead (`player.stride()`), which the workbench prints beside the slider. Nothing leaves
+the trace — Prev and Next still move exactly one frame.
 
 ## Racing several algorithms
 
@@ -93,12 +110,11 @@ same amount at every frame, and the only difference on screen is how much sortin
 A lane can overshoot the budget (the beat that takes it over may write a whole merged run) but
 must never fall behind it, which is what a check enforces.
 
-A tick may charge MORE than one unit (`opts.per`), because a frame is a tick and a big enough
-input asks for more beats than a trace holds — a walk that stops two thirds of the way through
-a sort shows nobody anything. That costs granularity and nothing else: every lane is still
-billed the identical amount at every frame, which is the only thing the comparison rests on.
-The colour block sizes `per` so the walk is about the same length whatever the block is
-(`Spectrum.per`), which is why a bigger block there is a sharper picture and not a longer wait.
+A tick may charge MORE than one unit (`opts.per`). That costs granularity and nothing else —
+every lane is still billed the identical amount at every frame — but it is a last resort, not a
+way to make a run fit. **Making a long run fit is `Trace.live`'s job, not the algorithm's**: the
+colour block runs at one operation a step at every size, because a step you cannot see is not a
+step you can learn anything from.
 
 ## Adding an algorithm
 

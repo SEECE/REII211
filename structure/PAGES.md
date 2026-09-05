@@ -47,6 +47,11 @@ student, so it should read like a sentence. See [FORMATS.md](FORMATS.md).
 frame and is also called on resize, so it must be pure with respect to the frame it is given —
 never mutate `frame.roles`; overlay onto a copy (see `js/pages/node-plane.js`).
 
+A page whose run is too long to drain up front returns `{ live: function () { return { subject,
+gen }; } }` instead of `{ subject, gen }` — a way to START the run rather than one already
+walked. `Playground` hands that to `Trace.live` and everything downstream is unchanged. Only the
+colour block needs it, and [RUNTIME.md](RUNTIME.md) says what it costs.
+
 `onField(id, value, api)` runs before the rebuild. Return `false` to suppress it — that is how a
 number box can be typed into without re-running anything. A range whose rebuild is expensive
 takes `settle: true` instead, and reports when the drag ENDS rather than on every tick of it —

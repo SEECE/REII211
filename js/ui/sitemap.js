@@ -30,7 +30,7 @@
       blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
       items: [
         { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
-        { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a block of hues, where sorted is the rainbow' },
+        { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a Hilbert block of hues, one operation at a time' },
       ],
     },
     {

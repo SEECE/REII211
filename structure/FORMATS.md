@@ -41,7 +41,7 @@ file does.
 
 | `kind` | Subject | Opens on |
 |---|---|---|
-| `array` | a plain array of numbers | the six sorting pages, both recursion trees |
+| `array` | a plain array of numbers (up to 16,384 — a 128 × 128 colour block) | the six sorting pages, both recursion trees, both comparison pages |
 | `memory` | `Store` — slots, values and pointers | arrays & linked lists |
 | `bst` | `BST` — the tree's shape | binary search trees |
 | `graph` | `Graph` — nodes and weighted edges | node plane |

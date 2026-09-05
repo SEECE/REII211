@@ -52,6 +52,15 @@ gen }; } }` instead of `{ subject, gen }` — a way to START the run rather than
 walked. `Playground` hands that to `Trace.live` and everything downstream is unchanged. Only the
 colour block needs it, and [RUNTIME.md](RUNTIME.md) says what it costs.
 
+A page whose subject is bigger than its stage owns a **camera**, and it is a rendering concern
+only — the subject is whole and every part of it exists at every zoom. The street map keeps one
+in `js/city/camera.js`: a point in SUBJECT coordinates that sits at the middle of the stage, and
+a zoom over whatever scale fits the whole thing. Keeping it in subject units rather than pixels
+is what makes it survive a resize, and `render` culling to `cam.bounds()` is what makes a
+zoomed-in view cost what a zoomed-in view should cost. The camera must survive `rebuild()` —
+that runs on every interaction, and being thrown back to the whole subject each time is
+unusable — so it is reset only when the subject itself is replaced.
+
 `onField(id, value, api)` runs before the rebuild. Return `false` to suppress it — that is how a
 number box can be typed into without re-running anything. A range whose rebuild is expensive
 takes `settle: true` instead, and reports when the drag ENDS rather than on every tick of it —

@@ -64,6 +64,41 @@ function* bubble(tape) {
 [FRONTEND.md](FRONTEND.md#roles). Nesting is `yield*`, which is how the recursive algorithms
 (merge, quick, the tree carvers) narrate their recursion without a manual stack.
 
+### `roles`, or `delta`
+
+A beat may state the whole picture or only what CHANGED since the last one:
+
+```js
+yield { roles: Roles.of({ done: everythingSoFar, focus: [here] }) };   // the whole picture
+yield { delta: Roles.of({ done: [wasFocused],    focus: [here] }) };   // only what moved
+```
+
+In a `delta`, the role **`idle` erases** — which is what `Roles.at` already returns for a key
+nobody mentioned, so there is no new vocabulary. The trace keeps the delta as it was handed
+over and folds it into a full map only when a frame is actually DRAWN, keyframing so the fold
+is bounded however long the run is. A renderer reads `frame.roles` and cannot tell which kind
+of beat made it.
+
+**Use `delta` whenever a role set is CUMULATIVE.** A set restated every beat is O(n) memory and
+O(n) time per frame, so a run over n elements costs O(n²) of both — which is invisible at sixty
+nodes and fatal at thirteen thousand. Measured on the whole of Manhattan, 3,000 frames of
+Dijkstra carried 4.6 million role entries and the full run would have carried about 345
+million; the same run as deltas carries a handful of keys per frame and builds in 2.6 seconds.
+
+The two forms **mix**, and the graph searches mix them: a beat that states the whole picture is
+a keyframe and the accumulation restarts from it, so the summing-up beats at the start and end
+of a run are written exactly as they always were and only the hot loop is a delta.
+
+The delta worth being careful about is the one that is **not append-only**. Dijkstra's
+shortest-path tree SHRINKS — an edge leaves it the moment a better parent is found — and that
+edge has to be put back to `idle` by hand. `js/tests/frames.js` is what makes that trustworthy:
+it asserts the highlighted edges are a forest on every frame, and a stale edge is a second way
+into one node.
+
+Not every algorithm can use it. Prim's narration shows every edge crossing out of the tree,
+which is a genuinely different set at every step — it has nothing to state a delta *about*, and
+so it is the one algorithm here that cannot walk the whole island.
+
 ### Trace and Player
 
 `Trace.build(gen, subject)` drains the generator into frames, recording `view()` and `stats()`
@@ -71,12 +106,15 @@ at every beat. `Trace.run(gen)` drains it for the RESULT only, keeping no frames
 the self-checks use, and what a page uses for setup work it does not want narrated (filling a
 BST, carving a maze before searching it).
 
-The trace is capped at `Trace.MAX` frames. A badly chosen input can produce millions of beats,
-and a tab that dies is worse than a walk that stops early and says so — which the last frame
-does.
+The trace is capped at `Trace.MAX` frames, or `opts.max`. A badly chosen input can produce
+millions of beats, and a tab that dies is worse than a walk that stops early and says so —
+which the last frame does. `opts.why` replaces the reason it gives: "run it again on a smaller
+input" is the right answer for a sort and no answer at all for an algorithm that is quadratic
+in something the student cannot see.
 
-`Trace.live(start, opts)` is the same list **discovered as it is walked**, and exists for the
-one page where building it up front is not merely slow but impossible: a 128 × 128 colour block
+`Trace.live(start, opts)` (in `js/core/trace-live.js`) is the same list **discovered as it is
+walked**, and exists for the one page where building it up front is not merely slow but
+impossible: a 128 × 128 colour block
 sorted one operation at a time is tens of millions of beats, each recording a 16,384-long
 snapshot. `start()` returns a *fresh* `{ subject, gen }` and may be called again, because a
 generator cannot be rewound — so going back past the kept window replays the run, bounded by
@@ -120,6 +158,7 @@ step you can learn anything from.
 
 1. Write `js/<area>/<name>.js` as a generator over an existing subject. If it needs a new kind
    of subject, that is a new file with `view()` and `stats()` — and put the counting in it.
+   State cumulative role sets as `delta`, not by restating them.
 2. Add the file to its bundle in [js/deps.js](../js/deps.js). **No page lists scripts by hand.**
 3. Add a case to the matching suite in `js/tests/`. Check the CLAIMS the narration makes, not
    just that it runs — if a step says "this is provably optimal", the check is what makes that
@@ -137,3 +176,5 @@ That is the definition of done.
 - No colour literals; roles only.
 - No second implementation for a different mode. If you are writing the algorithm twice, the
   design has gone wrong.
+- No cumulative role set restated on every beat. That is a `delta`, and the difference is
+  whether the page survives its subject getting big.

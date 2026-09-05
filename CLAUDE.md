@@ -31,17 +31,21 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   a maze), the point plane and job scheduling, and two comparison pages that run six sorts side
   by side — as bar graphs, and as a block of hues where the sorted answer is the rainbow. See
   [structure/PAGES.md](structure/PAGES.md).
-- **Runtime** ([js/core/](js/core/)) — `trace.js` (drain a generator into frames), `player.js`
-  (the only clock on the site), `workbench.js`, `surface.js` (canvas sized to its track at
-  device resolution), `rail.js` (controls from a declarative field list), `legend.js`,
-  `roles.js`, `palette.js` (resolves the `--role-*` tokens for the canvas), `page.js` (the
-  `Playground` orchestrator every page calls).
+- **Runtime** ([js/core/](js/core/)) — `trace.js` (drain a generator into frames; a beat states
+  its roles whole or as a **delta**, which is what lets a run cover thirteen thousand nodes),
+  `trace-live.js` (a trace discovered as it is walked), `player.js` (the only clock on the
+  site), `workbench.js`, `surface.js` (canvas sized to its track at device resolution),
+  `rail.js` (controls from a declarative field list), `legend.js`, `roles.js`, `palette.js`
+  (resolves the `--role-*` tokens for the canvas), `page.js` (the `Playground` orchestrator
+  every page calls).
 - **Algorithms** — `js/sorting/` (six sorts over `Tape`, an array that counts its own
   comparisons and swaps), `js/recursion/` (the same two sorts as call trees), `js/structures/`
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
   BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/city/` and
   `js/maze/` (a street map and a maze — the same five algorithms, on a subject nobody would
-  have drawn as a graph; the street map is real, read out of an OpenStreetMap extract),
+  have drawn as a graph; the street map is real and is the WHOLE of Manhattan, 13,048 crossings
+  resident at once, with a camera over it — `camera.js`, `controls.js` — that culls and thins
+  what is drawn without the graph knowing anything about it),
   `js/heuristics/` (tour, closest pair, interval scheduling), `js/compare/` (the race: several
   of the sorts over one array, all charged the same budget — drawn as bar graphs or as a block
   of colour).
@@ -94,7 +98,9 @@ change if the decision itself moves.
 ## Data
 
 `js/city/osm-manhattan.js` is an OpenStreetMap extract — the Overpass response, verbatim, 17.6
-MB — and the one file here that is not hand-written. **The site never talks to the network**, so
+MB — and the one file here that is not hand-written. Only `highway` and `name` are ever read
+off it; everything else in it is unused weight, and trimming it is an open decision rather than
+a done one. **The site never talks to the network**, so
 it is fetched at build time by [tools/fetch-osm.sh](tools/fetch-osm.sh) and committed. It is a
 `.js` assigning a global rather than a `.json` because the site must open over `file://`, where
 `fetch()` and `XMLHttpRequest` are both blocked and a `<script>` tag is the only thing that

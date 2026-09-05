@@ -7,7 +7,12 @@
 
    The frontier is scanned linearly to find the nearest unsettled node. A real implementation
    uses a priority queue and that is where the E log V comes from; at the sizes this page draws,
-   a scan is honest and shows exactly what the queue is doing for you. */
+   a scan is honest and shows exactly what the queue is doing for you.
+
+   Given a `goal`, it stops the moment that node is settled rather than settling the rest of the
+   map. That is not a shortcut and not a different algorithm — it falls straight out of the
+   claim above: the node was settled, so its distance is already final, and nothing settled
+   afterwards could change it. Leave the goal out and it does what it always did. */
 (function () {
   'use strict';
   var R = window.Roles;
@@ -27,8 +32,9 @@
       done: { label: 'Settled', desc: 'Shortest distance found and proven' },
     },
 
-    run: function* (g, start) {
+    run: function* (g, start, goal) {
       var dist = {}, prev = {}, settled = {}, tree = [];
+      var hunting = goal != null;
       g.nodes().forEach(function (n) { dist[n.id] = Infinity; });
       dist[start] = 0;
 
@@ -36,7 +42,9 @@
         tag: 'setup',
         note: 'Every node starts at distance <b>∞</b> except the source ' + label(g, start) +
           ', which is at <b>0</b>. Nothing is settled yet — these are only the best routes ' +
-          'known <i>so far</i>.',
+          'known <i>so far</i>.' +
+          (hunting ? ' Stop the moment ' + label(g, goal) + ' is settled: settled means final, ' +
+            'so there is nothing left to find out about it.' : ''),
         roles: R.of({ frontier: [start] }),
       };
 
@@ -60,6 +68,27 @@
             'has a negative weight to bring the total back down.',
           roles: R.of({ path: tree, done: Object.keys(settled).map(Number), focus: [best] }),
         };
+
+        if (hunting && best === goal) {
+          var route = window.Graph.route(g, prev, goal);
+          g.track('Hops', route.hops);
+          g.track('Weight', route.weight);
+          yield {
+            tag: 'done',
+            note: 'That settled node <i>is</i> the destination, so the answer is in: the shortest ' +
+              'route from ' + label(g, start) + ' to ' + label(g, goal) + ' weighs <b>' +
+              dist[goal] + '</b> and runs ' +
+              route.nodes.map(function (id) { return label(g, id); }).join(' → ') + ' — <b>' +
+              route.hops + '</b> edge' + (route.hops === 1 ? '' : 's') + '. Settling it took <b>' +
+              Object.keys(settled).length + '</b> of ' + g.nodes().length + ' nodes; the rest of ' +
+              'the graph never had to be worked out at all, because no route through a node that ' +
+              'is still further away than ' + label(g, goal) + ' could come back and beat it.',
+            roles: R.of({
+              done: Object.keys(settled).map(Number), path: route.keys, focus: [goal],
+            }),
+          };
+          return dist;
+        }
 
         var improved = [];
         g.neighbours(best).forEach(function (n) {

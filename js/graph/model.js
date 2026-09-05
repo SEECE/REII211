@@ -91,6 +91,22 @@
 
   window.Graph.edgeKey = key;
 
+  /* A route read back out of a parent map: the nodes from the source to `at`, the edge keys
+     between them, and what walking it costs. Every algorithm that is given a destination ends
+     the same way — trace the parents back — and every one of them has to report the same three
+     answers, so it is worked out here once rather than three times in three narrations. */
+  window.Graph.route = function (g, parent, at) {
+    var nodes = [at];
+    while (parent[nodes[0]] != null) nodes.unshift(parent[nodes[0]]);
+    var keys = [], weight = 0;
+    for (var i = 1; i < nodes.length; i++) {
+      var e = g.edge(nodes[i - 1], nodes[i]);
+      keys.push(key(nodes[i - 1], nodes[i]));
+      weight += e ? e.w : 0;
+    }
+    return { nodes: nodes, keys: keys, weight: weight, hops: nodes.length - 1 };
+  };
+
   /* Rebuild a graph from a saved view(). Ids are handed out fresh rather than trusted from the
      file, so an edge is only ever wired between two nodes this graph actually made. */
   window.Graph.load = function (saved) {

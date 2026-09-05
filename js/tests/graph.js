@@ -21,6 +21,18 @@
     }
   }
 
+  /* Hop counts, the thing BFS claims to minimise — a second implementation, not a rerun of
+     the one under test. */
+  function hops(g, from) {
+    var d = {}, q = [from];
+    d[from] = 0;
+    while (q.length) {
+      var at = q.shift();
+      g.peek(at).forEach(function (e) { if (d[e.to] == null) { d[e.to] = d[at] + 1; q.push(e.to); } });
+    }
+    return d;
+  }
+
   window.Check.suite('graphs — traversal, shortest path, spanning trees', function () {
     var C = window.Check, T = window.Trace, G = window.Graph;
 
@@ -42,6 +54,29 @@
       var want = reference(g, 0);
       var same = Object.keys(want).every(function (k) { return got[k] === want[k]; });
       C.ok(same, 'Dijkstra matches the reference (n=' + n + ')');
+
+      /* Given a destination all three stop early. Stopping must not change the ANSWER, which
+         is the only reason stopping is allowed at all. */
+      var goal = n - 1, far = hops(g, 0);
+
+      g.resetCounters();
+      var limited = T.run(window.GraphShortest.run(g, 0, goal));
+      C.equal(limited[goal], want[goal],
+        'stopping Dijkstra at the destination gives the distance the full run gives (n=' + n + ')');
+
+      g.resetCounters();
+      var found = T.run(window.GraphSearch.bfs.run(g, 0, goal));
+      C.equal(found.hops, far[goal], 'BFS to a destination uses the fewest edges (n=' + n + ')');
+
+      g.resetCounters();
+      var dived = T.run(window.GraphSearch.dfs.run(g, 0, goal));
+      C.equal([dived.nodes[0], dived.nodes[dived.nodes.length - 1]], [0, goal],
+        'DFS hands back a route that really runs start to destination (n=' + n + ')');
+      C.ok(dived.weight >= limited[goal],
+        'and never beats Dijkstra on weight (n=' + n + ')', dived.weight + ' < ' + limited[goal]);
+      C.ok(found.weight >= limited[goal],
+        "nor does BFS — fewest edges is not shortest weight (n=" + n + ')',
+        found.weight + ' < ' + limited[goal]);
 
       g.resetCounters();
       var prim = T.run(window.GraphSpanning.prim.run(g, 0));
@@ -96,6 +131,14 @@
     C.equal(marked(dijkstraEnd, 'done').sort(), ['0', '1'],
       'Dijkstra settles only what it could reach');
     C.ok(/∞/.test(dijkstraEnd.note), 'and reports the unreachable nodes as still at infinity');
+
+    /* A destination in the other component is not reachable, and the walk must say so rather
+       than hand back half a route. */
+    split.resetCounters();
+    C.equal(T.run(window.GraphSearch.bfs.run(split, 0, 3)), null,
+      'a search that cannot reach the destination returns no route');
+    C.ok(/no route at all/.test(finalFrame(window.GraphSearch.bfs.run(split, 0, 3)).note),
+      'and ends by saying there is none');
 
     /* Prim on the other piece finds that component instead — the note says it can, so it must. */
     split.resetCounters();

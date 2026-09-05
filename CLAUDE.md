@@ -41,7 +41,7 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
   BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/city/` and
   `js/maze/` (a street map and a maze — the same five algorithms, on a subject nobody would
-  have drawn as a graph),
+  have drawn as a graph; the street map is real, read out of an OpenStreetMap extract),
   `js/heuristics/` (tour, closest pair, interval scheduling), `js/compare/` (the race: several
   of the sorts over one array, all charged the same budget — drawn as bar graphs or as a block
   of colour).
@@ -91,6 +91,20 @@ change if the decision itself moves.
   step claims something is provable, there must be a check in `js/tests/` that makes the claim
   trustworthy.
 
+## Data
+
+`js/city/osm-manhattan.js` is an OpenStreetMap extract — the Overpass response, verbatim, 17.6
+MB — and the one file here that is not hand-written. **The site never talks to the network**, so
+it is fetched at build time by [tools/fetch-osm.sh](tools/fetch-osm.sh) and committed. It is a
+`.js` assigning a global rather than a `.json` because the site must open over `file://`, where
+`fetch()` and `XMLHttpRequest` are both blocked and a `<script>` tag is the only thing that
+still loads. `js/city/osm-index.js` reads it once and then releases it: 126 MB parsed down to 23
+MB kept.
+
+Data © OpenStreetMap contributors, [ODbL 1.0](https://opendatacommons.org/licenses/odbl/). The
+credit is shown over the stage on the page that draws it, which is what the licence asks for.
+
 ## Repo notes
 
 - `graphify-out/` and `visualizations/` are gitignored (graphify knowledge-graph output).
+- The 200-line ceiling is a rule about files people write. `js/city/osm-manhattan.js` is data.

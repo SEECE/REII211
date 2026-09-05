@@ -94,6 +94,27 @@ An interactive page also drives the subject from its own pointer handlers, then 
 6. **A `file` block**, so the page can save what it is set up on and open it again. If the
    subject is a new shape, that is a kind in `js/io/reii.js` too — [FORMATS.md](FORMATS.md).
 
+## A page that draws real data
+
+One page does: Manhattan reads its streets from an OpenStreetMap extract. Three rules come with
+that, and they are why it did not need a new subject, a new kind or a new renderer.
+
+**The data is fetched at build time and committed.** A visualiser must open over `file://` with
+no server and no network, so a page that fetched anything would be a page that sometimes draws
+nothing. `tools/fetch-osm.sh` writes the asset; the page loads it as a `<script>`, because
+`fetch()` and `XMLHttpRequest` are both blocked on `file://` and a script tag is not.
+
+**It becomes a `Graph` and nothing downstream is told.** `js/city/osm-graph.js` hands back the
+same subject `js/city/grid.js` invents, so all five algorithms, the renderer, the trace and the
+file block are the ones that were already there. If real data needs a change downstream, the
+change is usually wrong — the exception was `.wb-readout`, which was capped without an
+`overflow` and only overflowed once a counter held two hundred street names.
+
+**A real crop is not a tidy graph.** Cropping a street network leaves islands, so the largest
+connected component is what is kept; and the runtime scans nodes linearly and snapshots the
+whole subject per frame, so the window tightens around its centre until it is under a node cap.
+Both are the page's problem to solve before the runtime ever sees the graph.
+
 ## Page markup, in order
 
 ```

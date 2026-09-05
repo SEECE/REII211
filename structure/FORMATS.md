@@ -44,7 +44,7 @@ file does.
 | `array` | a plain array of numbers (up to 16,384 — a 128 × 128 colour block) | the six sorting pages, both recursion trees, both comparison pages |
 | `memory` | `Store` — slots, values and pointers | arrays & linked lists |
 | `bst` | `BST` — the tree's shape | binary search trees |
-| `graph` | `Graph` — nodes and weighted edges | node plane, Manhattan |
+| `graph` | `Graph` — nodes and weighted edges | node plane, Manhattan (its idealised grid) |
 | `maze` | `MazeGrid` — cells and the walls between them | maze search |
 | `points` | `PointSet` — points on the unit square | closed route finding |
 | `jobs` | `JobSet` — half-open intervals on a timeline | job scheduling |
@@ -57,6 +57,13 @@ Manhattan saves one and the node plane will draw it — but the reverse is not f
 Manhattan draws blocks between four corners and a node plane has none. The kind cannot express
 that, so the page checks the SHAPE and refuses in a sentence (`CityGrid.isCity`). A kind says
 what a file is; only the page knows what it can draw.
+
+Manhattan's *real* map is the other end of the same argument. It is a `Graph` like any other,
+but a window on it is hundreds of crossings called things like `Broadway × W 42nd St`, and this
+format holds 64 nodes with three-letter labels. So the page declines to save one and says why,
+rather than writing a file it could never open again. Nothing is bent to fit: a `.reii` carries
+a problem a student set up between the pages that can draw it, and a city read off a map is
+neither.
 
 ## Everything read off a disk is checked
 

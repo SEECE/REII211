@@ -13,7 +13,7 @@
 
   /* Smaller than the single-sort pages allow. Six lanes have to fit side by side, and the
      slowest of them charges Θ(n²) operations — every one of which is a frame. */
-  var SIZE = { min: 8, max: 80, value: 24 };
+  var SIZE = { min: 8, max: 1000, value: 24 };
 
   window.RacePage = function () {
     var ids = window.Sorts.ids();

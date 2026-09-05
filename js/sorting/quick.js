@@ -10,7 +10,7 @@
   var S = window.Sorts, R = window.Roles;
 
   /* Median of the first, middle and last element, moved to the end so the partition below is
-     unchanged. Two comparisons buy immunity to the sorted-input worst case. */
+     unchanged. Three comparisons buy immunity to the sorted-input worst case. */
   function* choosePivot(t, lo, hi, strategy) {
     if (strategy !== 'median') return;
     var mid = (lo + hi) >> 1;
@@ -21,7 +21,7 @@
     yield {
       tag: 'pivot',
       note: 'Median of three: compare the first, middle and last of ' + S.v(lo) + '‥' + S.v(hi) +
-        ' and put the middle one at ' + S.v(hi) + '. Two extra comparisons, and the sorted-input ' +
+        ' and put the middle one at ' + S.v(hi) + '. Three extra comparisons, and the sorted-input ' +
         'worst case goes away.',
       roles: R.of({ focus: [hi], scan: [lo, (lo + hi) >> 1] }),
     };

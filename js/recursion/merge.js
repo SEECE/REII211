@@ -1,7 +1,8 @@
 /* Merge sort, drawn as its call tree. Plain script, one global `MergeTree`.
 
    What the tree shows that the bar graph cannot: the shape is fixed by n alone — always
-   ⌈log₂ n⌉ levels, always the same splits, whatever the values are. Every level touches all n
+   ⌈log₂ n⌉ splits and so ⌈log₂ n⌉ + 1 levels, always in the same places, whatever the values
+   are. Every level touches all n
    elements exactly once on the way back up, and n per level times log n levels IS the
    n log n. Read the tree top to bottom and that argument is the picture. */
 (function () {

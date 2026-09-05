@@ -81,5 +81,47 @@
 
     var layout = window.TreeLayout(build(window.MergeTree, 12, 'shuffled').tree);
     C.ok(layout.columns > 0, 'the tree layout assigns columns');
+
+    /* One pivot choice, two pages. Both make the same three comparisons through the same tape,
+       so they must bill the same for it — the counters disagreeing about one algorithm is the
+       exact bug this site was rebuilt to remove. n=3 isolates it: one pivot choice and one
+       partition of two comparisons, whichever page you are on. */
+    function cost(strategy) {
+      var bars = Tape([3, 1, 2]);
+      T.run(window.Sorts.get('quick').run(bars, { pivot: strategy }));
+      var values = [3, 1, 2], tape = Tape(values);
+      T.run(window.QuickTree.run(window.CallTree(tape), tape, values, strategy));
+      return { bars: bars.stats().Comparisons, tree: tape.stats().Comparisons };
+    }
+    var naiveCost = cost('last'), medianCost = cost('median');
+    C.equal(medianCost.bars, medianCost.tree,
+      'median-of-three costs the same on the bar graph as in the call tree');
+    C.equal(medianCost.bars - naiveCost.bars, 3,
+      'and it costs the three comparisons the narration claims');
+
+    /* The page prints what a perfectly balanced tree would be. No real tree can beat that, and
+       median-of-three on already-sorted input splits exactly in half every time, so it should
+       hit it dead on. Both directions are checked: the claim was over by one on every n that
+       was not a power of two, which made the page report trees better than perfect. */
+    [2, 3, 4, 5, 6, 7, 8, 15, 16, 31].forEach(function (n) {
+      var values = Tape.build(n, 'sorted'), tape = Tape(values), tree = window.CallTree(tape);
+      var frames = T.build(window.QuickTree.run(tree, tape, values, 'median'), tree);
+      var claim = Number(frames[frames.length - 1].note.match(/would be <b>(\d+)</)[1]);
+      C.equal(claim, Math.ceil(Math.log2(n + 1)), 'the ideal depth for n=' + n + ' is ceil(log2(n+1))');
+      C.equal(tree.depth() + 1, claim,
+        'median-of-three on sorted input builds exactly that tree (n=' + n + ')');
+    });
+
+    [2, 3, 7, 20, 33].forEach(function (n) {
+      ['shuffled', 'reversed'].forEach(function (order) {
+        ['last', 'median'].forEach(function (p) {
+          var values = Tape.build(n, order), tape = Tape(values), tree = window.CallTree(tape);
+          var frames = T.build(window.QuickTree.run(tree, tape, values, p), tree);
+          var claim = Number(frames[frames.length - 1].note.match(/would be <b>(\d+)</)[1]);
+          C.ok(tree.depth() + 1 >= claim,
+            'no tree is shallower than perfect (' + p + ' ' + order + ' n=' + n + ')');
+        });
+      });
+    });
   });
 })();

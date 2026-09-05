@@ -11,14 +11,17 @@
   'use strict';
   var R = window.Roles;
 
+  /* Order the three INDICES by the values they point at, which leaves the median in `mid`.
+     These are the same three comparisons js/sorting/quick.js pays on the bar graph, made
+     through the same tape — so the two pages report the same cost for the same pivot choice.
+     Sorting a trio on the side and charging a guessed number for it is how the two drift. */
   function pick(values, strategy, tape) {
     if (strategy !== 'median' || values.length < 3) return values.length - 1;
-    var lo = 0, mid = values.length >> 1, hi = values.length - 1;
-    var trio = [[values[lo], lo], [values[mid], mid], [values[hi], hi]];
-    tape.lessVal(trio[0][0], trio[1][0]);      // the two comparisons median-of-three costs
-    tape.lessVal(trio[1][0], trio[2][0]);
-    trio.sort(function (a, b) { return a[0] - b[0]; });
-    return trio[1][1];
+    var lo = 0, mid = values.length >> 1, hi = values.length - 1, s;
+    if (tape.lessVal(values[mid], values[lo])) { s = lo; lo = mid; mid = s; }
+    if (tape.lessVal(values[hi], values[lo])) { s = lo; lo = hi; hi = s; }
+    if (tape.lessVal(values[hi], values[mid])) { s = mid; mid = hi; hi = s; }
+    return mid;
   }
 
   function* sort(tree, tape, parent, lo, values, strategy) {
@@ -82,11 +85,15 @@
     },
     run: function* (tree, tape, values, strategy) {
       yield* sort(tree, tape, null, 0, values, strategy);
-      var ideal = Math.ceil(Math.log2(Math.max(2, values.length)));
+      /* The fewest levels a quick sort tree over n elements can have. A call of size k splits
+         into two of size a and b with a + b = k - 1 — the pivot itself is not handed down — so
+         the best case is ⌈log₂(n+1)⌉, NOT ⌈log₂ n⌉. Getting that wrong made the page claim a
+         perfect tree was deeper than the one median-of-three had just built in front of you. */
+      var ideal = Math.max(1, Math.ceil(Math.log2(values.length + 1)));
       yield {
         tag: 'done',
         note: 'Sorted, in <b>' + (tree.depth() + 1) + '</b> levels. A perfectly balanced tree ' +
-          'over ' + values.length + ' elements would be <b>' + (ideal + 1) + '</b>. The gap ' +
+          'over ' + values.length + ' elements would be <b>' + ideal + '</b>. The gap ' +
           'between those two numbers is what the pivot choice cost you.',
         roles: R.of({ done: tree.nodes().map(function (n) { return n.id; }) }),
       };

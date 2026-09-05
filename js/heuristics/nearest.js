@@ -24,8 +24,10 @@
     return out;
   }
 
-  /* Every ordering of 1‥n-1 with point 0 pinned — a tour and its reverse are the same tour,
-     so pinning the start removes n of the n! duplicates for free. */
+  /* Every ordering of 1‥n-1 with point 0 pinned. A tour is a CYCLE, so all n rotations of an
+     ordering are the same tour and have the same length; pinning the start throws away n-1 of
+     every n orderings for free, leaving (n-1)! to try. Reversals are a further factor of two
+     that this does not bother to remove — at eight points it is not worth the code. */
   function exact(set) {
     var n = set.count(), best = null, bestLen = Infinity;
     var rest = [];

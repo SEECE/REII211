@@ -71,8 +71,9 @@
         tag: spot.node ? 'found' : 'not found',
         note: spot.node
           ? 'Found ' + v(value) + ' after <b>' + spot.path.length + '</b> node' +
-            (spot.path.length === 1 ? '' : 's') + '. A search costs one comparison per LEVEL, ' +
-            'so the height of the tree is the running time.'
+            (spot.path.length === 1 ? '' : 's') + '. Each level costs the same fixed handful of ' +
+            'comparisons — so what the search costs is the <b>height</b> of the tree, not the ' +
+            'number of nodes in it. Check the counter against the depth you just walked.'
           : v(value) + ' is not in the tree — the walk reached a missing child, and there is ' +
             'nowhere else it could have been.',
         roles: spot.node ? R.of({ scan: spot.path.slice(0, -1), done: [spot.node.id] })

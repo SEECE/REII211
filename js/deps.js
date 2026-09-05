@@ -63,7 +63,7 @@
       'heuristics/closest-pair.js', 'heuristics/jobs.js', 'heuristics/greedy.js',
       'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
       'structures/bst.js', 'structures/bst-ops.js',
-      'maze/grid.js', 'maze/carve.js', 'maze/search.js', 'compare/race.js',
+      'maze/grid.js', 'maze/carve.js', 'maze/search.js', 'compare/race.js', 'compare/lanes.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
       'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js'],
   };

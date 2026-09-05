@@ -76,6 +76,22 @@
       C.ok(over <= n, 'and no lane runs more than one beat of work ahead (n=' + n + ')');
     });
 
+    /* The lane grid arranges itself around however many boxes are ticked. It is scored, not
+       configured, so the check is that the score picks the sensible answer on a real stage. */
+    var L = window.Lanes;
+    C.equal(L.split(1, 900, 500).cols, 1, 'one lane takes the whole stage');
+    C.ok(L.split(6, 400, 900).cols < L.split(6, 1600, 400).cols,
+      'a tall narrow stage stacks where a wide one spreads');
+    var widening = true;
+    for (var w = 300; w < 2400; w += 50) {
+      if (L.split(6, w, 600).cols < L.split(6, w - 50, 600).cols) widening = false;
+    }
+    C.ok(widening, 'a stage that gets wider never gets fewer columns');
+    [1, 2, 3, 4, 5, 6].forEach(function (k) {
+      var g = L.split(k, 800, 600);
+      C.ok(g.cols * g.rows >= k, 'every lane gets a cell (' + k + ')');
+    });
+
     var none = window.Race(Tape.build(10, 'shuffled'), []);
     C.equal(T.build(window.Race.run(none), none).length, 1, 'no algorithms ticked is one frame');
   });

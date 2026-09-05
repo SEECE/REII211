@@ -72,7 +72,7 @@
       'maze/grid.js', 'maze/carve.js', 'maze/search.js', 'compare/race.js', 'compare/lanes.js',
       'compare/spectrum.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
-      'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js'],
+      'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js', 'tests/spectrum.js'],
   };
 
   var me = document.currentScript;

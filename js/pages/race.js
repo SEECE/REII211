@@ -23,7 +23,8 @@
     function entered(rail) { return ids.filter(function (id) { return rail.get(id); }); }
 
     var fields = [
-      { id: 'n', kind: 'range', label: 'Entries', min: SIZE.min, max: SIZE.max, value: SIZE.value },
+      { id: 'n', kind: 'range', label: 'Entries', min: SIZE.min, max: SIZE.max, value: SIZE.value,
+        settle: true },
       { id: 'order', kind: 'select', label: 'Start from', options: window.SortPage.orders },
       { id: 'again', kind: 'button', label: 'New array — all lanes', variant: 'primary' },
       { id: 'entrants', kind: 'note', label: '<b>In the race</b>', spacer: true },

@@ -30,6 +30,9 @@
       'sorting/selection.js', 'sorting/insertion.js', 'sorting/bubble.js',
       'sorting/exchange.js', 'sorting/merge.js', 'sorting/quick.js', 'pages/sort.js'],
 
+    /* comparison: the six sorts side by side on one array */
+    race: ['sorting', 'compare/race.js', 'compare/lanes.js', 'pages/race.js'],
+
     /* the same two sorts drawn as their call tree */
     recursion: ['core', 'sorting/tape.js', 'recursion/tree.js', 'recursion/layout.js',
       'recursion/draw.js', 'recursion/merge.js', 'recursion/quick.js', 'pages/recursion.js'],

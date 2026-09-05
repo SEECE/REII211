@@ -145,7 +145,7 @@
       tag: 'result',
       note: '<p><b>Everything is sorted.</b> The order they came home in is the order of what ' +
         'they cost on <i>this</i> array — change the starting order and it changes with it, ' +
-        'which is the only honest way to compare these six.</p><ol class="race-rank">' +
+        'which is the only honest way to compare these six.</p><ol>' +
         order.map(function (l) {
           return '<li><b>' + l.label + '</b> — ' + l.cost.toLocaleString() + ' operations (' +
             l.tape.stats().Comparisons.toLocaleString() + ' comparisons, ' +

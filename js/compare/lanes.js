@@ -59,7 +59,7 @@
 
       lanes.forEach(function (lane, i) {
         var x = (i % grid.cols) * cw, y = Math.floor(i / grid.cols) * ch;
-        var pad = 4;
+        var pad = 8;              // the gutter that keeps one lane's heading off the next
         this.head(ctx, lane, x + pad, y + pad, cw - pad * 2, head, size, colours);
 
         ctx.save();

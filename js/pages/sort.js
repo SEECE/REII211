@@ -73,4 +73,8 @@
       render: function (surface, frame, colours) { window.Bars.draw(surface, frame, colours); },
     });
   };
+
+  /* The comparison page asks the same question and must ask it in the same words — a rail that
+     said "Reversed" on one page and "Backwards" on the other would be two settings. */
+  window.SortPage.orders = ORDERS;
 })();

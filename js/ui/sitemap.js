@@ -26,6 +26,13 @@
       ],
     },
     {
+      id: 'compare', label: 'Comparisons', short: 'Vs',
+      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
+      items: [
+        { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
+      ],
+    },
+    {
       id: 'recursion', label: 'Recursion Trees', short: 'Trees',
       blurb: 'The same two sorts again, drawn as the call tree instead of the array — where the O(n log n) actually comes from.',
       items: [

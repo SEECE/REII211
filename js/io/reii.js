@@ -44,7 +44,9 @@
       label: 'an array', accept: 'the numbers of an array, in starting order',
       check: function (d) {
         if (!Array.isArray(d) || !d.length) bad('that file holds an empty array');
-        each(d, 500, 'entries', function (v) { return num(v, -1e9, 1e9); });
+        // 16,384 is a 128 × 128 colour block, the largest thing on the site that IS an array.
+        // A page that cannot draw that many says so itself, in its own sentence.
+        each(d, 16384, 'entries', function (v) { return num(v, -1e9, 1e9); });
       },
     },
 

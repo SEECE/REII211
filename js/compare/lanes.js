@@ -80,7 +80,9 @@
     },
 
     /* the heading: which algorithm this is, and what it has spent. A lane that is home says so
-       and stops counting — the number under it is the answer the page exists to compare. */
+       and stops counting — the number beside it is the answer the page exists to compare. Two
+       strings and nothing else: a rule under every lane was a line the eye had to step over on
+       a page whose whole content is a picture. */
     head: function (ctx, lane, x, y, w, h, size, colours) {
       var done = lane.done;
       ctx.textAlign = 'left';
@@ -95,13 +97,6 @@
       ctx.fillText((done ? place(lane) + ' · ' : '') + lane.cost.toLocaleString() + ' ops',
         x + w, y + h / 2, w * 0.36);
       ctx.textBaseline = 'alphabetic';
-
-      ctx.strokeStyle = done ? colours.done : colours.grid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, y + h - 0.5);
-      ctx.lineTo(x + w, y + h - 0.5);
-      ctx.stroke();
     },
   };
 })();

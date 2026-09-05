@@ -9,7 +9,7 @@
   window.Check.suite('comparisons — the colour block', function () {
     var C = window.Check, S = window.Spectrum, Tape = window.Tape, Sorts = window.Sorts;
     var T = window.Trace, ids = Sorts.ids();
-    var SIDE = { min: 4, max: 22 };          // what js/pages/spectrum.js offers on the rail
+    var SIDES = [4, 8, 16, 32, 64, 128];     // what js/pages/spectrum.js offers on the rail
 
     /* "Sorted, it is the spectrum itself." That sentence is only true if the hue is strictly
        increasing in the value — one repeat or one inversion and a sorted block has a seam in
@@ -31,13 +31,50 @@
        arbitrary values still paints a full sweep rather than a corner of one. */
     C.equal(S.hex(1000, 1000, 2000), S.hex(1, 1, 484), 'the smallest value is red whatever it is');
 
-    /* Every pixel gets a cell and the block never claims a row it does not need. */
-    [16, 17, 100, 251, 484].forEach(function (n) {
-      [4, 7, 16, 22].forEach(function (c) {
-        var r = S.rows(n, c);
-        C.ok(r * c >= n && (r - 1) * c < n, 'rows(' + n + ',' + c + ') fits it exactly once');
-      });
+    /* The Hilbert curve is the whole look of the page, and it is only a curve if it visits
+       every cell of the square exactly once and never jumps between two of them. Both are
+       checked directly rather than trusted to the bit-twiddling that produces them. */
+    SIDES.forEach(function (side) {
+      var seen = {}, once = true, joined = true, prev = null, count = 0;
+      for (var d = 0; d < side * side; d++) {
+        var p = S.xy(side, d), key = p[0] + ',' + p[1];
+        if (seen[key]) once = false;
+        seen[key] = true;
+        count++;
+        if (p[0] < 0 || p[1] < 0 || p[0] >= side || p[1] >= side) once = false;
+        if (prev && Math.abs(p[0] - prev[0]) + Math.abs(p[1] - prev[1]) !== 1) joined = false;
+        prev = p;
+      }
+      C.equal(Object.keys(seen).length, count, 'the curve visits every cell of ' + side +
+        '² exactly once');
+      C.ok(once, 'and never steps outside the square (' + side + ')');
+      C.ok(joined, 'and never jumps — every step is to a neighbour (' + side + ')');
     });
+
+    /* Self-similar, which is the sentence the narration makes: the first quarter of the curve
+       stays inside one quadrant, the second inside the next, and so on. That is what makes a
+       sorted block four blocks of colour, each of which is four smaller ones. */
+    SIDES.forEach(function (side) {
+      var half = side / 2, quads = {}, tidy = true;
+      for (var d = 0; d < side * side; d++) {
+        var p = S.xy(side, d), q = Math.floor(d / (side * side / 4));
+        var where = (p[0] >= half ? 1 : 0) + ',' + (p[1] >= half ? 1 : 0);
+        if (quads[q] === undefined) quads[q] = where;
+        else if (quads[q] !== where) tidy = false;
+      }
+      C.ok(tidy, 'each quarter of the curve fills one quadrant (' + side + ')');
+    });
+
+    /* A block is the smallest square that holds it, so a short array stops partway along the
+       curve rather than being padded or refused. */
+    C.equal([S.side(16), S.side(17), S.side(4096), S.side(4097)], [4, 8, 64, 128],
+      'a block is the smallest power-of-two square that holds it');
+    C.ok(S.side(1) === 1 && S.side(2) === 2, 'and a tiny array still gets a square');
+
+    /* The palette has to be at least as fine as the biggest block, or two adjacent values
+       would paint the same colour and the sorted picture would band. */
+    C.ok(S.STEPS >= SIDES[SIDES.length - 1] * SIDES[SIDES.length - 1],
+      'the palette has a step for every pixel of the largest block');
 
     /* The rail's promise: a bigger block is a sharper picture, not a longer walk. The measured
        worst case of these six is under 1.6n² operations — checked here rather than asserted,
@@ -56,13 +93,11 @@
     C.ok(worst < 1.6, 'no sort costs more than 1.6n² operations (worst seen: ' + worst.toFixed(2) + ')');
 
     var fits = true, longest = 0;
-    for (var w = SIDE.min; w <= SIDE.max; w++) {
-      for (var h = SIDE.min; h <= SIDE.max; h++) {
-        var n = w * h, frames = 1.6 * n * n / S.per(n);
-        longest = Math.max(longest, frames);
-        if (frames >= 40000) fits = false;       // js/core/trace.js MAX
-      }
-    }
+    SIDES.forEach(function (side) {
+      var n = side * side, frames = 1.6 * n * n / S.per(n);
+      longest = Math.max(longest, frames);
+      if (frames >= 40000) fits = false;         // js/core/trace.js MAX
+    });
     C.ok(fits, 'every block the rail offers walks inside a trace (longest: ' +
       Math.round(longest) + ' frames)');
 

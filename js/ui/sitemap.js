@@ -52,6 +52,7 @@
       id: 'applied', label: 'Applications', short: 'Apply',
       blurb: 'The same graph algorithms again, on something that is not drawn as a graph. A maze and a street map are both nodes and edges wearing a disguise, and finding that out is most of the lesson.',
       items: [
+        { id: 'manhattan', label: 'Manhattan', note: 'Two pins on a street grid — fewest blocks against shortest route' },
         { id: 'maze-search', label: 'Maze Search', note: 'BFS against DFS on a generated maze' },
       ],
     },

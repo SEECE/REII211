@@ -56,8 +56,8 @@
      the boundary, so the ring of streets around the edge of the map always survives and no
      park can ever cut the city in two. */
   function park(cols, rows) {
-    var w = Math.min(cols - 2, cols >= 6 ? 2 : 1);
-    var h = Math.min(rows - 2, Math.max(1, Math.round(rows / 2)));
+    var w = Math.min(cols - 2, cols >= 7 ? 2 : 1);
+    var h = Math.min(rows - 2, Math.max(1, Math.round(rows / 3)));
     if (w < 1 || h < 1) return null;
     return { c: Math.floor((cols - w) / 2), r: Math.floor((rows - h) / 2), w: w, h: h };
   }

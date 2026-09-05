@@ -46,12 +46,14 @@
     bst: ['core', 'sorting/tape.js', 'structures/bst.js', 'structures/bst-ops.js',
       'structures/bst-draw.js', 'pages/bst.js'],
 
-    /* graphs: the shared model and renderer, then the two pages over it */
+    /* graphs: the shared model and renderer, then the plane over it */
     graph: ['core', 'graph/model.js', 'graph/draw.js', 'graph/traverse.js',
       'graph/shortest.js', 'graph/spanning.js'],
     'node-plane': ['graph', 'graph/editor.js', 'graph/matrix.js', 'pages/node-plane.js'],
+    /* applications: the same graph algorithms on something not drawn as a graph */
     maze: ['core', 'graph/model.js', 'graph/traverse.js', 'maze/grid.js', 'maze/carve.js',
       'maze/draw.js', 'maze/search.js', 'pages/maze.js'],
+    manhattan: ['graph', 'city/grid.js', 'city/draw.js', 'pages/city.js'],
 
     /* heuristics: points on a plane, and intervals on a timeline */
     tour: ['core', 'heuristics/points.js', 'heuristics/tour-draw.js', 'heuristics/nearest.js',

@@ -55,7 +55,8 @@
       'maze/draw.js', 'maze/search.js', 'pages/maze.js'],
     /* the extract goes first: js/city/osm-index.js reads the global it defines */
     manhattan: ['graph', 'city/grid.js', 'city/osm-manhattan.js', 'city/osm-index.js',
-      'city/osm-graph.js', 'city/source.js', 'city/draw.js', 'pages/city.js'],
+      'city/osm-graph.js', 'city/source.js', 'city/camera.js', 'city/pins.js', 'city/draw.js',
+      'city/controls.js', 'pages/city.js'],
 
     /* heuristics: points on a plane, and intervals on a timeline */
     tour: ['core', 'heuristics/points.js', 'heuristics/tour-draw.js', 'heuristics/nearest.js',
@@ -75,10 +76,11 @@
       'structures/bst.js', 'structures/bst-ops.js',
       'maze/grid.js', 'maze/carve.js', 'maze/search.js',
       'city/grid.js', 'city/osm-manhattan.js', 'city/osm-index.js', 'city/osm-graph.js',
+      'city/source.js', 'city/camera.js', 'city/pins.js', 'city/draw.js',
       'compare/race.js', 'compare/lanes.js', 'compare/spectrum.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
       'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js',
-      'tests/maze.js', 'tests/frames.js',
+      'tests/maze.js', 'tests/frames.js', 'tests/view.js',
       'tests/spectrum.js', 'tests/city.js', 'tests/osm.js'],
   };
 

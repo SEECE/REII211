@@ -10,7 +10,13 @@
    The city SURVIVES between runs, like the plane's graph does. Drop two pins, run BFS, then run
    Dijkstra on the same two pins, and the two answers are the page. Prim and Kruskal ignore the
    pins and answer the other question a city asks, which is the cheapest set of streets that
-   still connects every corner. */
+   still connects every corner.
+
+   The real map is now the WHOLE island — thirteen thousand crossings, resident the entire time
+   — so the stage is a viewport over it rather than the whole of it (js/city/camera.js,
+   js/city/controls.js). None of that reached the Graph, which is the same object it always was.
+   The camera survives a REBUILD, which happens on every pin drop, and is reset only by a new
+   map: being thrown back to the whole island on every drop would make the page unusable. */
 (function () {
   'use strict';
 
@@ -18,7 +24,10 @@
      take the whole map and answer a different question about it. */
   var ROUTES = { bfs: true, dfs: true, dijkstra: true };
   var GRID_ONLY = ['cost', 'avenues', 'streets', 'closures', 'park', 'generate'];
-  var OSM_ONLY = ['district', 'span', 'roads'];
+  var OSM_ONLY = ['district', 'roads'];
+  /* Where the two pins start on the real map. Opposite ends of the island is a five-mile errand
+     and around 26,000 steps of Dijkstra — true, and a poor first thing to be shown. */
+  var START = { from: 'midtown', to: 'village' };
 
   function algorithms() {
     return {
@@ -29,22 +38,38 @@
   }
 
   window.CityPage = function () {
-    var city = null, from = null, to = null, next = 'from';
+    var city = null, from = null, to = null;
+    var cam = window.CityCamera(), controls = null, blocks = false;
     var credit = document.querySelector('[data-credit]');
 
     function real(rail) { return rail.get('source') === 'osm'; }
 
     function fresh(rail) {
       city = window.CitySource.build({
-        real: real(rail), district: rail.get('district'), span: rail.get('span'),
+        real: real(rail),
         roads: rail.get('roads'), avenues: rail.get('avenues'), streets: rail.get('streets'),
         park: rail.get('park'), closures: rail.get('closures'),
         traffic: rail.get('cost') === 'time',
       });
-      var two = window.CitySource.pins(city);
-      from = two.from;
-      to = two.to;
-      next = 'from';
+      if (real(rail)) {
+        from = atDistrict(START.from);
+        to = atDistrict(START.to);
+      } else {
+        var two = window.CitySource.pins(city);
+        from = two.from;
+        to = two.to;
+      }
+      cam.reset();                  // a different map is a different thing to be looking at
+    }
+
+    /* A district centre, as a crossing. The list used to decide what was BUILT; it now decides
+       where the pins start and where the viewport is pointed, which is the same list doing a
+       job that no longer costs the rest of the island. */
+    function atDistrict(id) {
+      var d = window.OsmGraph.DISTRICTS.filter(function (x) { return x.id === id; })[0];
+      if (!d || !d.lat || !city.place) return city.nodes()[0].id;
+      var at = city.place(d.lat, d.lon);
+      return window.CitySource.nearest(city, at.x, at.y);
     }
 
     function name(id) {
@@ -70,12 +95,12 @@
           { value: 'prim', label: "Prim's — cheapest network" },
           { value: 'kruskal', label: "Kruskal's — cheapest network" },
         ] },
-        { id: 'district', kind: 'select', label: 'Where', value: 'midtown',
+        /* This moves the VIEWPORT. It used to decide which few hundred crossings existed at
+           all, and the whole island existing instead is the point of the page now. */
+        { id: 'district', kind: 'select', label: 'Look at', value: 'all',
           options: (window.OsmGraph ? window.OsmGraph.DISTRICTS : []).map(function (d) {
             return { value: d.id, label: d.label };
           }) },
-        { id: 'span', kind: 'range', label: 'Window', min: 500, max: 2000, step: 100,
-          value: 1200, settle: true, format: function (v) { return v + ' m'; } },
         { id: 'roads', kind: 'select', label: 'Streets', value: 'all', options: [
           { value: 'all', label: 'Every street' },
           { value: 'main', label: 'Main roads only' },
@@ -90,15 +115,16 @@
         { id: 'park', kind: 'check', label: 'Put a park in the middle', value: true },
         { id: 'generate', kind: 'button', label: 'New city', variant: 'primary' },
         { id: 'hint', kind: 'note', spacer: true, label:
-          'Click a crossing to move a pin — first the From, then the To. Then run one algorithm ' +
-          'at a time on the same two pins and compare what each of them came back with.' },
+          'Drag a pin to move it — it snaps to the crossing you drop it on. Drag the map to ' +
+          'pan it and scroll to zoom. Then run one algorithm at a time on the same two pins ' +
+          'and compare what each of them came back with.' },
       ],
 
       file: {
         kind: 'graph',
-        empty: 'a real window is hundreds of crossings called things like "Broadway × West 42nd ' +
-          'Street", and a .reii graph holds 64 nodes with three-letter labels. Switch the map to ' +
-          'the idealised grid to save one.',
+        empty: 'the real map is the whole island — thirteen thousand crossings called things ' +
+          'like "Broadway × West 42nd Street" — and a .reii graph holds 64 nodes with ' +
+          'three-letter labels. Switch the map to the idealised grid to save one.',
         name: function () { return 'city-' + city.nodes().length; },
         get: function () {
           return real(page.rail) || !city.nodes().length ? null : city.view();
@@ -119,8 +145,11 @@
       },
 
       onField: function (id, value, api) {
-        // only the algorithm leaves the map alone; everything else asks for a different one
+        /* Three kinds of field now. `algo` asks a different question of the same map; `district`
+           asks nothing at all and only points the camera somewhere, so it repaints rather than
+           re-running; everything else asks for a different map. */
         if (id === 'algo') return;
+        if (id === 'district') { controls.look(value); return false; }
         fresh(api.rail);
       },
 
@@ -131,6 +160,9 @@
         GRID_ONLY.forEach(function (f) { rail.show(f, !osm); });
         window.CitySource.credit(credit, city);
         city.resetCounters();
+        /* Read here and not in render(): Playground draws its first frame while it is still
+           being constructed, so `page` does not exist yet — but build() has always run first. */
+        blocks = !osm;
         var which = rail.get('algo'), chosen = algorithms()[which];
         return {
           subject: city,
@@ -143,21 +175,27 @@
 
       render: function (surface, frame, colours) {
         if (!frame) return;
-        window.CityDraw.draw(surface, frame, colours, { from: from, to: to });
+        // the first frame of a new map is where the whole of it is framed, and the only place
+        // the camera is ever reset — a rebuild after a pin drop must not move the view
+        if (!cam.placed()) cam.fit(frame.state);
+        window.CityDraw.draw(surface, frame, colours, {
+          from: from, to: to, cam: cam, held: controls && controls.held(),
+          blocks: blocks, cls: city.cls, span: city.span,
+        });
       },
     });
 
-    /* Moving a pin is a new errand, so it re-runs — unlike the node plane, where an edit is
-       announced and waits, because here there is only one thing a click can mean. */
-    if (page.surface) {
-      page.surface.canvas.addEventListener('pointerdown', function (e) {
-        var box = page.surface.canvas.getBoundingClientRect();
-        var id = window.CityDraw.hit(page.surface, city.view(), e.clientX - box.left, e.clientY - box.top);
-        if (id == null) return;
-        if (next === 'from') { from = id; next = 'to'; } else { to = id; next = 'from'; }
+    /* The pointer is js/city/controls.js's business — one file for pan, zoom and the two
+       draggable pins, so this one stays about the algorithms. It owns the pin in flight. */
+    controls = window.CityControls({
+      page: page, cam: cam,
+      city: function () { return city; },
+      pins: function () { return { from: from, to: to }; },
+      drop: function (pin, id) {
+        if (pin === 'From') from = id; else to = id;
         page.rebuild();
-      });
-    }
+      },
+    });
 
     return page;
   };

@@ -30,8 +30,11 @@
       'sorting/selection.js', 'sorting/insertion.js', 'sorting/bubble.js',
       'sorting/exchange.js', 'sorting/merge.js', 'sorting/quick.js', 'pages/sort.js'],
 
-    /* comparison: the six sorts side by side on one array */
+    /* comparison: the six sorts side by side on one array — as bar graphs, or as a block of
+       hues where the sorted answer is the rainbow itself */
     race: ['sorting', 'compare/race.js', 'compare/lanes.js', 'pages/race.js'],
+    spectrum: ['sorting', 'compare/race.js', 'compare/lanes.js', 'compare/spectrum.js',
+      'pages/spectrum.js'],
 
     /* the same two sorts drawn as their call tree */
     recursion: ['core', 'sorting/tape.js', 'recursion/tree.js', 'recursion/layout.js',
@@ -67,6 +70,7 @@
       'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
       'structures/bst.js', 'structures/bst-ops.js',
       'maze/grid.js', 'maze/carve.js', 'maze/search.js', 'compare/race.js', 'compare/lanes.js',
+      'compare/spectrum.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
       'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js'],
   };

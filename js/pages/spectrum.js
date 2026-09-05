@@ -18,12 +18,6 @@
   var SIDE = { min: 4, max: 22 };
   var LIMITS = { min: SIDE.min * SIDE.min, max: SIDE.max * SIDE.max };
 
-  /* A frame is a tick, so a block big enough to be worth looking at asks for far more beats
-     than a trace holds. The slowest of the six costs about 1.5n² operations, and this spends
-     that over roughly 2,500 frames whatever the size — so the walk is the same length at 4×4
-     as at 22×22 and only the resolution of the picture changes. */
-  function per(n) { return Math.max(1, Math.ceil(n * n / 1600)); }
-
   window.SpectrumPage = function () {
     var ids = window.Sorts.ids();
     var values = null;
@@ -48,10 +42,12 @@
     }
 
     var fields = [
+      /* `settle` because these two are the expensive ones: a 22×22 block is six sorts over 484
+         values, and rebuilding that on every tick of a drag would lock the page up. */
       { id: 'cols', kind: 'range', label: 'Block width', min: SIDE.min, max: SIDE.max, value: 16,
-        format: function (v) { return v + ' px'; } },
+        settle: true, format: function (v) { return v + ' px'; } },
       { id: 'rows', kind: 'range', label: 'Block height', min: SIDE.min, max: SIDE.max, value: 16,
-        format: function (v) { return v + ' px'; } },
+        settle: true, format: function (v) { return v + ' px'; } },
       { id: 'order', kind: 'select', label: 'Start from', options: window.SortPage.orders },
       { id: 'again', kind: 'button', label: 'New block — all lanes', variant: 'primary' },
       { id: 'entrants', kind: 'note', label: '<b>In the race</b>', spacer: true },
@@ -104,7 +100,8 @@
       build: function (rail) {
         if (!values) regenerate(rail);
         cols = rail.get('cols');
-        var race = window.Race(values, entered(rail), { pivot: rail.get('pivot'), per: per(values.length) });
+        var race = window.Race(values, entered(rail),
+          { pivot: rail.get('pivot'), per: window.Spectrum.per(values.length) });
         return {
           subject: race,
           gen: window.Race.run(race, intro(rail, values.length)),

@@ -40,6 +40,12 @@
   window.Spectrum = {
     SWEEP: SWEEP,
 
+    /* What one step of a race over a block of n pixels should charge (js/compare/race.js).
+       A frame is a tick, and the slowest of the six sorts costs about 1.5n² operations, so
+       this spreads that over roughly 2,500 frames whatever the size — a bigger block is a
+       sharper picture and not a longer walk, which is a claim js/tests/compare.js checks. */
+    per: function (n) { return Math.max(1, Math.ceil(n * n / 1600)); },
+
     /* where in the rainbow a value sits, in degrees */
     hue: function (v, lo, hi) { return pos(v, lo, hi) * SWEEP; },
     rgb: function (v, lo, hi) { return hsl(pos(v, lo, hi) * SWEEP / 360, SAT, LIGHT); },

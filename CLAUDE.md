@@ -26,9 +26,10 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   map the ribbon nav reads, so a page cannot be in one and missing from the other.
 - **Visualisers** ([topics/](topics/)) — one folder per page, each a `body.app` shell of ribbon
   + three regions: **rail** (the input), **stage** (the drawing), **workbench** (the run —
-  narration, counts, legend, transport). Fourteen of them: six bar-graph sorts, two recursion
+  narration, counts, legend, transport). Fifteen of them: six bar-graph sorts, two recursion
   trees, arrays/linked-lists and BSTs, the node plane and maze search, the point plane and job
-  scheduling. See [structure/PAGES.md](structure/PAGES.md).
+  scheduling, and the sorting race that runs six of them side by side. See
+  [structure/PAGES.md](structure/PAGES.md).
 - **Runtime** ([js/core/](js/core/)) — `trace.js` (drain a generator into frames), `player.js`
   (the only clock on the site), `workbench.js`, `surface.js` (canvas sized to its track at
   device resolution), `rail.js` (controls from a declarative field list), `legend.js`,
@@ -38,7 +39,8 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   comparisons and swaps), `js/recursion/` (the same two sorts as call trees), `js/structures/`
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
   BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/maze/`,
-  `js/heuristics/` (tour, closest pair, interval scheduling).
+  `js/heuristics/` (tour, closest pair, interval scheduling), `js/compare/` (the race: several
+  of the sorts over one array, all charged the same budget).
 - **Files** ([js/io/reii.js](js/io/reii.js)) — the `.reii` file. One envelope for all seven
   subjects, where the payload is exactly the subject's `view()`; the control that writes and
   reads it is `js/core/files.js`, appended to the rail by `Playground`. See

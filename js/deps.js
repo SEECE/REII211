@@ -30,6 +30,9 @@
       'sorting/selection.js', 'sorting/insertion.js', 'sorting/bubble.js',
       'sorting/exchange.js', 'sorting/merge.js', 'sorting/quick.js', 'pages/sort.js'],
 
+    /* comparison: the six sorts side by side on one array */
+    race: ['sorting', 'compare/race.js', 'compare/lanes.js', 'pages/race.js'],
+
     /* the same two sorts drawn as their call tree */
     recursion: ['core', 'sorting/tape.js', 'recursion/tree.js', 'recursion/layout.js',
       'recursion/draw.js', 'recursion/merge.js', 'recursion/quick.js', 'pages/recursion.js'],
@@ -63,9 +66,9 @@
       'heuristics/closest-pair.js', 'heuristics/jobs.js', 'heuristics/greedy.js',
       'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
       'structures/bst.js', 'structures/bst-ops.js',
-      'maze/grid.js', 'maze/carve.js', 'maze/search.js',
+      'maze/grid.js', 'maze/carve.js', 'maze/search.js', 'compare/race.js', 'compare/lanes.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
-      'tests/structures.js', 'tests/io.js', 'tests/core.js'],
+      'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js'],
   };
 
   var me = document.currentScript;

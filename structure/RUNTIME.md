@@ -93,6 +93,13 @@ same amount at every frame, and the only difference on screen is how much sortin
 A lane can overshoot the budget (the beat that takes it over may write a whole merged run) but
 must never fall behind it, which is what a check enforces.
 
+A tick may charge MORE than one unit (`opts.per`), because a frame is a tick and a big enough
+input asks for more beats than a trace holds — a walk that stops two thirds of the way through
+a sort shows nobody anything. That costs granularity and nothing else: every lane is still
+billed the identical amount at every frame, which is the only thing the comparison rests on.
+The colour block sizes `per` so the walk is about the same length whatever the block is
+(`Spectrum.per`), which is why a bigger block there is a sharper picture and not a longer wait.
+
 ## Adding an algorithm
 
 1. Write `js/<area>/<name>.js` as a generator over an existing subject. If it needs a new kind

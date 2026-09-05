@@ -48,7 +48,9 @@ frame and is also called on resize, so it must be pure with respect to the frame
 never mutate `frame.roles`; overlay onto a copy (see `js/pages/node-plane.js`).
 
 `onField(id, value, api)` runs before the rebuild. Return `false` to suppress it — that is how a
-number box can be typed into without re-running anything.
+number box can be typed into without re-running anything. A range whose rebuild is expensive
+takes `settle: true` instead, and reports when the drag ENDS rather than on every tick of it —
+the colour block rebuilds six sorts over up to 484 values and locks the tab up otherwise.
 
 Everything else — sizing the canvas, counting, pausing a timer, disabling Prev at frame zero,
 keeping the legend honest — is the runtime's.

@@ -93,20 +93,6 @@
       page.repaint();
     }, { passive: false });
 
-    return {
-      held: function () { return held; },
-      /* Point the camera at one of the named places. Twenty-two times the whole-island scale is
-         about two metres to the pixel, which is where the cross-streets come back. */
-      look: function (id) {
-        var view = o.city().view();
-        var d = (window.OsmGraph.DISTRICTS.filter(function (x) { return x.id === id; })[0]) || {};
-        if (!d.lat || !o.city().place) o.cam.fit(view);
-        else {
-          var at = o.city().place(d.lat, d.lon);
-          o.cam.to(at.x, at.y, 22, view);
-        }
-        page.repaint();
-      },
-    };
+    return { held: function () { return held; } };
   };
 })();

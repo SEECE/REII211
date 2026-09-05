@@ -3,7 +3,7 @@
    Two maps answer to the same contract, so the page can hold both without knowing anything
    about either:
 
-     real       js/city/osm-graph.js — the whole of Manhattan as OpenStreetMap has it
+     real       js/city/osm-graph.js — Manhattan as OpenStreetMap has it, whole or by district
      invented   js/city/grid.js — the idealised grid, with block lengths and a traffic model
 
    Keeping both is not indecision. The invented grid is where fewest-blocks and shortest-route
@@ -21,7 +21,11 @@
     build: function (o) {
       var g = null;
       if (o.real && window.OsmGraph && window.OsmGraph.ready()) {
+        var where = window.OsmGraph.DISTRICTS.filter(function (d) {
+          return d.id === o.district && d.lat;
+        })[0];
         g = window.OsmGraph.build({
+          at: where || null, span: o.span,
           classes: o.roads === 'main' ? window.CitySource.MAIN : null,
         });
       }

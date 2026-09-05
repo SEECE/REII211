@@ -9,7 +9,14 @@
 
    Run them on the same graph and they usually pick the edges in a different order and end up
    with the same total weight, which is the surprising part and the reason to watch both.
-   Prim needs a start node; Kruskal does not care where you begin. */
+   Prim needs a start node; Kruskal does not care where you begin.
+
+   Kruskal's beats in the loop are DELTAS (js/core/trace.js): one edge is taken or rejected per
+   step and the rest of the picture is exactly what it was, so restating the whole tree and the
+   whole reject pile every time was quadratic for no gain. Prim's are not, and cannot be: what
+   its narration SHOWS is every edge crossing out of the tree, which is a different set each
+   step and is the thing it is teaching. That is also why Prim is the one algorithm here that
+   cannot walk the whole island — see js/pages/city.js. */
 (function () {
   'use strict';
   var R = window.Roles;
@@ -89,7 +96,7 @@
     function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
 
     var sorted = g.edges().slice().sort(function (a, b) { return a.w - b.w; });
-    var tree = [], rejected = [], total = 0;
+    var tree = [], rejected = [], total = 0, last = null;
 
     yield {
       tag: 'Kruskal',
@@ -113,8 +120,16 @@
           (cycle
             ? '<b>already in the same component</b>, so adding it would close a cycle. Reject it.'
             : 'in <b>different</b> components, so it joins two pieces of the forest. Take it.'),
-        roles: R.of({ path: tree, reject: rejected, focus: cycle ? [] : [e.key], frontier: cycle ? [e.key] : [] }),
+        /* the edge decided last step stops being the one under discussion and settles into the
+           tree or the reject pile; this one takes its place. Nothing else moved. */
+        delta: R.of({
+          path: last && !last.cycle ? [last.key] : null,
+          reject: last && last.cycle ? [last.key] : null,
+          focus: cycle ? null : [e.key],
+          frontier: cycle ? [e.key] : null,
+        }),
       };
+      last = { key: e.key, cycle: cycle };
     }
 
     yield {

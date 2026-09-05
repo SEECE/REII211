@@ -56,9 +56,13 @@
       return p.x >= -1 && p.x <= s.w + 1 && p.y >= -1 && p.y <= s.h + 1;
     }), 'and the whole island is on the stage at that fit — nothing is off the edge');
 
+    /* Driven the way a student drives it — scroll, scroll, drag — rather than by setting the
+       camera outright, because that is the path a dropped pin actually goes through. */
     var offBy = 0;
-    [1, 4, 30, 180].forEach(function (z) {
-      cam.to(0.4, 0.5, z, view);
+    [0, 6, 18, 30].forEach(function (clicks) {
+      cam.fit(view);
+      for (var i = 0; i < clicks; i++) cam.zoom(1.18, 300, 220, s, view);
+      cam.pan(-40, 25, s, view);
       var q = cam.geometry(s, view);
       g.nodes().slice(0, 400).forEach(function (n) {
         var p = q.at(n), back = q.world(p.x, p.y);
@@ -95,7 +99,8 @@
       'but thins the residential mesh rather than inking the island solid',
       whole.lines.length + ' of ' + g.edges().length + ' blocks');
 
-    cam.to(0.5, 0.5, 200, view);
+    cam.fit(view);
+    for (var i = 0; i < 32; i++) cam.zoom(1.18, s.w / 2, s.h / 2, s, view);
     var close = paint(plain, {});
     C.ok(close.lines.length < whole.lines.length,
       'zoomed in, a street outside the frame is not drawn at all',

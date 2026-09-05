@@ -5,11 +5,17 @@
    `Graph` — so nothing downstream can tell them apart. That is the whole design: the source of
    the nodes and edges moved, and the contract did not.
 
-   It used to cut a WINDOW out of the island and tighten it until the crossings fitted a cap the
-   runtime could walk. The cap is gone. Nothing about the graph made it necessary — it was the
-   frame cost of walking one, and js/core/trace.js no longer pays it — so the whole island is
-   built once, stays resident, and what changes with the zoom is only what js/city/draw.js
-   bothers to paint.
+   It builds either the WHOLE island or one district cut out of it, and the difference between
+   those two is now a choice rather than a limit. It used to be a limit: a window was tightened
+   until its crossings fitted a cap the runtime could walk. The cap is gone — nothing about the
+   graph made it necessary, it was the frame cost of walking one and js/core/trace.js no longer
+   pays it — so the island builds whole and what changes with the zoom is only what
+   js/city/draw.js bothers to paint.
+
+   The window stayed because it is not the same thing as zooming in. A district is a smaller
+   PROBLEM — fewer crossings for an algorithm to settle, a route that finishes in a hundred
+   steps instead of twenty thousand — where zooming is the same problem seen closer. Both are
+   worth having and they answer different questions.
 
    Two jobs the index still leaves alone, because both are about presenting the map rather than
    reading it: reducing it to the one piece that is all connected, and projecting it into the
@@ -21,25 +27,32 @@
 
   var RAD = Math.PI / 180, R = 6371008.8;
 
-  /* The crossings on the wanted classes of street, reduced to the LARGEST PIECE that is all one
-     thing. A real street network is not connected: the extract's own edge cuts streets off, a
-     slip road reaches nothing, a service spur is quoted by one way and no other. Whole-island,
-     that is 18,297 crossings and 25,905 blocks arriving and 13,048 and 19,133 surviving — and
-     the ones that go are exactly the ones where a pin would have had no route to anywhere,
-     which is a true answer to a question nobody asked. The synthetic grid never had the problem
-     because it was connected by construction. */
-  function piece(ix, classes) {
-    var adj = {}, keep = [], id;
-    for (id in ix.at) adj[id] = [];
+  /* The crossings on the wanted classes of street — inside a box, if there is one — reduced to
+     the LARGEST PIECE that is all one thing. A real street network is not connected: the
+     extract's own edge cuts streets off, a slip road reaches nothing, a service spur is quoted
+     by one way and no other, and cropping a window adds more of the same. Whole-island that is
+     18,297 crossings and 25,905 blocks arriving and 13,048 and 19,133 surviving, and the ones
+     that go are exactly the ones where a pin would have had no route to anywhere, which is a
+     true answer to a question nobody asked. The synthetic grid never had the problem because it
+     was connected by construction. */
+  function piece(ix, classes, box) {
+    var inside = {}, adj = {}, keep = [], id;
+    for (id in ix.at) {
+      var n = ix.at[id];
+      if (box && (n.lat < box.south || n.lat > box.north ||
+        n.lon < box.west || n.lon > box.east)) continue;
+      inside[id] = n;
+      adj[id] = [];
+    }
     ix.edges.forEach(function (e) {
-      if (classes && !classes[e.cls]) return;
+      if (!inside[e.a] || !inside[e.b] || (classes && !classes[e.cls])) return;
       keep.push(e);
       adj[e.a].push(e.b);
       adj[e.b].push(e.a);
     });
 
     var seen = {}, best = [];
-    for (id in ix.at) {
+    for (id in inside) {
       if (seen[id]) continue;
       var part = [], stack = [id];
       seen[id] = 1;
@@ -51,7 +64,7 @@
       if (part.length > best.length) best = part;
     }
     var live = {};
-    best.forEach(function (kept) { live[kept] = ix.at[kept]; });
+    best.forEach(function (kept) { live[kept] = inside[kept]; });
     return { at: live, edges: keep.filter(function (e) { return live[e.a] && live[e.b]; }) };
   }
 
@@ -83,8 +96,7 @@
   }
 
   window.OsmGraph = {
-    /* Places worth looking at. They no longer decide what is BUILT — the whole island always
-       is — they move the viewport, which is a different job with the same list. */
+    /* What can be built: the island, or one district cut out of it. */
     DISTRICTS: [
       { id: 'all', label: 'The whole island' },
       { id: 'midtown', label: 'Midtown', lat: 40.7561, lon: -73.9845 },
@@ -96,13 +108,23 @@
 
     ready: function () { return window.OsmIndex.ready(); },
 
-    /* build({ classes }) → the whole island as a Graph, or null if the extract is missing. */
+    /* build({ classes, at: { lat, lon }, span }) → a Graph, or null if the extract is missing.
+       With no `at` it is the whole island; with one it is a `span`-metre window around it, and
+       there is no cap on either — a window is a smaller problem because it was asked for, not
+       because the runtime could not manage a bigger one. */
     build: function (o) {
       var ix = window.OsmIndex.get();
       if (!ix) return null;
-      var classes = null;
-      if (o && o.classes) { classes = {}; o.classes.forEach(function (c) { classes[c] = 1; }); }
-      var kept = piece(ix, classes);
+      o = o || {};
+      var classes = null, box = null;
+      if (o.classes) { classes = {}; o.classes.forEach(function (c) { classes[c] = 1; }); }
+      if (o.at) {
+        var half = (o.span || 1200) / 2;
+        var dLat = half / (R * RAD), dLon = half / (R * RAD * Math.cos(o.at.lat * RAD));
+        box = { south: o.at.lat - dLat, north: o.at.lat + dLat,
+          west: o.at.lon - dLon, east: o.at.lon + dLon };
+      }
+      var kept = piece(ix, classes, box);
       var ids = Object.keys(kept.at);
       if (!ids.length) return null;
 

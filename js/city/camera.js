@@ -94,16 +94,6 @@
         cy = before.y - (py - s.h / 2) / k;
         clamp(view);
       },
-      /* Put a place in the middle at a given zoom — what the "Where" list does now that it no
-         longer decides what is BUILT. */
-      to: function (x, y, zoom, view) {
-        cx = x;
-        cy = y;
-        z = Math.max(MIN_Z, Math.min(MAX_Z, zoom || z));
-        placed = true;
-        clamp(view);
-      },
-      zoomLevel: function () { return z; },
     };
 
     /* The map may leave the stage but never entirely: half a screen past the edge in map units

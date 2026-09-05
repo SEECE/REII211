@@ -12,21 +12,32 @@
    pins and answer the other question a city asks, which is the cheapest set of streets that
    still connects every corner.
 
-   The real map is now the WHOLE island — thirteen thousand crossings, resident the entire time
-   — so the stage is a viewport over it rather than the whole of it (js/city/camera.js,
-   js/city/controls.js). None of that reached the Graph, which is the same object it always was.
-   The camera survives a REBUILD, which happens on every pin drop, and is reset only by a new
-   map: being thrown back to the whole island on every drop would make the page unusable. */
+   The real map is the WHOLE island — thirteen thousand crossings, resident the whole time — so
+   the stage is a viewport over it (js/city/camera.js, js/city/controls.js) and none of that
+   reached the Graph. The camera survives a REBUILD, which happens on every pin drop, and is
+   reset only by a new map: being thrown back to the island every time would be unusable. */
 (function () {
   'use strict';
 
   /* Which of the five are routing between the pins at all. Prim and Kruskal are not — they
      take the whole map and answer a different question about it. */
   var ROUTES = { bfs: true, dfs: true, dijkstra: true };
+
+  /* Prim is the one algorithm that cannot walk the whole island: its narration shows every edge
+     CROSSING OUT of the tree, a different set each step and growing with it. Measured, that is
+     13,047 steps, 7.5 seconds and 3.8 GB — the frames, not the algorithm. The other four state
+     their beats as deltas and finish; this one has nothing to state a delta ABOUT, because what
+     it draws really did all change. So it is capped and says so. */
+  var PRIM_STEPS = 1200;
+  var PRIM_WHY = 'Prim rescans every street crossing out of the tree on every step, so the work ' +
+    'and the drawing both grow with the tree — thirteen thousand crossings is more than a ' +
+    'browser will finish. <b>Kruskal</b> answers the same question on the whole island, because ' +
+    'it sorts the streets once and never looks back; or switch to the idealised grid and watch ' +
+    'Prim reach the end.';
   var GRID_ONLY = ['cost', 'avenues', 'streets', 'closures', 'park', 'generate'];
   var OSM_ONLY = ['district', 'roads'];
-  /* Where the two pins start on the real map. Opposite ends of the island is a five-mile errand
-     and around 26,000 steps of Dijkstra — true, and a poor first thing to be shown. */
+  /* Where the pins start on the real map. Opposite ends of it is a five-mile errand and 26,000
+     steps of Dijkstra — true, and a poor first thing to be shown. */
   var START = { from: 'midtown', to: 'village' };
 
   function algorithms() {
@@ -46,12 +57,15 @@
 
     function fresh(rail) {
       city = window.CitySource.build({
-        real: real(rail),
+        real: real(rail), district: rail.get('district'), span: rail.get('span'),
         roads: rail.get('roads'), avenues: rail.get('avenues'), streets: rail.get('streets'),
         park: rail.get('park'), closures: rail.get('closures'),
         traffic: rail.get('cost') === 'time',
       });
-      if (real(rail)) {
+      /* On the island the pins start at two named places, because opposite ends of it is a
+         five-mile errand. On a district — or on the grid — the two corners furthest apart are
+         the walk the page wants to talk about, and they are a few hundred metres. */
+      if (real(rail) && rail.get('district') === 'all') {
         from = atDistrict(START.from);
         to = atDistrict(START.to);
       } else {
@@ -83,42 +97,7 @@
       legendNotes: Object.assign({}, window.GraphSearch.notes, window.GraphShortest.notes,
         window.GraphSpanning.prim.notes),
 
-      fields: [
-        { id: 'source', kind: 'choice', label: 'Map', value: 'osm', options: [
-          { value: 'osm', label: 'Manhattan — the real streets' },
-          { value: 'grid', label: 'An idealised grid' },
-        ] },
-        { id: 'algo', kind: 'choice', label: 'Algorithm', value: 'dijkstra', options: [
-          { value: 'bfs', label: 'Breadth-first — fewest blocks' },
-          { value: 'dfs', label: 'Depth-first — any route at all' },
-          { value: 'dijkstra', label: 'Dijkstra — the cheapest route' },
-          { value: 'prim', label: "Prim's — cheapest network" },
-          { value: 'kruskal', label: "Kruskal's — cheapest network" },
-        ] },
-        /* This moves the VIEWPORT. It used to decide which few hundred crossings existed at
-           all, and the whole island existing instead is the point of the page now. */
-        { id: 'district', kind: 'select', label: 'Look at', value: 'all',
-          options: (window.OsmGraph ? window.OsmGraph.DISTRICTS : []).map(function (d) {
-            return { value: d.id, label: d.label };
-          }) },
-        { id: 'roads', kind: 'select', label: 'Streets', value: 'all', options: [
-          { value: 'all', label: 'Every street' },
-          { value: 'main', label: 'Main roads only' },
-        ] },
-        { id: 'cost', kind: 'choice', label: 'A block costs', value: 'distance', options: [
-          { value: 'distance', label: 'Distance — metres walked' },
-          { value: 'time', label: 'Time — metres and traffic' },
-        ] },
-        { id: 'avenues', kind: 'range', label: 'Avenues', min: 3, max: 8, value: 5 },
-        { id: 'streets', kind: 'range', label: 'Streets', min: 3, max: 8, value: 8 },
-        { id: 'closures', kind: 'range', label: 'Closed streets', min: 0, max: 10, value: 3 },
-        { id: 'park', kind: 'check', label: 'Put a park in the middle', value: true },
-        { id: 'generate', kind: 'button', label: 'New city', variant: 'primary' },
-        { id: 'hint', kind: 'note', spacer: true, label:
-          'Drag a pin to move it — it snaps to the crossing you drop it on. Drag the map to ' +
-          'pan it and scroll to zoom. Then run one algorithm at a time on the same two pins ' +
-          'and compare what each of them came back with.' },
-      ],
+      fields: window.CityRail(),
 
       file: {
         kind: 'graph',
@@ -145,11 +124,8 @@
       },
 
       onField: function (id, value, api) {
-        /* Three kinds of field now. `algo` asks a different question of the same map; `district`
-           asks nothing at all and only points the camera somewhere, so it repaints rather than
-           re-running; everything else asks for a different map. */
+        // only the algorithm leaves the map alone; everything else asks for a different one
         if (id === 'algo') return;
-        if (id === 'district') { controls.look(value); return false; }
         fresh(api.rail);
       },
 
@@ -158,6 +134,8 @@
         var osm = real(rail);
         OSM_ONLY.forEach(function (f) { rail.show(f, osm); });
         GRID_ONLY.forEach(function (f) { rail.show(f, !osm); });
+        // the window width means nothing until there is a window to be the width of
+        rail.show('span', osm && rail.get('district') !== 'all');
         window.CitySource.credit(credit, city);
         city.resetCounters();
         /* Read here and not in render(): Playground draws its first frame while it is still
@@ -167,6 +145,7 @@
         return {
           subject: city,
           gen: chosen.run(city, from, to),
+          opts: osm && which === 'prim' ? { max: PRIM_STEPS, why: PRIM_WHY } : null,
           title: ROUTES[which]
             ? chosen.label + ' — ' + name(from) + ' to ' + name(to)
             : chosen.label + ' — every corner connected',

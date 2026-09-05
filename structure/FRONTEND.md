@@ -84,6 +84,15 @@ role names, so a swatch and its caption cannot disagree — several of the old h
 legends were stale, and the bubble-sort page still labelled a colour "Minimum" from the
 selection-sort page it had been copied from.
 
+**The one exception, and the test for another.** `js/compare/spectrum.js` paints a colour that
+is not a role, because on that page the colour IS the value — the same information a bar's
+height carries on `js/sorting/bars.js`, not a statement about what the element is doing. That
+is the whole test: if reskinning the site would change what the picture MEANS, the colour is
+data and belongs in the renderer; if it would only change how the picture looks, it is a role
+and belongs in `tokens.css`. Everything that element is *doing* on that page — compared,
+written, under the cursor — still comes from the palette, and an algorithm still yields only
+roles. A second renderer wanting this exception is almost certainly wrong.
+
 Blend with `Palette.mix()`, not CSS `color-mix()`: a canvas `fillStyle` goes through the CSS
 colour parser and a value the browser cannot parse is **silently ignored**, leaving the
 previous fill in place. That is a wrong-colour bug that only shows up on older browsers and

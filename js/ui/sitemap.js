@@ -26,13 +26,6 @@
       ],
     },
     {
-      id: 'compare', label: 'Comparisons', short: 'Vs',
-      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
-      items: [
-        { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
-      ],
-    },
-    {
       id: 'recursion', label: 'Recursion Trees', short: 'Trees',
       blurb: 'The same two sorts again, drawn as the call tree instead of the array — where the O(n log n) actually comes from.',
       items: [
@@ -50,9 +43,16 @@
     },
     {
       id: 'graphs', label: 'Graphs', short: 'Graph',
-      blurb: 'Traversal, shortest path and minimum spanning trees, on a plane you build yourself or on a maze.',
+      blurb: 'Traversal, shortest path and minimum spanning trees, on a plane you draw yourself — nodes and edges and nothing else, which is what all five algorithms actually see.',
       items: [
         { id: 'node-plane', label: 'Node Plane', note: 'BFS · DFS · Dijkstra · Prim · Kruskal' },
+      ],
+    },
+    {
+      id: 'applied', label: 'Applications', short: 'Apply',
+      blurb: 'The same graph algorithms again, on something that is not drawn as a graph. A maze and a street map are both nodes and edges wearing a disguise, and finding that out is most of the lesson.',
+      items: [
+        { id: 'manhattan', label: 'Manhattan', note: 'Two pins on a street grid — fewest blocks against shortest route' },
         { id: 'maze-search', label: 'Maze Search', note: 'BFS against DFS on a generated maze' },
       ],
     },
@@ -62,6 +62,14 @@
       items: [
         { id: 'tour-heuristics', label: 'Closed Route Finding', note: 'Nearest neighbour · closest pair' },
         { id: 'job-scheduling', label: 'Job Scheduling', note: 'Three greedy rules, three different answers' },
+      ],
+    },
+    {
+      id: 'compare', label: 'Comparisons', short: 'Vs',
+      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
+      items: [
+        { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
+        { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a Hilbert block of hues, one operation at a time' },
       ],
     },
   ];

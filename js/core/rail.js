@@ -12,7 +12,12 @@
        ], onChange)
 
    onChange(id, value) fires on any input; a button reports its own id with value `true`.
-   Returns { get, set, el, disable } — `get(id)` is typed (a range is a number). */
+   Returns { get, set, el, disable } — `get(id)` is typed (a range is a number).
+
+   A range marked `settle: true` reports when the drag ENDS rather than on every tick of it.
+   That is not a preference: a page whose rebuild is expensive — the colour block is six sorts
+   over up to 484 values — locks the tab up otherwise, and the number beside the label still
+   tracks the thumb live, so the control does not feel any different to use. */
 (function () {
   'use strict';
 
@@ -27,6 +32,11 @@
     var inputs = {}, values = {}, groups = {};
 
     function fire(id) { if (onChange) onChange(id, values[id]); }
+
+    /* which event a control announces itself with, so set() can raise the same one a student
+       raises. A range normally fires while it is being dragged; one marked `settle` waits for
+       the drag to end, which is what an expensive rebuild needs to stay usable. */
+    var fires = {};
 
     function label(field, forId) {
       var l = node('label', 'field-label', field.label);
@@ -45,11 +55,13 @@
         input.id = f.id;
         input.min = f.min; input.max = f.max; input.step = f.step || 1; input.value = f.value;
         values[f.id] = Number(f.value);
+        fires[f.id] = f.settle ? 'change' : 'input';
         input.addEventListener('input', function () {
           values[f.id] = Number(input.value);
           val.innerHTML = f.format ? f.format(values[f.id]) : input.value;
-          fire(f.id);
+          if (!f.settle) fire(f.id);          // a settling range reads live and rebuilds late
         });
+        if (f.settle) input.addEventListener('change', function () { fire(f.id); });
         val.innerHTML = f.format ? f.format(values[f.id]) : String(f.value);
         box.appendChild(head);
         box.appendChild(input);
@@ -152,7 +164,7 @@
         if (input.tagName === 'DIV') return;
         input.value = v;
         values[id] = input.type === 'range' || input.type === 'number' ? Number(v) : v;
-        input.dispatchEvent(new Event(input.tagName === 'SELECT' ? 'change' : 'input'));
+        input.dispatchEvent(new Event(fires[id] || (input.tagName === 'SELECT' ? 'change' : 'input')));
       },
       show: function (id, on) { if (groups[id]) groups[id].hidden = !on; },
       disable: function (id, off) { if (inputs[id]) inputs[id].disabled = !!off; },

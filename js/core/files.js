@@ -2,7 +2,7 @@
 
    A page does not build this: `Playground` appends it when the page declares a `file` block
    (structure/PAGES.md), so the control sits in the same place, says the same things and is
-   styled the same way on all fourteen pages. What varies is only which KIND of subject the
+   styled the same way on every page that has one. What varies is only which KIND of subject the
    page saves and which kinds it will open — both read out of js/io/reii.js, so the wording
    here cannot drift from what the format actually accepts.
 

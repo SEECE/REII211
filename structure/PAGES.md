@@ -47,8 +47,30 @@ student, so it should read like a sentence. See [FORMATS.md](FORMATS.md).
 frame and is also called on resize, so it must be pure with respect to the frame it is given —
 never mutate `frame.roles`; overlay onto a copy (see `js/pages/node-plane.js`).
 
+**Copy a frame with `Object.assign`, never `Object.create`.** `roles` is an accessor, because a
+beat may state only what changed and the map is folded on demand ([RUNTIME.md](RUNTIME.md)).
+Inheriting from a frame and assigning over its roles throws in strict mode, and the map the
+getter hands back at a keyframe is that keyframe's own — so copy the map too before writing
+into it.
+
+A page whose run is too long to drain up front returns `{ live: function () { return { subject,
+gen }; } }` instead of `{ subject, gen }` — a way to START the run rather than one already
+walked. `Playground` hands that to `Trace.live` and everything downstream is unchanged. Only the
+colour block needs it, and [RUNTIME.md](RUNTIME.md) says what it costs.
+
+A page whose subject is bigger than its stage owns a **camera**, and it is a rendering concern
+only — the subject is whole and every part of it exists at every zoom. The street map keeps one
+in `js/city/camera.js`: a point in SUBJECT coordinates that sits at the middle of the stage, and
+a zoom over whatever scale fits the whole thing. Keeping it in subject units rather than pixels
+is what makes it survive a resize, and `render` culling to `cam.bounds()` is what makes a
+zoomed-in view cost what a zoomed-in view should cost. The camera must survive `rebuild()` —
+that runs on every interaction, and being thrown back to the whole subject each time is
+unusable — so it is reset only when the subject itself is replaced.
+
 `onField(id, value, api)` runs before the rebuild. Return `false` to suppress it — that is how a
-number box can be typed into without re-running anything.
+number box can be typed into without re-running anything. A range whose rebuild is expensive
+takes `settle: true` instead, and reports when the drag ENDS rather than on every tick of it —
+the colour block rebuilds six sorts over up to 484 values and locks the tab up otherwise.
 
 Everything else — sizing the canvas, counting, pausing a timer, disabling Prev at frame zero,
 keeping the legend honest — is the runtime's.
@@ -58,17 +80,18 @@ keeping the legend honest — is the runtime's.
 **Fresh each run** (the sorts, the recursion trees). `build` makes a new subject every time, so
 changing any rail field is a new problem.
 
-**Standing subject** (memory, BST, node plane, maze, point plane, scheduling). The subject lives
-in the page's closure and *survives* between runs — you build a structure up over several
-operations, or you build a graph and then run four different algorithms on it. `build` runs
+**Standing subject** (memory, BST, node plane, the street map, the maze, point plane,
+scheduling). The subject lives in the page's closure and *survives* between runs — you build a
+structure up over several operations, or you build a graph and then run four different
+algorithms on it. `build` runs
 whatever the rail last asked for against what is already there; only Clear or a genuine change
 of input starts over. This is what makes the comparisons on those pages mean anything: BFS and
 Dijkstra on *the same* graph, all three greedy rules on *the same* offers.
 
 An interactive page also drives the subject from its own pointer handlers, then calls
 `api.rebuild()`. Hit-testing reads its geometry back from the renderer (`GraphDraw.hit`,
-`PointDraw.hit`) rather than recomputing it, so what you click is what was drawn — the old
-version worked the positions out twice and the two drifted apart on every resize.
+`CityDraw.hit`, `PointDraw.hit`) rather than recomputing it, so what you click is what was drawn
+— the old version worked the positions out twice and the two drifted apart on every resize.
 
 ## Adding a visualiser
 
@@ -85,6 +108,27 @@ version worked the positions out twice and the two drifted apart on every resize
    [RUNTIME.md](RUNTIME.md#adding-an-algorithm).
 6. **A `file` block**, so the page can save what it is set up on and open it again. If the
    subject is a new shape, that is a kind in `js/io/reii.js` too — [FORMATS.md](FORMATS.md).
+
+## A page that draws real data
+
+One page does: Manhattan reads its streets from an OpenStreetMap extract. Three rules come with
+that, and they are why it did not need a new subject, a new kind or a new renderer.
+
+**The data is fetched at build time and committed.** A visualiser must open over `file://` with
+no server and no network, so a page that fetched anything would be a page that sometimes draws
+nothing. `tools/fetch-osm.sh` writes the asset; the page loads it as a `<script>`, because
+`fetch()` and `XMLHttpRequest` are both blocked on `file://` and a script tag is not.
+
+**It becomes a `Graph` and nothing downstream is told.** `js/city/osm-graph.js` hands back the
+same subject `js/city/grid.js` invents, so all five algorithms, the renderer, the trace and the
+file block are the ones that were already there. If real data needs a change downstream, the
+change is usually wrong — the exception was `.wb-readout`, which was capped without an
+`overflow` and only overflowed once a counter held two hundred street names.
+
+**A real crop is not a tidy graph.** Cropping a street network leaves islands, so the largest
+connected component is what is kept; and the runtime scans nodes linearly and snapshots the
+whole subject per frame, so the window tightens around its centre until it is under a node cap.
+Both are the page's problem to solve before the runtime ever sees the graph.
 
 ## Page markup, in order
 

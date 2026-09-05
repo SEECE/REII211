@@ -7,7 +7,19 @@
 
    The frontier is scanned linearly to find the nearest unsettled node. A real implementation
    uses a priority queue and that is where the E log V comes from; at the sizes this page draws,
-   a scan is honest and shows exactly what the queue is doing for you. */
+   a scan is honest and shows exactly what the queue is doing for you.
+
+   Given a `goal`, it stops the moment that node is settled rather than settling the rest of the
+   map. That is not a shortcut and not a different algorithm — it falls straight out of the
+   claim above: the node was settled, so its distance is already final, and nothing settled
+   afterwards could change it. Leave the goal out and it does what it always did.
+
+   The two beats in the loop state their roles as a DELTA — one node settled, a few edges
+   relaxed, and the edge a shorter route DISPLACED going back to nothing. That last one is the
+   only part that is not obvious, and it is the interesting part: the shortest-path tree is not
+   append-only, and an edge leaves it the moment a better parent is found. See js/core/trace.js
+   for why restating the whole tree on every beat was a page that could hold a district and not
+   an island. */
 (function () {
   'use strict';
   var R = window.Roles;
@@ -27,8 +39,13 @@
       done: { label: 'Settled', desc: 'Shortest distance found and proven' },
     },
 
-    run: function* (g, start) {
-      var dist = {}, prev = {}, settled = {}, tree = [];
+    run: function* (g, start, goal) {
+      var dist = {}, prev = {}, settled = {}, tree = [], count = 0;
+      /* carried from one beat to the next, because promoting them is the delta: the edges shown
+         as being relaxed become ordinary tree edges, and the nodes shown as newly reached go
+         back to being unremarkable until one of them is settled */
+      var wasScanned = [], wasReached = [];
+      var hunting = goal != null;
       g.nodes().forEach(function (n) { dist[n.id] = Infinity; });
       dist[start] = 0;
 
@@ -36,7 +53,9 @@
         tag: 'setup',
         note: 'Every node starts at distance <b>∞</b> except the source ' + label(g, start) +
           ', which is at <b>0</b>. Nothing is settled yet — these are only the best routes ' +
-          'known <i>so far</i>.',
+          'known <i>so far</i>.' +
+          (hunting ? ' Stop the moment ' + label(g, goal) + ' is settled: settled means final, ' +
+            'so there is nothing left to find out about it.' : ''),
         roles: R.of({ frontier: [start] }),
       };
 
@@ -49,8 +68,9 @@
         if (best === null) break;
 
         settled[best] = true;
+        count++;
         g.settle();
-        g.track('Settled', Object.keys(settled).length);
+        g.track('Settled', count);
 
         yield {
           tag: 'settle',
@@ -58,17 +78,47 @@
             '</b>. <b>Settle it.</b> No route through any node still on the frontier could be ' +
             'shorter, because every one of them is already at least this far away and no edge ' +
             'has a negative weight to bring the total back down.',
-          roles: R.of({ path: tree, done: Object.keys(settled).map(Number), focus: [best] }),
+          /* what moved: the edges relaxed last beat are ordinary tree edges now, the nodes they
+             reached go back to nothing, and the nearest of them is the one being settled. The
+             node settled last beat was already marked done by the relax that followed it. */
+          delta: R.of({
+            path: wasScanned, idle: wasReached, focus: [best],
+          }),
         };
 
-        var improved = [];
+        if (hunting && best === goal) {
+          var route = window.Graph.route(g, prev, goal);
+          g.track('Hops', route.hops);
+          g.track('Weight', route.weight);
+          yield {
+            tag: 'done',
+            note: 'That settled node <i>is</i> the destination, so the answer is in: the shortest ' +
+              'route from ' + label(g, start) + ' to ' + label(g, goal) + ' weighs <b>' +
+              dist[goal] + '</b> and runs ' +
+              route.nodes.map(function (id) { return label(g, id); }).join(' → ') + ' — <b>' +
+              route.hops + '</b> edge' + (route.hops === 1 ? '' : 's') + '. Settling it took <b>' +
+              count + '</b> of ' + g.nodes().length + ' nodes; the rest of ' +
+              'the graph never had to be worked out at all, because no route through a node that ' +
+              'is still further away than ' + label(g, goal) + ' could come back and beat it.',
+            roles: R.of({
+              done: Object.keys(settled).map(Number), path: route.keys, focus: [goal],
+            }),
+          };
+          return dist;
+        }
+
+        var improved = [], displaced = [];
         g.neighbours(best).forEach(function (n) {
           if (settled[n.to]) return;
           var through = dist[best] + n.w;
-          if (through < dist[n.to]) { dist[n.to] = through; prev[n.to] = best; improved.push(n); }
+          if (through >= dist[n.to]) return;
+          /* a node that already had a route loses the edge it arrived by — the tree SHRINKS
+             here as well as growing, and an edge that leaves it has to be put back to nothing */
+          if (prev[n.to] != null) displaced.push(window.Graph.edgeKey(n.to, prev[n.to]));
+          dist[n.to] = through;
+          prev[n.to] = best;
+          improved.push(n);
         });
-
-        tree = Object.keys(prev).map(function (id) { return window.Graph.edgeKey(id, prev[id]); });
 
         yield {
           tag: 'relax',
@@ -80,22 +130,32 @@
               ' as the step before it on its best route.'
             : 'No neighbour of ' + label(g, best) + ' gets a shorter route this way — every one ' +
               'of them already had an equal or better distance recorded.',
-          roles: R.of({
-            done: Object.keys(settled).map(Number),
-            path: tree,
+          delta: R.of({
+            idle: displaced,
+            done: [best],
             scan: improved.map(function (n) { return n.key; }),
             frontier: improved.map(function (n) { return n.to; }),
           }),
         };
+
+        wasScanned = improved.map(function (n) { return n.key; });
+        wasReached = improved.map(function (n) { return n.to; });
       }
 
+      tree = Object.keys(prev).map(function (id) { return window.Graph.edgeKey(id, prev[id]); });
+
       var reached = g.nodes().filter(function (n) { return dist[n.id] < Infinity; });
+      /* Every distance, when there are few enough to read. Thirteen thousand of them is not a
+         list anybody reads and is a megabyte of HTML in a panel four inches wide. */
+      var listed = reached.length <= 60
+        ? reached.map(function (n) { return n.label + '&thinsp;=&thinsp;<b>' + dist[n.id] + '</b>'; }).join(', ')
+        : '<b>' + reached.length.toLocaleString() + '</b> of them — too many to list';
       g.track('Total', reached.reduce(function (sum, n) { return sum + dist[n.id]; }, 0));
       var stranded = g.nodes().length - reached.length;
       yield {
         tag: 'done',
         note: 'Every reachable node is settled. Distances from ' + label(g, start) + ': ' +
-          reached.map(function (n) { return n.label + '&thinsp;=&thinsp;<b>' + dist[n.id] + '</b>'; }).join(', ') +
+          listed +
           '. The highlighted edges form the shortest-path <i>tree</i> — follow one back to the ' +
           'source and you have the route.' +
           (stranded

@@ -13,7 +13,7 @@
 
   /* Smaller than the single-sort pages allow. Six lanes have to fit side by side, and the
      slowest of them charges Θ(n²) operations — every one of which is a frame. */
-  var SIZE = { min: 8, max: 80, value: 24 };
+  var SIZE = { min: 8, max: 1000, value: 24 };
 
   window.RacePage = function () {
     var ids = window.Sorts.ids();
@@ -23,7 +23,8 @@
     function entered(rail) { return ids.filter(function (id) { return rail.get(id); }); }
 
     var fields = [
-      { id: 'n', kind: 'range', label: 'Entries', min: SIZE.min, max: SIZE.max, value: SIZE.value },
+      { id: 'n', kind: 'range', label: 'Entries', min: SIZE.min, max: SIZE.max, value: SIZE.value,
+        settle: true },
       { id: 'order', kind: 'select', label: 'Start from', options: window.SortPage.orders },
       { id: 'again', kind: 'button', label: 'New array — all lanes', variant: 'primary' },
       { id: 'entrants', kind: 'note', label: '<b>In the race</b>', spacer: true },
@@ -77,7 +78,12 @@
       build: function (rail) {
         if (!values) regenerate(rail);
         var lanes = entered(rail);
-        var race = window.Race(values, lanes, { pivot: rail.get('pivot') });
+        /* A quadratic lane at n=1000 can bill half a million operations; charged one per frame
+           that is half a million snapshots kept alive in the trace — the slowdown and the
+           truncated run the size slider now makes possible. Scale the charge with n² so the
+           worst lane still finishes in a few thousand frames, whatever n is. */
+        var per = Math.max(1, Math.round(values.length * values.length / 40000));
+        var race = window.Race(values, lanes, { pivot: rail.get('pivot'), per: per });
         return {
           subject: race,
           gen: window.Race.run(race),

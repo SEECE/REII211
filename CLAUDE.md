@@ -26,10 +26,10 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
   map the ribbon nav reads, so a page cannot be in one and missing from the other.
 - **Visualisers** ([topics/](topics/)) — one folder per page, each a `body.app` shell of ribbon
   + three regions: **rail** (the input), **stage** (the drawing), **workbench** (the run —
-  narration, counts, legend, transport). Sixteen of them: six bar-graph sorts, two recursion
-  trees, arrays/linked-lists and BSTs, the node plane and maze search, the point plane and job
-  scheduling, and two comparison pages that run six sorts side by side — as bar graphs, and as
-  a block of hues where the sorted answer is the rainbow. See
+  narration, counts, legend, transport). Seventeen of them: six bar-graph sorts, two recursion
+  trees, arrays/linked-lists and BSTs, the node plane, two applications of it (a street map and
+  a maze), the point plane and job scheduling, and two comparison pages that run six sorts side
+  by side — as bar graphs, and as a block of hues where the sorted answer is the rainbow. See
   [structure/PAGES.md](structure/PAGES.md).
 - **Runtime** ([js/core/](js/core/)) — `trace.js` (drain a generator into frames), `player.js`
   (the only clock on the site), `workbench.js`, `surface.js` (canvas sized to its track at
@@ -39,7 +39,9 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
 - **Algorithms** — `js/sorting/` (six sorts over `Tape`, an array that counts its own
   comparisons and swaps), `js/recursion/` (the same two sorts as call trees), `js/structures/`
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
-  BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/maze/`,
+  BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/city/` and
+  `js/maze/` (a street map and a maze — the same five algorithms, on a subject nobody would
+  have drawn as a graph),
   `js/heuristics/` (tour, closest pair, interval scheduling), `js/compare/` (the race: several
   of the sorts over one array, all charged the same budget — drawn as bar graphs or as a block
   of colour).

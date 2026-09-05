@@ -44,13 +44,19 @@ file does.
 | `array` | a plain array of numbers (up to 16,384 — a 128 × 128 colour block) | the six sorting pages, both recursion trees, both comparison pages |
 | `memory` | `Store` — slots, values and pointers | arrays & linked lists |
 | `bst` | `BST` — the tree's shape | binary search trees |
-| `graph` | `Graph` — nodes and weighted edges | node plane |
+| `graph` | `Graph` — nodes and weighted edges | node plane, Manhattan |
 | `maze` | `MazeGrid` — cells and the walls between them | maze search |
 | `points` | `PointSet` — points on the unit square | closed route finding |
 | `jobs` | `JobSet` — half-open intervals on a timeline | job scheduling |
 
 An `array` opening on eight different pages is the point: save a shuffle from bubble sort, open
 it on merge sort, and the comparison counts are finally about the algorithms.
+
+A `graph` opening on two is the same point made the other way. A street map *is* a graph, so
+Manhattan saves one and the node plane will draw it — but the reverse is not free, because
+Manhattan draws blocks between four corners and a node plane has none. The kind cannot express
+that, so the page checks the SHAPE and refuses in a sentence (`CityGrid.isCity`). A kind says
+what a file is; only the page knows what it can draw.
 
 ## Everything read off a disk is checked
 

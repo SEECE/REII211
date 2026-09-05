@@ -65,8 +65,8 @@ keeping the legend honest — is the runtime's.
 **Fresh each run** (the sorts, the recursion trees). `build` makes a new subject every time, so
 changing any rail field is a new problem.
 
-**Standing subject** (memory, BST, node plane, maze, point plane, scheduling). The subject lives
-in the page's closure and *survives* between runs — you build a structure up over several
+**Standing subject** (memory, BST, node plane, the street map, the maze, point plane,
+scheduling). The subject lives in the page's closure and *survives* between runs — you build a structure up over several
 operations, or you build a graph and then run four different algorithms on it. `build` runs
 whatever the rail last asked for against what is already there; only Clear or a genuine change
 of input starts over. This is what makes the comparisons on those pages mean anything: BFS and
@@ -74,8 +74,8 @@ Dijkstra on *the same* graph, all three greedy rules on *the same* offers.
 
 An interactive page also drives the subject from its own pointer handlers, then calls
 `api.rebuild()`. Hit-testing reads its geometry back from the renderer (`GraphDraw.hit`,
-`PointDraw.hit`) rather than recomputing it, so what you click is what was drawn — the old
-version worked the positions out twice and the two drifted apart on every resize.
+`CityDraw.hit`, `PointDraw.hit`) rather than recomputing it, so what you click is what was drawn
+— the old version worked the positions out twice and the two drifted apart on every resize.
 
 ## Adding a visualiser
 

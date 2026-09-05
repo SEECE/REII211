@@ -1,4 +1,5 @@
-/* The graph — the SUBJECT both graph pages trace. Plain script, one global `Graph`.
+/* The graph — the SUBJECT the node plane and the street map both trace. Plain script, one
+   global `Graph`.
 
    Nodes carry a label and a position in the unit square (the renderer scales them to whatever
    the stage is); edges are undirected and weighted. Adjacency is kept as a map so a traversal

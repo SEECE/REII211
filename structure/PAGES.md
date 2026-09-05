@@ -47,6 +47,12 @@ student, so it should read like a sentence. See [FORMATS.md](FORMATS.md).
 frame and is also called on resize, so it must be pure with respect to the frame it is given —
 never mutate `frame.roles`; overlay onto a copy (see `js/pages/node-plane.js`).
 
+**Copy a frame with `Object.assign`, never `Object.create`.** `roles` is an accessor, because a
+beat may state only what changed and the map is folded on demand ([RUNTIME.md](RUNTIME.md)).
+Inheriting from a frame and assigning over its roles throws in strict mode, and the map the
+getter hands back at a keyframe is that keyframe's own — so copy the map too before writing
+into it.
+
 A page whose run is too long to drain up front returns `{ live: function () { return { subject,
 gen }; } }` instead of `{ subject, gen }` — a way to START the run rather than one already
 walked. `Playground` hands that to `Trace.live` and everything downstream is unchanged. Only the

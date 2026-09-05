@@ -59,6 +59,20 @@
     C.equal(JSON.stringify(long[10].roles), before,
       'and reading a later frame does not disturb an earlier one');
 
+    /* `roles` is an accessor, so a page overlaying its own UI state on a frame has to COPY the
+       frame rather than inherit from it — js/pages/node-plane.js marks the node waiting to be
+       connected exactly this way. Object.create + assign throws in strict mode, and the map the
+       getter hands back at a keyframe is that keyframe's own, so writing into it would stain
+       the trace. Both halves are checked because both have bitten. */
+    var overlay = Object.assign({}, deltas[1]);
+    overlay.roles = Object.assign({}, deltas[1].roles);
+    overlay.roles[9] = 'focus';
+    C.equal(deltas[1].roles[9], undefined, 'a page can overlay its own state without staining the frame');
+    C.equal(overlay.roles[1], 'done', 'while still seeing everything the frame showed');
+    var threw = false;
+    try { var bad = Object.create(deltas[1]); bad.roles = {}; } catch (e) { threw = true; }
+    C.ok(threw, 'and inheriting from a frame to write over its roles is refused, not ignored');
+
     if (window.Palette) {
       C.equal(window.Palette.mix('#ff0000', 50, '#000000'), 'rgb(128,0,0)', 'palette blends hex');
       C.equal(window.Palette.mix('#fff', 100, '#000'), 'rgb(255,255,255)', 'palette expands short hex');

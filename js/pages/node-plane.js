@@ -106,10 +106,16 @@
       render: function (surface, frame, colours) {
         if (!rails || !frame) return;
         /* The node waiting to be connected is a UI state, not part of the trace, so it is
-           overlaid on a COPY — writing it into frame.roles would make it permanent. */
+           overlaid on a COPY — writing it into frame.roles would make it permanent.
+
+           Object.assign and not Object.create: `roles` is an ACCESSOR on a frame now, because a
+           beat may state only what changed and the map is folded on demand (js/core/trace.js).
+           Inheriting from the frame and assigning over it throws in strict mode — there is a
+           getter and no setter — and the map the getter hands back may be a keyframe's own, so
+           it has to be copied before anything is written into it. */
         var shown = frame;
         if (selected != null) {
-          shown = Object.create(frame);
+          shown = Object.assign({}, frame);
           shown.roles = Object.assign({}, frame.roles);
           shown.roles[selected] = 'focus';
         }

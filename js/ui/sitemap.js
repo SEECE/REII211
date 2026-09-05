@@ -26,14 +26,6 @@
       ],
     },
     {
-      id: 'compare', label: 'Comparisons', short: 'Vs',
-      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
-      items: [
-        { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
-        { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a Hilbert block of hues, one operation at a time' },
-      ],
-    },
-    {
       id: 'recursion', label: 'Recursion Trees', short: 'Trees',
       blurb: 'The same two sorts again, drawn as the call tree instead of the array — where the O(n log n) actually comes from.',
       items: [
@@ -63,6 +55,14 @@
       items: [
         { id: 'tour-heuristics', label: 'Closed Route Finding', note: 'Nearest neighbour · closest pair' },
         { id: 'job-scheduling', label: 'Job Scheduling', note: 'Three greedy rules, three different answers' },
+      ],
+    },
+    {
+      id: 'compare', label: 'Comparisons', short: 'Vs',
+      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
+      items: [
+        { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
+        { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a Hilbert block of hues, one operation at a time' },
       ],
     },
   ];

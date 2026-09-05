@@ -18,6 +18,29 @@
 
    A FRAME is { note, tag, roles, state, stats, n }.
 
+   A beat may state its roles in either of two ways, and the difference is the difference
+   between a page that holds a district and a page that holds the island:
+
+       roles: R.of({ done: everythingSoFar, focus: [here] })     the whole picture
+       delta: R.of({ done: [wasFocused],    focus: [here] })     only what CHANGED
+
+   A `delta` names the keys whose role moved and nothing else; the role `idle` in one means
+   "back to nothing", which is what `Roles.at` already returns for a key that is absent, so
+   there is no new vocabulary to learn. The trace keeps the delta as it was handed over and
+   folds it into a full map only when a frame is actually DRAWN, keyframing every KEY frames so
+   the fold is bounded however long the run is.
+
+   Why it matters: a cumulative set restated every beat is O(n) memory AND O(n) time per frame,
+   so a run over n nodes costs O(n²) of both. Measured on the whole of Manhattan, 3,000 frames
+   of Dijkstra carried 4.6 million role entries and the full run would have carried about 345
+   million. The same run stated as deltas carries a handful of keys per frame. Nothing else
+   changed: an algorithm still yields one beat per step and still knows nothing about colour.
+
+   The two forms mix freely, and the algorithms here do mix them. A beat that states the whole
+   picture IS a keyframe — the accumulation restarts from it — so the summing-up frames at the
+   start and end of a run are written exactly as they always were, and only the hot loop in
+   between is a delta.
+
    The trace is finite and bounded: MAX exists because a badly-chosen input can produce
    millions of beats, and a browser tab that dies is worse than a walk that stops early and
    says so.
@@ -32,6 +55,42 @@
   'use strict';
 
   var MAX = 40000;
+  var KEY = 200;                 // frames between keyframes; the most deltas one fold walks
+
+  /* Apply one delta to a role map, in place. `idle` erases rather than records: an absent key
+     and a key marked idle mean the same thing to a renderer, and keeping the second would make
+     a map grow without bound over a long run — which is the thing this exists to stop. */
+  function apply(map, d) {
+    for (var k in d) { if (d[k] === 'idle') delete map[k]; else map[k] = d[k]; }
+    return map;
+  }
+
+  /* The full role map at frame k: the nearest keyframe at or before it, with the deltas since
+     folded on. Frame 0 always carries one, so the walk back always terminates. */
+  function fold(frames, k) {
+    var i = k;
+    while (!frames[i].full) i--;
+    var out = Object.assign({}, frames[i].full);
+    for (var j = i + 1; j <= k; j++) apply(out, frames[j].d);
+    return out;
+  }
+
+  /* `roles` is a GETTER, so a frame nobody draws never pays for its map. Renderers read
+     `frame.roles` exactly as they did — none of them can tell which kind of beat made it. */
+  function record(frame, beat, frames) {
+    if (beat.roles || !beat.delta) { frame.full = beat.roles || {}; }
+    else {
+      frame.d = beat.delta;
+      // frame 0 has nothing behind it to fold from, so it becomes the first keyframe itself
+      if (!frame.n) frame.full = apply({}, beat.delta);
+      else if (frame.n % KEY === 0) frame.full = fold(frames, frame.n);
+    }
+    Object.defineProperty(frame, 'roles', {
+      enumerable: true,
+      get: function () { return frame.full || fold(frames, frame.n); },
+    });
+    return frame;
+  }
 
   function build(gen, subject, opts) {
     var limit = (opts && opts.max) || MAX;
@@ -41,17 +100,18 @@
       var next = gen.next();
       if (next.done) break;
       beat = next.value || {};
-      frames.push({
+      var frame = {
         n: frames.length,
         note: beat.note || '',
         tag: beat.tag || '',
-        roles: beat.roles || {},
         /* optional: how far through the run this is, when the generator knows better than the
            frame count does — a race reports how many lanes are home */
         progress: beat.progress,
         state: subject.view(),
         stats: subject.stats ? subject.stats() : null,
-      });
+      };
+      frames.push(frame);
+      record(frame, beat, frames);
       if (frames.length >= limit) { truncated = true; break; }
     }
 
@@ -88,7 +148,7 @@
   function live(start, opts) {
     var win = Math.max(4, (opts && opts.window) || 240);
     var rewind = (opts && opts.rewind) || 20000;
-    var run = null, cache = [], base = 0, done = false;
+    var run = null, cache = [], base = 0, done = false, carried = {};
 
     var api = {
       length: 0,          // how many frames have been discovered
@@ -104,6 +164,7 @@
       cache = [];
       base = 0;
       done = false;
+      carried = {};
       api.length = 0;
       api.total = null;
       api.oldest = 0;
@@ -120,11 +181,17 @@
           break;
         }
         var beat = next.value || {};
+        /* A live trace drops old frames, so it cannot keyframe: the keyframe a fold needed
+           would be the first thing thrown away. It carries the running map instead and stores
+           the folded copy, which costs what a full map costs — the window, not the run. No page
+           that uses `live` yields deltas today; this is here so that one would still be right. */
+        carried = beat.roles ? Object.assign({}, beat.roles)
+          : beat.delta ? apply(carried, beat.delta) : carried;
         cache.push({
           n: api.length,
           note: beat.note || '',
           tag: beat.tag || '',
-          roles: beat.roles || {},
+          roles: beat.delta && !beat.roles ? Object.assign({}, carried) : (beat.roles || {}),
           progress: beat.progress,
           state: run.subject.view(),
           stats: run.subject.stats ? run.subject.stats() : null,

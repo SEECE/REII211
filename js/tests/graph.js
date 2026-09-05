@@ -33,6 +33,10 @@
     return d;
   }
 
+  /* Both references are used again by js/tests/frames.js, which checks what the SEARCHES DRAW
+     rather than what they answer. One implementation of each, in the file that wrote it. */
+  window.GraphRef = { reference: reference, hops: hops };
+
   window.Check.suite('graphs — traversal, shortest path, spanning trees', function () {
     var C = window.Check, T = window.Trace, G = window.Graph;
 
@@ -147,36 +151,6 @@
     split.resetCounters();
     C.equal(T.run(window.GraphSpanning.kruskal.run(split)), 5,
       'Kruskal spans the whole forest without being told where to start');
-  });
 
-  window.Check.suite('graphs — mazes', function () {
-    var C = window.Check, T = window.Trace;
-
-    ['backtracker', 'prim'].forEach(function (style) {
-      [[2, 2], [6, 4], [20, 14]].forEach(function (dim) {
-        var grid = window.MazeGrid(dim[0], dim[1]);
-        T.run(window.MazeCarve.run(grid, style));
-
-        var seen = {}, stack = [0], reached = 0;
-        seen[0] = true;
-        while (stack.length) {
-          var at = stack.pop();
-          reached++;
-          grid.neighbours(at).forEach(function (next) {
-            if (!seen[next]) { seen[next] = true; stack.push(next); }
-          });
-        }
-        C.equal(reached, grid.size, style + ' carves every cell (' + dim.join('x') + ')');
-        C.equal(grid.stats().Gaps, grid.size - 1, style + ' leaves no loops (' + dim.join('x') + ')');
-
-        grid.resetCounters();
-        var bfs = T.run(window.MazeSearch.bfs.run(grid));
-        grid.resetCounters();
-        var dfs = T.run(window.MazeSearch.dfs.run(grid));
-        C.equal(bfs, dfs, 'both searches find the one route through (' + style + ' ' + dim.join('x') + ')');
-        C.equal(bfs[0], grid.goal, 'the route ends at the goal');
-        C.equal(bfs[bfs.length - 1], grid.start, 'and starts at the start');
-      });
-    });
   });
 })();

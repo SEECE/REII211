@@ -78,6 +78,7 @@
       'compare/race.js', 'compare/lanes.js', 'compare/spectrum.js',
       'tests/kit.js', 'tests/sorting.js', 'tests/graph.js', 'tests/heuristics.js',
       'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js',
+      'tests/maze.js', 'tests/frames.js',
       'tests/spectrum.js', 'tests/city.js', 'tests/osm.js'],
   };
 

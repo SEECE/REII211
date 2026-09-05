@@ -26,6 +26,39 @@
     C.ok(capped.truncated, 'and says it was truncated');
     C.ok(/Trace stopped/.test(capped[4].note), 'and the last frame explains why');
 
+    /* ── delta beats ──
+
+       A beat may state only what CHANGED, and the trace folds those into the full map a
+       renderer reads. `idle` in a delta ERASES: it is what Roles.at already returns for a key
+       nobody mentioned, so a map must never come back carrying one. */
+    var deltas = T.build((function* () {
+      yield { roles: R.of({ done: [1], frontier: [2] }) };
+      yield { delta: R.of({ focus: [2] }) };
+      yield { delta: R.of({ idle: [1] }) };
+      yield { delta: R.of({ done: [2], frontier: [3] }) };
+    })(), subject);
+    C.equal(deltas[0].roles[2], 'frontier', 'a full beat states the picture outright');
+    C.equal(deltas[1].roles[1], 'done', 'a delta carries the untouched keys forward');
+    C.equal(deltas[1].roles[2], 'focus', 'and moves the ones it names');
+    C.equal(deltas[2].roles[1], undefined, 'idle in a delta erases the key');
+    C.ok(Object.keys(deltas[2].roles).every(function (k) { return deltas[2].roles[k] !== 'idle'; }),
+      'a folded map never carries an idle, which would grow without bound over a long run');
+    C.equal(deltas[3].roles, { 2: 'done', 3: 'frontier' }, 'and the last frame is the sum of them');
+
+    /* Past the keyframe interval the fold has to walk back to one, and a frame must not be
+       disturbed by another frame being read — the bug a shared, mutated map would give. */
+    var long = T.build((function* () {
+      yield { roles: R.of({ done: [0] }) };
+      for (var i = 1; i < 500; i++) yield { delta: R.of({ done: [i] }) };
+    })(), subject);
+    C.equal(long.length, 500, 'a long delta run traces every beat');
+    C.equal(Object.keys(long[499].roles).length, 500, 'and folds 500 beats past its keyframe');
+    C.equal(long[250].roles[251], undefined, 'a frame knows nothing of what came after it');
+    var before = JSON.stringify(long[10].roles);
+    long[499].roles;
+    C.equal(JSON.stringify(long[10].roles), before,
+      'and reading a later frame does not disturb an earlier one');
+
     if (window.Palette) {
       C.equal(window.Palette.mix('#ff0000', 50, '#000000'), 'rgb(128,0,0)', 'palette blends hex');
       C.equal(window.Palette.mix('#fff', 100, '#000'), 'rgb(255,255,255)', 'palette expands short hex');

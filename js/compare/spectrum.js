@@ -152,21 +152,9 @@
       ctx.imageSmoothingEnabled = zoom < 1;
       ctx.drawImage(block.canvas, 0, 0, side, side, x0, y0, size, size);
 
-      /* Marks go on after the blit, and only for the cells that carry one — a role map holds
-         the handful of elements an algorithm is touching, so this is not another pass over the
-         block. `done` is deliberately unmarked: here a settled block IS the rainbow, and
-         outlining every finished cell would cover the answer with the working. */
-      var cell = size / side, w = Math.max(1, Math.min(3, cell / 4));
-      ctx.lineWidth = w;
-      for (var key in frame.roles) {
-        var role = frame.roles[key];
-        if (role === 'idle' || role === 'done') continue;
-        var o = at[key] / 4;
-        if (!(o >= 0)) continue;
-        ctx.strokeStyle = colours[role];
-        ctx.strokeRect(x0 + (o % side) * cell + w / 2, y0 + Math.floor(o / side) * cell + w / 2,
-          cell - w, cell - w);
-      }
+      /* No role marks here, unlike every other renderer: the hue IS the answer, and a stroked
+         outline flashing over the block on every scan/write reads as noise rather than signal —
+         the same reason `done` was already left unmarked below. */
     },
   };
 })();

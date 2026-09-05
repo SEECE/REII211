@@ -91,13 +91,21 @@
 
       var reached = g.nodes().filter(function (n) { return dist[n.id] < Infinity; });
       g.track('Total', reached.reduce(function (sum, n) { return sum + dist[n.id]; }, 0));
+      var stranded = g.nodes().length - reached.length;
       yield {
         tag: 'done',
         note: 'Every reachable node is settled. Distances from ' + label(g, start) + ': ' +
           reached.map(function (n) { return n.label + '&thinsp;=&thinsp;<b>' + dist[n.id] + '</b>'; }).join(', ') +
           '. The highlighted edges form the shortest-path <i>tree</i> — follow one back to the ' +
-          'source and you have the route.',
-        roles: R.of({ done: g.nodes().map(function (n) { return n.id; }), path: tree }),
+          'source and you have the route.' +
+          (stranded
+            ? ' <b>' + stranded + '</b> node' + (stranded === 1 ? ' is' : 's are') + ' still at ' +
+              '<b>∞</b>: no path from ' + label(g, start) + ' reaches ' + (stranded === 1 ? 'it' : 'them') +
+              ' at all, so ' + (stranded === 1 ? 'it' : 'they') + ' never entered the frontier.'
+            : ''),
+        /* only the nodes that were actually settled — marking an unreachable node "Settled"
+           would contradict the ∞ the same frame reports for it */
+        roles: R.of({ done: reached.map(function (n) { return n.id; }), path: tree }),
       };
       return dist;
     },

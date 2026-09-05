@@ -68,10 +68,17 @@
       };
     }
 
+    var reached = Object.keys(inTree).map(Number);
     yield {
       tag: 'done',
-      note: 'Every node is in the one tree. Total weight <b>' + total + '</b>.',
-      roles: R.of({ path: tree, done: g.nodes().map(function (n) { return n.id; }) }),
+      note: reached.length === g.nodes().length
+        ? 'Every node is in the one tree. Total weight <b>' + total + '</b>.'
+        : 'Nothing crosses out of the tree any more, but only <b>' + reached.length + '</b> of ' +
+          '<b>' + g.nodes().length + '</b> nodes are in it. This graph is not connected, and ' +
+          'Prim can only ever span the component it was started in — pick a start node in the ' +
+          'other piece and it will build that one instead. Kruskal finds the same forest ' +
+          'without being told where to begin.',
+      roles: R.of({ path: tree, done: reached }),
     };
     return total;
   }

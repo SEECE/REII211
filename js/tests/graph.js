@@ -70,6 +70,40 @@
       'a new node after an erase does not take a live id');
     C.equal(edited.nodes().length, 3, 'the erase left two nodes and the add made a third');
     C.equal(edited.peek(2).length, 1, 'and the surviving node kept its edge');
+
+    /* Erasing edges on the plane can leave the graph in pieces, and a frame must not claim
+       more than it did. Prim spans only the component it started in; Dijkstra leaves the other
+       piece at ∞. Both used to end by marking every node on the plane finished. */
+    var split = G();
+    ['A', 'B', 'C', 'D'].forEach(function (l, i) { split.addNode(l, i / 4, 0.5); });
+    split.addEdge(0, 1, 2); split.addEdge(2, 3, 3);          // two components, no edge between
+
+    function finalFrame(gen) { var f = T.build(gen, split); return f[f.length - 1]; }
+    function marked(frame, role) {
+      return Object.keys(frame.roles).filter(function (k) { return frame.roles[k] === role; });
+    }
+
+    split.resetCounters();
+    var primEnd = finalFrame(window.GraphSpanning.prim.run(split, 0));
+    C.equal(marked(primEnd, 'done').sort(), ['0', '1'],
+      'Prim ends marking only the component it started in');
+    C.ok(/not connected/.test(primEnd.note), 'and says the graph is not connected');
+    C.ok(!/Every node is in the one tree/.test(primEnd.note),
+      'rather than claiming every node is in the tree');
+
+    split.resetCounters();
+    var dijkstraEnd = finalFrame(window.GraphShortest.run(split, 0));
+    C.equal(marked(dijkstraEnd, 'done').sort(), ['0', '1'],
+      'Dijkstra settles only what it could reach');
+    C.ok(/∞/.test(dijkstraEnd.note), 'and reports the unreachable nodes as still at infinity');
+
+    /* Prim on the other piece finds that component instead — the note says it can, so it must. */
+    split.resetCounters();
+    C.equal(T.run(window.GraphSpanning.prim.run(split, 2)), 3,
+      'starting Prim in the other component spans that one');
+    split.resetCounters();
+    C.equal(T.run(window.GraphSpanning.kruskal.run(split)), 5,
+      'Kruskal spans the whole forest without being told where to start');
   });
 
   window.Check.suite('graphs — mazes', function () {

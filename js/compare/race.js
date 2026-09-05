@@ -68,6 +68,10 @@
     return {
       lanes: lanes,
       running: function () { return placed < lanes.length; },
+      /* How far through the race is, for a workbench that cannot know how many frames there
+         are (js/core/trace.js). Lanes home is coarse but it is the only honest answer: what
+         remains is exactly the sorting nobody has done yet. */
+      progress: function () { return lanes.length ? placed / lanes.length : 1; },
       tick: tick,
       ops: function () { return ops; },
       /* the beat's role map, one per lane — the renderer reads roles[laneId][index] */
@@ -136,11 +140,12 @@
     while (race.running()) {
       var home = race.tick();
       if (!home.length) {
-        yield { tag: 'running', note: RUNNING, roles: race.roles() };
+        yield { tag: 'running', note: RUNNING, roles: race.roles(), progress: race.progress() };
         continue;
       }
       yield {
         tag: ord(home[0].place) + ' home',
+        progress: race.progress(),
         note: home.map(function (l) {
           var s = l.tape.stats();
           return '<b>' + l.label + '</b> is sorted after <b>' + l.cost.toLocaleString() +
@@ -154,6 +159,7 @@
     var order = race.order();
     yield {
       tag: 'result',
+      progress: 1,
       note: '<p><b>Everything is sorted.</b> The order they came home in is the order of what ' +
         'they cost on <i>this</i> array — change the starting order and it changes with it, ' +
         'which is the only honest way to compare these six.</p><ol>' +

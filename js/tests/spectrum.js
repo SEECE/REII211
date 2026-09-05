@@ -76,60 +76,85 @@
     C.ok(S.STEPS >= SIDES[SIDES.length - 1] * SIDES[SIDES.length - 1],
       'the palette has a step for every pixel of the largest block');
 
-    /* The rail's promise: a bigger block is a sharper picture, not a longer walk. The measured
-       worst case of these six is under 1.6n² operations — checked here rather than asserted,
-       because the whole claim rests on it — and per() has to keep that inside a trace at every
-       shape the rail will hand it. */
-    var worst = 0;
-    ['reversed', 'shuffled'].forEach(function (order) {
-      var input = Tape.build(96, order);
-      ids.forEach(function (id) {
-        var t = Tape(input);
-        T.run(Sorts.get(id).run(t, { pivot: 'last' }));
-        var st = t.stats();
-        worst = Math.max(worst, (st.Comparisons + st.Writes) / (96 * 96));
-      });
-    });
-    C.ok(worst < 1.6, 'no sort costs more than 1.6n² operations (worst seen: ' + worst.toFixed(2) + ')');
+    /* A live trace has to be indistinguishable from a built one, or the colour block is a
+       second runtime rather than the same one walked differently. Checked frame for frame
+       against Trace.build over the real race. */
+    function start(input, opts) {
+      return function () {
+        var race = window.Race(input, ids, opts || { pivot: 'last' });
+        return { subject: race, gen: window.Race.run(race, 'the block') };
+      };
+    }
 
-    var fits = true, longest = 0;
-    SIDES.forEach(function (side) {
-      var n = side * side, frames = 1.6 * n * n / S.per(n);
-      longest = Math.max(longest, frames);
-      if (frames >= 40000) fits = false;         // js/core/trace.js MAX
-    });
-    C.ok(fits, 'every block the rail offers walks inside a trace (longest: ' +
-      Math.round(longest) + ' frames)');
-
-    /* Charging a block of operations per step must not buy anyone a head start: the invariant
-       is the one the race rests on, so it is checked again at a budget bigger than one. */
-    [16, 144].forEach(function (n) {
+    [0, 1, 16, 64].forEach(function (n) {
       var input = Tape.build(n, 'reversed');
-      var per = S.per(n);
-      var race = window.Race(input, ids, { pivot: 'last', per: per });
-      var frames = T.build(window.Race.run(race, 'the block'), race);
-      var want = input.slice().sort(function (a, b) { return a - b; });
+      var pair = start(input)();
+      var built = T.build(pair.gen, pair.subject);
+      var lazy = T.live(start(input), { window: 8 });
 
-      C.equal(frames[0].note, 'the block', 'a page can say what its picture is (n=' + n + ')');
-      C.ok(!frames.truncated, 'the walk finishes inside the trace (n=' + n + ')');
-      C.ok(race.lanes.every(function (l) {
-        return JSON.stringify(l.tape.done()) === JSON.stringify(want);
-      }), 'every lane still sorts at ' + per + ' operations a step (n=' + n + ')');
-
-      var behind = 0;
-      frames.forEach(function (f) {
-        f.state.lanes.forEach(function (l) { if (!l.done && l.cost < f.state.ops) behind++; });
-      });
-      C.equal(behind, 0, 'no lane falls behind a budget of ' + per + ' a step (n=' + n + ')');
-
-      race.lanes.forEach(function (l) {
-        var alone = Tape(input);
-        T.run(Sorts.get(l.id).run(alone, { pivot: 'last' }));
-        var a = alone.stats(), r = l.tape.stats();
-        C.equal([r.Comparisons, r.Writes], [a.Comparisons, a.Writes],
-          l.id + ' bills the same charged ' + per + ' a step as it does alone (n=' + n + ')');
-      });
+      var same = true;
+      for (var k = 0; k < built.length; k++) {
+        var a = built[k], b = lazy.at(k);
+        if (!b || a.note !== b.note || a.tag !== b.tag ||
+            JSON.stringify(a.state) !== JSON.stringify(b.state) ||
+            JSON.stringify(a.stats) !== JSON.stringify(b.stats)) { same = false; break; }
+      }
+      C.ok(same, 'a live trace gives the same frames as a built one (n=' + n + ')');
+      C.equal(lazy.at(built.length), null, 'and ends where it ends (n=' + n + ')');
+      C.equal(lazy.total, built.length, 'and knows its length once it has walked it (n=' + n + ')');
     });
+
+    /* The window is the whole point: memory must be the window and not the run. */
+    var walked = T.live(start(Tape.build(64, 'reversed')), { window: 8 });
+    var last = 0;
+    while (walked.at(last + 1)) last++;
+    C.ok(last > 200, 'a 64-pixel race is more than 200 frames at one operation a step (' + last + ')');
+    C.equal(walked.at(last - 3).n, last - 3, 'the recent window is still there');
+
+    /* Stepping back past the window replays rather than losing the frame — the trade the live
+       trace makes, and the thing that would silently break Prev if it did not hold. */
+    var early = walked.at(2);
+    C.ok(early && early.n === 2, 'and stepping back past the window replays to reach it');
+    C.equal(JSON.stringify(early.state), JSON.stringify(T.live(start(Tape.build(64, 'reversed')),
+      { window: 8 }).at(2).state), 'a replayed frame is the frame it replaced');
+
+    /* One operation a step is the promise on the rail: nothing may be skipped. */
+    [16, 64].forEach(function (n) {
+      var input = Tape.build(n, 'reversed');
+      var pair = start(input)();
+      var frames = T.build(pair.gen, pair.subject);
+      var jumped = 0;
+      for (var k = 1; k < frames.length; k++) {
+        if (frames[k].state.ops - frames[k - 1].state.ops > 1) jumped++;
+      }
+      C.equal(jumped, 0, 'the budget rises one operation at a time, never in jumps (n=' + n + ')');
+      C.ok(frames.every(function (f) {
+        return f.state.lanes.every(function (l) { return l.done || l.cost >= f.state.ops; });
+      }), 'and no lane falls behind it (n=' + n + ')');
+    });
+
+    /* Prev must never offer a journey it cannot make. Past the rewind budget the earliest
+       reachable frame is the oldest one still in the window, and the player is told so rather
+       than being left to trigger a replay that freezes the tab. */
+    var bounded = T.live(start(Tape.build(64, 'reversed')), { window: 8, rewind: 40 });
+    var k = 0;
+    while (k < 400 && bounded.at(k + 1)) k++;
+    C.ok(bounded.oldest > 0, 'a run past its rewind budget reports how far back it can go');
+    C.equal(bounded.at(bounded.oldest - 1), null, 'and refuses anything earlier');
+    C.ok(bounded.at(bounded.oldest) !== null, 'while the oldest kept frame is still there');
+
+    var free = T.live(start(Tape.build(64, 'reversed')), { window: 8, rewind: 1e9 });
+    k = 0;
+    while (k < 400 && free.at(k + 1)) k++;
+    C.equal(free.oldest, 0, 'a run inside its budget can always go back to the start');
+
+    /* The race reports its own progress, because a live trace cannot say how long it is. */
+    var pr = start(Tape.build(16, 'shuffled'))();
+    var fs = T.build(pr.gen, pr.subject);
+    C.equal(fs[fs.length - 1].progress, 1, 'the closing frame reports the race finished');
+    C.ok(fs.slice(1).every(function (f, k) {
+      return f.progress == null || fs[k].progress == null || f.progress >= fs[k].progress;
+    }), 'and progress never goes backwards');
 
     /* The lane grid arranges square cells around square blocks rather than wide ones. */
     var L = window.Lanes;

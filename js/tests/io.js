@@ -123,9 +123,13 @@
     refuses('an offer that ends before it starts', function () {
       F.write('jobs', { span: 12, jobs: [{ studio: 'Aurora', row: 0, start: 8, end: 3 }] }, 'j');
     });
+    /* 16,384 is a 128 × 128 colour block — the largest thing on the site that IS an array.
+       A page that cannot draw that many refuses it itself, in its own sentence. */
     refuses('an array longer than any page can draw', function () {
-      F.write('array', window.Tape.build(600, 'sorted'), 'a');
+      F.write('array', window.Tape.build(16385, 'sorted'), 'a');
     });
+    window.Check.ok(F.write('array', window.Tape.build(16384, 'sorted'), 'a'),
+      'but a full colour block can be saved');
 
     /* a name is a filename and a heading, so it is stripped rather than trusted */
     window.Check.equal(F.clean('<script>alert(1)</script>'), 'scriptalert1script', 'a name is stripped to plain characters');

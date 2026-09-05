@@ -72,13 +72,20 @@
 
     function frame(i, f) {
       if (!f) return;
-      var total = player.length();
-      set(el.count, 'count', (i + 1).toLocaleString() + ' / ' + total.toLocaleString());
+      /* `total` is null while a live trace is still being discovered, and "step 41,802 of
+         41,802" would be a fraction of a number nobody knows yet. A run that cannot say how
+         long it is counts instead, and takes its progress from the frame — the race reports
+         how many lanes are home, which is the only honest answer it has. */
+      var total = player.total();
+      set(el.count, 'count', total == null ? (i + 1).toLocaleString() + ' steps'
+        : (i + 1).toLocaleString() + ' / ' + total.toLocaleString());
       set(el.title, 'title',
         (f.tag ? '<span class="step-badge">' + f.tag + '</span>' : '') + heading, true);
       set(el.body, 'note', f.note || '', true);
       if (el.progress) {
-        var width = (total < 2 ? 100 : (i / (total - 1)) * 100).toFixed(2) + '%';
+        var done = f.progress != null ? f.progress
+          : total == null ? 0 : total < 2 ? 1 : i / (total - 1);
+        var width = (Math.max(0, Math.min(1, done)) * 100).toFixed(2) + '%';
         if (shown.width !== width) {
           shown.width = width;
           el.progress.firstElementChild.style.width = width;
@@ -91,14 +98,15 @@
        way: four attribute writes a frame is four style invalidations for a button that has
        looked identical for the last ten thousand of them. */
     function state() {
-      var i = player.index(), last = player.length() - 1;
-      var now = (i <= 0) + '|' + (i >= last) + '|' + (last < 1) + '|' + player.playing();
+      var i = player.index(), more = player.hasNext(), back = player.hasPrev();
+      var alone = !back && !more;                // a one-frame run has nothing to transport
+      var now = back + '|' + more + '|' + alone + '|' + player.playing();
       if (now === shown.transport) return;
       shown.transport = now;
-      if (el.prev) el.prev.disabled = i <= 0;
-      if (el.next) el.next.disabled = i >= last;
+      if (el.prev) el.prev.disabled = !back;
+      if (el.next) el.next.disabled = !more;
       if (el.play) {
-        el.play.disabled = last < 1;
+        el.play.disabled = alone;
         el.play.dataset.playing = String(player.playing());
         el.play.lastChild.textContent = player.playing() ? 'Pause' : 'Play';
         el.play.setAttribute('aria-label', player.playing() ? 'Pause the walk' : 'Play the walk');
@@ -108,13 +116,21 @@
     if (el.prev) el.prev.addEventListener('click', function () { player.step(-1); });
     if (el.next) el.next.addEventListener('click', function () { player.step(1); });
     if (el.play) el.play.addEventListener('click', function () { player.toggle(); });
-    if (el.speed) {
-      el.speed.addEventListener('input', function () {
-        player.setSpeed(Number(el.speed.value));
-        if (el.speedVal) el.speedVal.textContent = el.speed.value + '×';
-      });
+    /* The speed label says the stride once it is more than one: past the point where the timer
+       cannot tick any faster, turning the slider up advances several frames per paint rather
+       than painting faster, and a student watching swaps go by needs to know which they are
+       looking at. */
+    function speed() {
       player.setSpeed(Number(el.speed.value));
-      if (el.speedVal) el.speedVal.textContent = el.speed.value + '×';
+      var stride = player.stride();
+      if (el.speedVal) {
+        el.speedVal.innerHTML = el.speed.value + '×' +
+          (stride > 1 ? ' <small>· ' + stride + ' a frame</small>' : '');
+      }
+    }
+    if (el.speed) {
+      el.speed.addEventListener('input', speed);
+      speed();
     }
 
     return {

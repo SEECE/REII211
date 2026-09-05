@@ -66,11 +66,13 @@
       <div class="wb-readout" id="step-readout"></div>
 
       <footer class="wb-transport">
-        <!-- faster by default than the walkthrough pages: a race is thousands of one-operation
-             frames, and the interesting part is the shape of the finish, not any single step -->
+        <!-- deliberately BELOW the point where the player starts advancing several frames per
+             paint (js/core/player.js): the whole appeal here is watching individual swaps land,
+             so the page opens one operation a frame and the student turns it up if they want
+             the finish rather than the mechanism -->
         <div class="transport-speed">
           <label class="field-label" for="step-speed">Speed</label>
-          <input class="ctl-range" id="step-speed" type="range" min="1" max="100" value="78" />
+          <input class="ctl-range" id="step-speed" type="range" min="1" max="100" value="45" />
           <span class="field-value" id="step-speed-val">78&times;</span>
         </div>
         <div class="transport-row">

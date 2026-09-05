@@ -101,14 +101,31 @@
         if (id === 'detail' || id === 'order' || id === 'again') regenerate(api.rail);
       },
 
+      /* A LIVE run (js/core/trace.js): `build` hands over a way to start the race rather than
+         a race already drained. At one operation a step a 128 × 128 block is tens of millions
+         of frames, each carrying a 16,384-long snapshot per lane — building that up front is
+         not a slow rebuild, it is an impossible one. Discovered as it is walked, a rebuild is
+         instant at every size and nothing has to be skipped to make it fit. */
       build: function (rail) {
         if (!values) regenerate(rail);
         var side = window.Spectrum.side(values.length);
-        var race = window.Race(values, entered(rail),
-          { pivot: rail.get('pivot'), per: window.Spectrum.per(values.length) });
+        var lanes = entered(rail), pivot = rail.get('pivot');
+        var opening = intro(rail, values.length);
         return {
-          subject: race,
-          gen: window.Race.run(race, intro(rail, values.length)),
+          live: function () {
+            var race = window.Race(values, lanes, { pivot: pivot });
+            return { subject: race, gen: window.Race.run(race, opening) };
+          },
+          /* The window is the only memory this page holds, so it is sized in PIXELS rather
+             than in frames: about a quarter of a million values kept, whether that is a
+             thousand frames of a small block or a dozen of the largest. Stepping back further
+             than that replays the run, which is the trade the live trace makes. */
+          opts: {
+            window: Math.max(8, Math.round(250000 / (values.length * Math.max(1, lanes.length)))),
+            /* how far back Prev may replay to. Kept to roughly a fifth of a second of walking,
+               because redoing a hundred thousand frames for one button press is a frozen tab. */
+            rewind: Math.max(2000, Math.round(2e6 / values.length)),
+          },
           title: side + ' × ' + side + ' — ' + values.length.toLocaleString() + ' pixels',
         };
       },

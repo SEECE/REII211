@@ -60,7 +60,11 @@
         var run = o.build(rail, api);
         if (!run) return api;
         if (run.title) bench.setTitle(run.title);
-        player.load(window.Trace.build(run.gen, run.subject, run.opts));
+        /* `live` is a page handing over a way to START the run rather than a run already
+           drained — the colour block, whose trace is too long to build up front. Everything
+           downstream is the same; see js/core/trace.js. */
+        player.load(run.live ? window.Trace.live(run.live, run.opts)
+          : window.Trace.build(run.gen, run.subject, run.opts));
         return api;
       },
       /* Repaint without rebuilding — for a page whose stage is editable between runs. */

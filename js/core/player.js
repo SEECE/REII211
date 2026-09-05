@@ -6,39 +6,65 @@
    this is the one clock that walks it.
 
    Player({ onFrame, onState }) — onFrame(index) whenever the position moves, onState() whenever
-   playing/position/length changes so the UI can re-enable its buttons. It owns no DOM. */
+   playing/position/length changes so the UI can re-enable its buttons. It owns no DOM.
+
+   It reads its frames through `.at(k)` and never by index, which is what lets the colour block
+   hand it a trace that is still being discovered (js/core/trace.js). A plain Array already has
+   `.at()`, so the other fifteen pages hand it one exactly as before. Where a list ENDS is
+   therefore "at(i + 1) gave nothing", not "i is the last index" — the second question has no
+   answer while a trace is still growing. */
 (function () {
   'use strict';
 
-  // 1 (slow) … 100 (fast) mapped onto 600 ms … 2 ms. Geometric, so the slider feels even.
-  function delayFor(speed) {
-    return Math.round(600 * Math.pow(2 / 600, (Math.max(1, Math.min(100, speed)) - 1) / 99));
+  /* The slider is a RATE, not a delay, and that distinction is the whole of this function.
+     Mapping 1…100 straight onto 600 ms…2 ms looked fine and was a lie at the top: a browser
+     clamps a nested setTimeout to about 4 ms, so every setting past roughly 70 asked for the
+     same speed and the last third of the slider did nothing. It looked like the page being
+     too slow to keep up, which on the colour block — millions of one-operation frames — is
+     exactly what it felt like.
+
+     So a rate is asked for, and once the timer cannot tick any faster the run advances several
+     frames per tick instead. Nothing is skipped in the TRACE — Prev and Next still move one
+     frame — it is only that not every frame gets painted, which is the honest trade when the
+     screen refreshes 60 times a second and the run wants 30,000 steps in it. */
+  var FLOOR = 8;                 // ms; below this the timer is fighting the browser, not the run
+
+  function paceFor(speed) {
+    var rate = 1.6 * Math.pow(30000 / 1.6, (Math.max(1, Math.min(100, speed)) - 1) / 99);
+    var delay = Math.max(FLOOR, Math.round(1000 / rate));
+    return { delay: delay, stride: Math.max(1, Math.round(rate * delay / 1000)) };
   }
 
   window.Player = function (o) {
     var frames = [], i = 0, speed = 30, timer = null;
 
     function announce() { if (o.onState) o.onState(api); }
-    function show() { if (o.onFrame) o.onFrame(i, frames[i]); announce(); }
+    function show() { if (o.onFrame) o.onFrame(i, frames.at(i)); announce(); }
+    function more() { return !!frames.at(i + 1); }
 
     function tick() {
       timer = null;
-      if (i >= frames.length - 1) { pause(); return; }
-      i++;
+      if (!more()) { pause(); return; }
+      var pace = paceFor(speed), next = i + pace.stride;
+      if (!frames.at(next)) next = Math.max(i + 1, frames.length - 1);   // the end, wherever it is
+      i = next;
       show();
-      timer = setTimeout(tick, delayFor(speed));
+      timer = setTimeout(tick, pace.delay);
     }
 
     function play() {
-      if (timer || frames.length < 2) return;
-      if (i >= frames.length - 1) i = 0;      // replay rather than sit on a finished trace
+      // "is there a second frame" rather than "is length >= 2": a live trace has discovered
+      // only the first one at this point, and asking is what makes it find the next.
+      if (timer || !frames.at(1)) return;
+      if (!more()) i = 0;                     // replay rather than sit on a finished trace
       show();
-      timer = setTimeout(tick, delayFor(speed));
+      timer = setTimeout(tick, paceFor(speed).delay);
     }
     function pause() { if (timer) { clearTimeout(timer); timer = null; } announce(); }
 
     function goto(k) {
-      var next = Math.max(0, Math.min(frames.length - 1, k));
+      var next = Math.max(frames.oldest || 0, k);
+      if (!frames.at(next)) next = Math.max(0, frames.length - 1);   // past the end, wherever it is
       if (next === i) { announce(); return; }
       i = next;
       show();
@@ -54,6 +80,14 @@
         show();
         return api;
       },
+      /* how many frames there ARE — null while a live trace is still discovering them, which
+         is a different question from how many it has handed out so far (`length`) */
+      total: function () { return frames.total === undefined ? frames.length : frames.total; },
+      hasNext: more,
+      /* not always frame zero: a live trace too long to replay can only go back as far as the
+         window it kept, and offering a Prev that cannot be honoured is worse than not offering
+         one (js/core/trace.js) */
+      hasPrev: function () { return i > (frames.oldest || 0); },
       play: play,
       pause: pause,
       toggle: function () { if (timer) pause(); else play(); },
@@ -63,6 +97,9 @@
       end: function () { pause(); goto(frames.length - 1); },
       setSpeed: function (s) { speed = s; },        // takes effect on the next tick
       speed: function () { return speed; },
+      /* how many frames a tick will advance at the current setting — the workbench says so out
+         loud, because a run that is painting one frame in twelve should not pretend otherwise */
+      stride: function () { return paceFor(speed).stride; },
       playing: function () { return !!timer; },
       index: function () { return i; },
       length: function () { return frames.length; },

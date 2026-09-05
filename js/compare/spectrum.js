@@ -104,9 +104,6 @@
     SWEEP: SWEEP,
     STEPS: STEPS,
 
-    /* What one step of a race over a block of n pixels should charge (js/compare/race.js). */
-    per: function (n) { return Math.max(1, Math.ceil(n * n / 1600)); },
-
     /* The square a block of n values is drawn on: the smallest power of two that holds it, so
        the Hilbert curve is defined. A short array simply stops partway along the curve. */
     side: function (n) {

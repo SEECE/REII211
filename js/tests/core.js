@@ -37,6 +37,19 @@
      the FILE is checked in tests/io.js; what matters here is that it builds, that its wording
      comes out of the format rather than being typed twice, and that it opens and closes.
      Saving is not clicked: a passing self-check that downloads a file is a nuisance. */
+  /* The speed slider promises a rate. It used to promise a delay, and above about 70 every
+     setting asked for the same thing because a browser will not tick a nested timer faster
+     than ~4 ms — the top third of the control did nothing at all. */
+  window.Check.suite('core — the speed control', function () {
+    var C = window.Check, player = window.Player({}), stride = [];
+    for (var v = 1; v <= 100; v++) { player.setSpeed(v); stride.push(player.stride()); }
+    C.ok(stride.every(function (s, i) { return i === 0 || s >= stride[i - 1]; }),
+      'turning the slider up never advances fewer frames a tick');
+    C.equal(stride[0], 1, 'the slowest setting is one frame a tick');
+    C.equal(stride[44], 1, 'and so is the default the colour block opens on (45)');
+    C.ok(stride[99] > 50, 'while the fastest advances in strides, since the timer cannot');
+  });
+
   window.Check.suite('core — the Open-or-Save control', function () {
     var C = window.Check;
     if (typeof document === 'undefined' || !window.Files) return;

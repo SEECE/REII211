@@ -78,6 +78,21 @@ does.
 `Player` is the only clock on the site. It walks a frame list, and `step()` pauses first so a
 Next press never fights a running animation.
 
+## Racing several algorithms
+
+A comparison page (`js/compare/`) has no algorithm of its own. Its subject is a field of LANES,
+each holding a plain `Tape` and the real generator from `js/sorting/`, and its generator
+advances them — so there is still exactly one implementation of each sort and a lane bills what
+the single-sort page bills. The self-checks assert that directly.
+
+**A race advances on cost, never on beats.** One beat per lane per tick sounds obvious and
+ranks the narration instead of the algorithms: a sort that explains itself twice per comparison
+would lose a race it wins. A tick is one unit of work — one comparison or one write — and each
+lane is advanced until its tape has billed past the budget. Every lane is therefore charged the
+same amount at every frame, and the only difference on screen is how much sorting that bought.
+A lane can overshoot the budget (the beat that takes it over may write a whole merged run) but
+must never fall behind it, which is what a check enforces.
+
 ## Adding an algorithm
 
 1. Write `js/<area>/<name>.js` as a generator over an existing subject. If it needs a new kind

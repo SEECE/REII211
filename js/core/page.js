@@ -25,6 +25,7 @@
     var legendEl = document.getElementById('step-legend');
     var colours = window.Palette.all();
     var current = null;              // the frame on screen, so a resize can repaint it
+    var frames = [];                 // the whole run, for a view that draws more than one frame
 
     var player = window.Player({
       onFrame: function (i, f) { current = f; bench.onFrame(i, f); paint(); },
@@ -63,13 +64,17 @@
         /* `live` is a page handing over a way to START the run rather than a run already
            drained — the colour block, whose trace is too long to build up front. Everything
            downstream is the same; see js/core/trace.js. */
-        player.load(run.live ? window.Trace.live(run.live, run.opts)
-          : window.Trace.build(run.gen, run.subject, run.opts));
+        frames = run.live ? window.Trace.live(run.live, run.opts)
+          : window.Trace.build(run.gen, run.subject, run.opts);
+        player.load(frames);
         return api;
       },
       /* Repaint without rebuilding — for a page whose stage is editable between runs. */
       repaint: paint,
       frame: function () { return current; },
+      /* The whole trace, by reference — a view that draws the RUN rather than a moment in it
+         (js/sorting/marks.js) rebuilds when this stops being the same array and not before. */
+      frames: function () { return frames; },
     };
 
     /* Open or Save, if the page declared what it saves. The rebuild after an open belongs

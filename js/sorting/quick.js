@@ -73,6 +73,12 @@
   S.register({
     id: 'quick',
     label: 'Quick sort',
+    /* handed out so js/recursion/quick.js can draw the SAME partition as a call tree instead
+       of writing a second one. The tree page used to split a slice into two fresh arrays in a
+       single beat: no scan to watch, and — because that split is stable and Lomuto's is not —
+       sub-slices that disagreed with this page on the same input. */
+    partition: partition,
+    choosePivot: choosePivot,
     complexity: 'Θ(n log n) average · Θ(n²) worst · in place',
     roles: ['idle', 'focus', 'scan', 'move', 'done'],
     notes: {

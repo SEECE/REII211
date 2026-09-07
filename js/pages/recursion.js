@@ -14,8 +14,9 @@
   ];
 
   /* capped well below the bar-graph pages on purpose: past about thirty elements the tree is
-     wider than the stage and stops being the thing you can read */
-  var SIZE = { min: 4, max: 28, value: 16 };
+     wider than the stage and stops being the thing you can read. The cap is a power of two so
+     the merge tree at full size is the perfect one — every level splits evenly, no odd slice. */
+  var SIZE = { min: 4, max: 32, value: 16 };
 
   window.RecursionPage = function (which) {
     var algo = window[ALGOS[which]];

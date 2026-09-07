@@ -10,14 +10,17 @@
   'use strict';
   var R = window.Roles;
 
+  /* The box is as wide as the slab of stage its subtree owns, so it cannot reach past the edge
+     or into a sibling however lopsided the tree is. The floor is there for a 40-column tree on
+     a phone, where a column is a couple of pixels wide. */
   function nodeBox(L, W, H, node) {
     var rows = L.depth + 1;
     var rowH = H / rows;
-    var w = Math.min(W / L.columns * Math.max(1, node.hi - node.lo) * 0.92, W * 0.9);
+    var w = Math.max(8, L.span(node.id) * W * 0.92);
     return {
       cx: L.x(node.id) * W,
       cy: node.depth * rowH + rowH / 2,
-      w: Math.max(14, w),
+      w: w,
       h: Math.min(30, rowH * 0.52),
     };
   }
@@ -51,12 +54,12 @@
         if (!cell) return;                       // this call has not happened yet
         var box = boxes[n.id];
         var role = R.at(frame.roles, n.id, cell.closed ? 'done' : 'idle');
-        TreeDraw.cell(ctx, box, cell.values, colours, role);
+        TreeDraw.cell(ctx, box, cell, colours, role);
       });
     },
 
-    cell: function (ctx, box, values, colours, role) {
-      var x = box.cx - box.w / 2, y = box.cy - box.h / 2;
+    cell: function (ctx, box, cell, colours, role) {
+      var values = cell.values, x = box.cx - box.w / 2, y = box.cy - box.h / 2;
       var colour = colours[role];
       ctx.fillStyle = window.Palette.mix(colour, 15, colours.paper);
       ctx.strokeStyle = colour;
@@ -71,7 +74,14 @@
       if (perValue >= 15 && box.h >= 14) {
         ctx.fillStyle = colours.ink;
         ctx.font = '600 10px ui-sans-serif, system-ui, sans-serif';
+        /* One value in the slice, in the role that POSITION is in — the pivot, the boundary
+           the smaller ones are piling up behind, the one being compared this step. Without it
+           a partition is twenty frames of identical-looking box while the prose does all the
+           work, which is the whole complaint about watching a quick sort as a tree. */
         values.forEach(function (v, i) {
+          var mark = cell.marks && cell.marks[cell.lo + i];
+          ctx.fillStyle = mark ? colours[mark] || colours.ink : colours.ink;
+          ctx.font = (mark ? '800 ' : '600 ') + '10px ui-sans-serif, system-ui, sans-serif';
           ctx.fillText(String(v), x + perValue * (i + 0.5), box.cy);
         });
         return;

@@ -39,9 +39,12 @@
       <div class="rail-fields"></div>
     </aside>
 
-    <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it. -->
-    <section class="stage panel" aria-label="The array, as a bar graph">
+    <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it.
+         Two views of the same run, swapped by the workbench (js/sorting/marks.js): the bar
+         graph, and the marking table a student writes out by hand in a test. -->
+    <section class="stage panel" data-view="bars" aria-label="The array, as a bar graph or a marking table">
       <canvas id="canvas"></canvas>
+      <div class="marks scroller" id="marks" aria-label="The run, one row per write"></div>
     </section>
 
     <!-- workbench: the RUN. Head / narration + legend / pinned counts / transport. -->
@@ -53,6 +56,8 @@
         </div>
         <h2 class="step-title" id="step-title" aria-live="polite"></h2>
         <div class="step-progress" id="step-progress" aria-hidden="true"><i></i></div>
+        <!-- js/sorting/marks.js fills this with the stage's view buttons -->
+        <div class="wb-views" id="step-views" role="group" aria-label="How to draw the run"></div>
       </header>
 
       <div class="wb-scroll scroller">
@@ -72,10 +77,11 @@
           <span class="field-value" id="step-speed-val">26&times;</span>
         </div>
         <div class="transport-row">
-          <button type="button" class="btn btn--soft" id="step-prev" aria-label="Previous step">&lsaquo;</button>
+          <button type="button" class="btn btn--soft btn--step" id="step-prev" aria-label="Previous step"><span class="step-arrow" aria-hidden="true">&lsaquo;</span><span>Prev</span></button>
           <button type="button" class="btn btn--primary btn--play" id="step-play"><span>Play</span></button>
-          <button type="button" class="btn btn--soft" id="step-next" aria-label="Next step">&rsaquo;</button>
+          <button type="button" class="btn btn--soft btn--step" id="step-next" aria-label="Next step"><span>Next</span><span class="step-arrow" aria-hidden="true">&rsaquo;</span></button>
         </div>
+        <p class="transport-hint">or press <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to step, <kbd>Space</kbd> to play</p>
       </footer>
     </aside>
 

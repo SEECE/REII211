@@ -47,6 +47,10 @@ student, so it should read like a sentence. See [FORMATS.md](FORMATS.md).
 frame and is also called on resize, so it must be pure with respect to the frame it is given —
 never mutate `frame.roles`; overlay onto a copy (see `js/pages/node-plane.js`).
 
+`api.frames()` hands back the whole trace by reference, for a view that draws the RUN rather
+than a moment in it — the marking table on the sorting pages rebuilds when that stops being the
+same array and not before. `render` is still the only thing that draws.
+
 **Copy a frame with `Object.assign`, never `Object.create`.** `roles` is an accessor, because a
 beat may state only what changed and the map is folded on demand ([RUNTIME.md](RUNTIME.md)).
 Inheriting from a frame and assigning over its roles throws in strict mode, and the map the

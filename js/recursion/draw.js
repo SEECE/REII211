@@ -10,14 +10,17 @@
   'use strict';
   var R = window.Roles;
 
+  /* The box is as wide as the slab of stage its subtree owns, so it cannot reach past the edge
+     or into a sibling however lopsided the tree is. The floor is there for a 40-column tree on
+     a phone, where a column is a couple of pixels wide. */
   function nodeBox(L, W, H, node) {
     var rows = L.depth + 1;
     var rowH = H / rows;
-    var w = Math.min(W / L.columns * Math.max(1, node.hi - node.lo) * 0.92, W * 0.9);
+    var w = Math.max(8, L.span(node.id) * W * 0.92);
     return {
       cx: L.x(node.id) * W,
       cy: node.depth * rowH + rowH / 2,
-      w: Math.max(14, w),
+      w: w,
       h: Math.min(30, rowH * 0.52),
     };
   }

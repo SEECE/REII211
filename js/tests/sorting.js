@@ -151,6 +151,27 @@
     var layout = window.TreeLayout(build(window.MergeTree, 12, 'shuffled').tree);
     C.ok(layout.columns > 0, 'the tree layout assigns columns');
 
+    /* Every box on a row must sit inside the stage and off its neighbours. The quick tree
+       failed both: its boxes were sized by how many VALUES the slice held, and a slice holds
+       more values than it leaves columns, so the wide ones ran off the sides and over each
+       other — at n=32 that was a third of the tree. A bushy shuffled tree is where it showed. */
+    [[window.MergeTree, 32, 'shuffled', null], [window.QuickTree, 32, 'shuffled', 'last'],
+     [window.QuickTree, 31, 'shuffled', 'median'], [window.QuickTree, 32, 'sorted', 'last']]
+      .forEach(function (c) {
+      var tree = build(c[0], c[1], c[2], c[3]).tree, L = window.TreeLayout(tree), rows = {}, bad = 0;
+      tree.nodes().forEach(function (n) {
+        var lo = L.x(n.id) - L.span(n.id) / 2, hi = lo + L.span(n.id);
+        if (lo < -1e-9 || hi > 1 + 1e-9) bad++;
+        (rows[n.depth] = rows[n.depth] || []).push([lo, hi]);
+      });
+      Object.keys(rows).forEach(function (d) {
+        rows[d].sort(function (a, b) { return a[0] - b[0]; })
+          .forEach(function (box, i, all) { if (i && box[0] < all[i - 1][1] - 1e-9) bad++; });
+      });
+      C.equal(bad, 0, 'no box leaves the stage or lands on a neighbour (' +
+        c[0].label + ', ' + c[2] + ' n=' + c[1] + ')');
+    });
+
     /* An empty side is narrated, never drawn: a zero-value node is a blank box holding a leaf
        column open, and on a leaning tree there are n of them. */
     C.ok(build(window.QuickTree, 24, 'sorted', 'last').tree.nodes()

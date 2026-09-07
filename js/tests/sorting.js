@@ -189,6 +189,38 @@
       T.run(window.QuickTree.run(window.CallTree(tape), tape, values, strategy));
       return { bars: bars.stats().Comparisons, tree: tape.stats().Comparisons };
     }
+    /* The two pages are now ONE quick sort: the tree runs the bar page's partition on its own
+       tape. So they must agree on the finished array and on every counter, for any input —
+       which they did not when this file kept a second, out-of-place partition of its own. */
+    [7, 8, 16, 31].forEach(function (n) {
+      ['shuffled', 'sorted', 'reversed'].forEach(function (order) {
+        ['last', 'median'].forEach(function (p) {
+          var values = Tape.build(n, order);
+          var bars = Tape(values);
+          T.run(window.Sorts.get('quick').run(bars, { pivot: p }));
+          var tape = Tape(values), tree = window.CallTree(tape);
+          var frames = T.build(window.QuickTree.run(tree, tape, values, p), tree);
+          C.equal(tape.done(), bars.done(), 'both quick sort pages leave the same array (' +
+            p + ' ' + order + ' n=' + n + ')');
+          C.equal(tape.stats(), bars.stats(), 'and are charged the same for it (' +
+            p + ' ' + order + ' n=' + n + ')');
+          /* the scan is watchable: marks name positions INSIDE the node they are drawn in */
+          var marked = 0, stray = 0;
+          frames.forEach(function (f) {
+            Object.keys(f.state.cells).forEach(function (id) {
+              var c = f.state.cells[id];
+              Object.keys(c.marks || {}).forEach(function (k) {
+                marked++;
+                if (k < c.lo || k >= c.lo + c.values.length) stray++;
+              });
+            });
+          });
+          C.ok(marked > 0 && stray === 0, 'the partition marks positions inside their own call (' +
+            marked + ' marks, ' + stray + ' stray)');
+        });
+      });
+    });
+
     var naiveCost = cost('last'), medianCost = cost('median');
     C.equal(medianCost.bars, medianCost.tree,
       'median-of-three costs the same on the bar graph as in the call tree');

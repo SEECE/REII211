@@ -23,7 +23,7 @@
         var node = {
           id: nodes.length, lo: lo, hi: hi,
           depth: parent ? parent.depth + 1 : 0,
-          values: values.slice(), kids: [], parent: parent, closed: false,
+          values: values.slice(), marks: null, kids: [], parent: parent, closed: false,
         };
         nodes.push(node);
         if (parent) parent.kids.push(node); else root = node;
@@ -34,19 +34,30 @@
       /* return from a call with whatever it produced */
       close: function (node, values) {
         node.values = values.slice();
+        node.marks = null;
         node.closed = true;
         dirty();
         return node;
       },
-      /* mid-call update — a partition rearranging its own slice */
-      touch: function (node, values) { node.values = values.slice(); dirty(); return node; },
+      /* mid-call update — a partition rearranging its own slice. `marks` is the role of each
+         POSITION in the array underneath (the pivot, the boundary, the one being compared), so
+         the box can show where in its own slice the scan has got to. It rides on the state and
+         not on frame.roles because a role map is keyed by node, and this is inside a node. */
+      touch: function (node, values, marks) {
+        node.values = values.slice();
+        node.marks = marks || null;
+        dirty();
+        return node;
+      },
 
       /* the Trace subject contract. `tree` is the live object, read only for STRUCTURE and
          layout at draw time (both final by then); `cells` is this frame's own values. */
       view: function () {
         if (snapshot) return snapshot;
         var cells = {};
-        nodes.forEach(function (n) { cells[n.id] = { values: n.values, closed: n.closed }; });
+        nodes.forEach(function (n) {
+          cells[n.id] = { values: n.values, closed: n.closed, marks: n.marks, lo: n.lo };
+        });
         snapshot = { tree: api, live: nodes.length, cells: cells };
         return snapshot;
       },

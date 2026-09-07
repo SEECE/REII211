@@ -24,7 +24,7 @@
   function* inside(gen, tree, tape, node) {
     var step = gen.next();
     while (!step.done) {
-      tree.touch(node, tape.slice(node.lo, node.hi));
+      tree.touch(node, tape.slice(node.lo, node.hi), step.value.roles);
       yield {
         tag: 'depth ' + node.depth,
         note: step.value.note,
@@ -32,7 +32,7 @@
       };
       step = gen.next();
     }
-    tree.touch(node, tape.slice(node.lo, node.hi));
+    tree.touch(node, tape.slice(node.lo, node.hi), null);
     return step.value;
   }
 
@@ -82,11 +82,15 @@
 
   window.QuickTree = {
     label: 'Quick sort — the call tree',
-    roles: ['idle', 'focus', 'done'],
+    /* The first three colour a CALL, the last two colour single values inside the call being
+       partitioned — the same two pointers the bar graph draws, in the same colours. */
+    roles: ['idle', 'focus', 'scan', 'move', 'done'],
     notes: {
       idle: { label: 'Waiting', desc: 'Entered, not yet returned' },
-      focus: { label: 'Partitioning', desc: 'Being scanned and split around its pivot' },
-      done: { label: 'Sorted', desc: 'This call has returned a sorted slice' },
+      focus: { label: 'Partitioning', desc: 'The call being split — and, inside it, the pivot' },
+      scan: { label: 'Comparing', desc: 'The value being tested against the pivot this step' },
+      move: { label: 'Placed', desc: 'The pivot, dropped into its final position' },
+      done: { label: 'Sorted', desc: 'A call that has returned — or a value known to be smaller' },
     },
     run: function* (tree, tape, values, strategy) {
       yield* sort(tree, tape, null, 0, tape.size - 1, strategy);

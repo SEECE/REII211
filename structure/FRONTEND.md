@@ -132,6 +132,11 @@ for in a test and the one thing a bar graph cannot show them. It is not a second
 second implementation; the rows come out of the frames the player is already walking
 (`js/sorting/marks.js`), so the table and the bars cannot disagree about what the algorithm did.
 
+**A second view steps with the first.** It is not a summary shown beside the run: the table's
+bottom row holds the frame the bars are drawing at this instant, rows the run has not reached
+are not on screen, and a line is fixed only on the frame the bars agree with it — which
+`js/tests/sorting.js` asserts, because that is the only thing "1:1" can be checked to mean.
+
 Both views live in the stage and exactly one is in the box at a time — `.stage[data-view]`
 gives the other `display: none`, not `visibility: hidden`, because a hidden-but-laid-out
 sibling takes a grid row and shortens the drawing that IS showing.

@@ -16,15 +16,22 @@
 
    **A row is a PASS, not a beat.** The state at the end of every `tag` group — "key 2/3",
    "pass 3", "partition" — which is the granularity the answer is written at: [3,1,2] gives
-   three rows and not the five the shifts pass through. That is also why the mid-shift state
-   [3,3,2] never appears; it is a smear of a value being copied, not an arrangement of the
-   array, and no marker would accept it as a line. A group that ended where the last one did
-   adds nothing, so a pass that made no write costs no row — `Tape.view()` hands back the same
-   array object until something is written (js/sorting/tape.js), so that test is a reference
-   comparison and costs nothing. Cells that moved since the row above are marked.
+   three lines and not the five the shifts pass through. A group that ended where the last one
+   did adds nothing, so a pass that made no write costs no row — `Tape.view()` hands back the
+   same array object until something is written (js/sorting/tape.js), so that test is a
+   reference comparison and costs nothing. Cells that moved since the row above are marked.
 
    The algorithm supplies none of this. `tag` is already how a sort names its own phase for the
    workbench badge, so a table built from it needs no beat to know it is being tabulated.
+
+   **The bottom row is being WRITTEN, and steps with the bars.** The table is not a summary
+   shown beside the run: rows below the one you are on do not exist yet, and the bottom row
+   holds the frame the bars are drawing at this instant — so stepping through insertion sort
+   shows the key dragging itself back through that line one shift at a time, and the line is
+   only fixed when the outer loop closes and the next one opens under it. That is the one place
+   the mid-shift smear [3,3,2] is allowed to appear: it is the work in progress, not an answer,
+   and the frame where a line is COMMITTED is a frame where the bars show exactly what the line
+   says. js/tests/sorting.js checks that, which is what "1:1 with the bar graph" has to mean.
 
    Marks(api, onView) → null when the page has no #marks / #step-views, so a page that has not
    been given the markup is simply unaffected. */
@@ -83,6 +90,7 @@
 
     var stage = root.parentElement;
     var table = null, model = null, source = null, shownRow = -1;
+    var live = null;                 // the state the bottom row is currently showing
 
     /* Two buttons in the rail's own vocabulary, so the pressed state is the one css/controls
        already draws. The stage is told which view it is in and hides the other one. */
@@ -102,6 +110,7 @@
       source = frames;
       model = tabulate(frames);
       shownRow = -1;
+      live = null;
       table = null;
       root.innerHTML = '';
       if (!model.n) return;
@@ -117,6 +126,7 @@
       model.rows.forEach(function (row, k) {
         var tr = el('tr');
         tr.title = 'trace step ' + (row.step + 1);
+        tr.hidden = k > 0;                       // revealed as the run reaches it
         tr.appendChild(el('th', 'mark-step', String(k)));
         tr.appendChild(el('td', 'mark-tag', row.tag || '—'));
         for (var j = 0; j < model.n; j++) {
@@ -142,19 +152,40 @@
         if (onView) onView(v);
       },
       showing: function () { return mode === 'marks'; },
-      /* The table is the whole run; walking it only moves which row is the current one. */
+      /* Walking the trace fills the table in. Everything above the bottom row is already
+         written and is never touched again; the bottom row is the frame the bars are drawing,
+         rewritten in place as it changes. Both halves are guarded — Play arrives here sixty
+         times a second and the row it is on has usually not moved. */
       paint: function (i) {
         build();
         if (!table) return;
-        var k = model.at[Math.max(0, Math.min(model.at.length - 1, i))];
-        if (k === shownRow) return;
-        var body = table.tBodies[0];
-        if (body.children[shownRow]) body.children[shownRow].classList.remove('mark-now');
-        shownRow = k;
-        var tr = body.children[k];
+        var frames = api.frames();
+        i = Math.max(0, Math.min(model.at.length - 1, i));
+        var k = model.at[i], body = table.tBodies[0], tr = body.children[k];
         if (!tr) return;
-        tr.classList.add('mark-now');
-        tr.scrollIntoView({ block: 'nearest' });
+
+        if (k !== shownRow) {
+          if (body.children[shownRow]) body.children[shownRow].classList.remove('mark-now');
+          /* Stepping back un-writes the lines below. A row the run has not reached is not an
+             answer yet, and leaving it on screen hands the student the rest of the table. */
+          for (var r = 0; r < body.children.length; r++) body.children[r].hidden = r > k;
+          shownRow = k;
+          live = null;
+          tr.classList.add('mark-now');
+          tr.scrollIntoView({ block: 'nearest' });
+        }
+
+        var state = frames[i].state;
+        if (state === live) return;
+        live = state;
+        var was = k ? model.rows[k - 1].state : null;
+        for (var j = 0; j < model.n; j++) {
+          var td = tr.children[j + 2];             // after the step and the tag columns
+          var text = String(state[j]);
+          if (td.textContent !== text) td.textContent = text;
+          var hit = !!was && was[j] !== state[j];
+          if (td.classList.contains('mark-hit') !== hit) td.classList.toggle('mark-hit', hit);
+        }
       },
     };
     api.marks.show('bars');

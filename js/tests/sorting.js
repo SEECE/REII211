@@ -71,6 +71,21 @@
       });
     });
 
+    /* 1:1 with the bar graph. The table's bottom row IS the frame the bars are drawing, so
+       the frame where the run leaves a row — the last frame of that tag group — must show
+       exactly the line the table then freezes. If those two ever disagreed, stepping would
+       commit a row the student never saw on the bars. */
+    Sorts.ids().forEach(function (id) {
+      var tape = Tape(Tape.build(24, 'shuffled'));
+      var frames = T.build(Sorts.get(id).run(tape, { pivot: 'last' }), tape);
+      var model = window.Marks.tabulate(frames), wrong = 0;
+      for (var i = 0; i + 1 < frames.length; i++) {
+        if (model.at[i + 1] === model.at[i]) continue;              // still in the same row
+        if (frames[i].state !== model.rows[model.at[i]].state) wrong++;
+      }
+      C.equal(wrong, 0, id + ' — a table row is committed on the frame the bars agree with it');
+    });
+
     /* The worked example the file documents itself with. Three rows, not the five the shifts
        pass through — if this changes, the comment at the top of marks.js is now a lie. */
     var ex = Tape([3, 1, 2]);

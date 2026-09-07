@@ -41,7 +41,8 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
 - **Algorithms** — `js/sorting/` (six sorts over `Tape`, an array that counts its own
   comparisons and swaps), `js/recursion/` (the same two sorts as call trees), `js/structures/`
   (one addressed memory grid shared by arrays and lists, plus the BST), `js/graph/` (one model,
-  BFS/DFS/Dijkstra/Prim/Kruskal, an editor and an adjacency-matrix view), `js/city/` and
+  BFS/DFS/Dijkstra/Prim/Kruskal, an editor, an adjacency-matrix view and Dijkstra's marking
+  table), `js/city/` and
   `js/maze/` (a street map and a maze — the same five algorithms, on a subject nobody would
   have drawn as a graph; the street map is real and is the WHOLE of Manhattan, 13,048 crossings
   resident at once, with a camera over it — `camera.js`, `controls.js` — that culls and thins

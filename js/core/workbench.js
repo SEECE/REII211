@@ -116,6 +116,22 @@
     if (el.prev) el.prev.addEventListener('click', function () { player.step(-1); });
     if (el.next) el.next.addEventListener('click', function () { player.step(1); });
     if (el.play) el.play.addEventListener('click', function () { player.toggle(); });
+
+    /* Walking the trace by hand is the point of the page, so it is also on the arrow keys —
+       a student reading the narration should not have to go back to the mouse between steps.
+       Bound on the document because there is nothing sensible to focus first, and skipped
+       while a field has focus: Left in a range input is the student moving the slider, and
+       Space on a focused button is that button, not this one. */
+    document.addEventListener('keydown', function (e) {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      var t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA|BUTTON|A)$/.test(t.tagName))) return;
+      if (e.key === 'ArrowLeft') player.step(-1);
+      else if (e.key === 'ArrowRight') player.step(1);
+      else if (e.key === ' ' || e.key === 'Spacebar') player.toggle();
+      else return;
+      e.preventDefault();
+    });
     /* The speed label says the stride once it is more than one: past the point where the timer
        cannot tick any faster, turning the slider up advances several frames per paint rather
        than painting faster, and a student watching swaps go by needs to know which they are

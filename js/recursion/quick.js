@@ -31,10 +31,7 @@
       tree.close(node, values);
       yield {
         tag: 'depth ' + node.depth,
-        note: values.length
-          ? 'One element — nothing to partition. Base case.'
-          : 'An empty side. This happens whenever the pivot was the smallest or the largest ' +
-            'value in its slice, and it is exactly what makes the tree lean.',
+        note: 'One element — nothing to partition. Base case.',
         roles: R.of({ done: [node.id] }),
       };
       return values;
@@ -60,8 +57,12 @@
       roles: R.of({ focus: [node.id] }),
     };
 
-    var sortedLeft = yield* sort(tree, tape, node, lo, left, strategy);
-    var sortedRight = yield* sort(tree, tape, node, lo + left.length + 1, right, strategy);
+    /* An empty side is not a call: recursing on it drew a blank box on the tree and took a
+       leaf column with it, which is what crowded every other node off the stage. The lean it
+       causes is already the point of the partition beat above. */
+    var sortedLeft = left.length ? yield* sort(tree, tape, node, lo, left, strategy) : left;
+    var sortedRight = right.length
+      ? yield* sort(tree, tape, node, lo + left.length + 1, right, strategy) : right;
 
     var out = sortedLeft.concat([pivot], sortedRight);
     out.forEach(function (v, k) { tape.set(lo + k, v); });

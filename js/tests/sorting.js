@@ -151,6 +151,12 @@
     var layout = window.TreeLayout(build(window.MergeTree, 12, 'shuffled').tree);
     C.ok(layout.columns > 0, 'the tree layout assigns columns');
 
+    /* An empty side is narrated, never drawn: a zero-value node is a blank box holding a leaf
+       column open, and on a leaning tree there are n of them. */
+    C.ok(build(window.QuickTree, 24, 'sorted', 'last').tree.nodes()
+      .every(function (n) { return n.values.length > 0; }),
+      'the quick tree opens no call for an empty side');
+
     /* One pivot choice, two pages. Both make the same three comparisons through the same tape,
        so they must bill the same for it — the counters disagreeing about one algorithm is the
        exact bug this site was rebuilt to remove. n=3 isolates it: one pivot choice and one

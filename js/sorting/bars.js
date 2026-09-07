@@ -21,8 +21,11 @@
       var gap = n > 90 ? 1 : Math.max(1, Math.min(6, Math.floor(W / n / 7)));
       var barW = (W - gap * (n + 1)) / n;
       var floor = 18;                       // room under the bars for the index ruler
-      var usable = H - floor - 6;
       var labels = barW >= 22;              // only where a number actually fits
+      /* The value sits ABOVE its bar, so the tallest bar has to leave room for it or the
+         number is drawn off the top of the canvas — which is where the largest value in the
+         array always is, so the one label a student most wants to read was the one clipped. */
+      var usable = H - floor - (labels ? 17 : 6);
 
       ctx.textAlign = 'center';
       ctx.font = '600 10px ' + 'ui-sans-serif, system-ui, sans-serif';

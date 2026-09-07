@@ -128,7 +128,11 @@
         tr.title = 'trace step ' + (row.step + 1);
         tr.hidden = k > 0;                       // revealed as the run reaches it
         tr.appendChild(el('th', 'mark-step', String(k)));
-        tr.appendChild(el('td', 'mark-tag', row.tag || '—'));
+        /* A tag is HTML by contract — the workbench sets it inside the step badge the same
+           way, and exchange sort's is "anchor <span class=val>3</span>". */
+        var tag = el('td', 'mark-tag');
+        tag.innerHTML = row.tag || '—';
+        tr.appendChild(tag);
         for (var j = 0; j < model.n; j++) {
           tr.appendChild(el('td', row.hit && row.hit[j] ? 'mark-hit' : null, String(row.state[j])));
         }

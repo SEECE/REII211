@@ -37,14 +37,30 @@
           roles: R.of({ done: R.range(0, i), focus: [i] }),
         };
 
+        /* The comparison is yielded BEFORE it is acted on, including the one that fails.
+           Writing the test inside the `while` header charged a comparison the walk never
+           showed, so stepping through jumped straight from the last shift to the drop and
+           the beat that actually ENDS the inner loop — the whole point of the sort being
+           adaptive — was billed to the student and never drawn. */
         var j = i - 1, moved = 0;
-        while (j >= 0 && t.lessVal(key, t.get(j))) {
-          t.set(j + 1, t.get(j));
+        while (j >= 0) {
+          var here = t.get(j);
+          var bigger = t.lessVal(key, here);
+          yield {
+            tag: 'key ' + (i + 1) + '/' + n,
+            note: 'Is the key ' + S.v(key) + ' smaller than ' + S.at(j, here) + '? <b>' +
+              (bigger ? 'Yes' : 'No') + '</b>' + (bigger
+                ? ' — so that value has to move out of the way.'
+                : ' — everything further left is smaller still, so the search stops here.'),
+            roles: R.of({ done: R.range(0, i + 1), focus: [j + 1], scan: [j] }),
+          };
+          if (!bigger) break;
+          t.set(j + 1, here);
           moved++;
           yield {
             tag: 'key ' + (i + 1) + '/' + n,
-            note: S.at(j, t.get(j)) + ' is bigger than the key ' + S.v(key) +
-              ', so it shifts one place right. The key keeps travelling.',
+            note: S.at(j, here) + ' shifts one place right, into ' + S.v(j + 1) +
+              '. The key keeps travelling.',
             roles: R.of({ done: R.range(0, i + 1), move: [j + 1], scan: [j] }),
           };
           j--;

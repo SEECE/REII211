@@ -24,6 +24,23 @@
       });
     });
 
+    /* A step you can walk is a step you can SEE. Every comparison a sort charges must have a
+       beat of its own — insertion sort tested `key < a[j]` inside its `while` header, which
+       billed the comparison that ends the inner loop and never drew it, so stepping jumped
+       from the last shift straight to the drop and the reason the sort is adaptive was the
+       one moment the walk skipped. The counters are the honest witness here: no frame may
+       advance Comparisons by more than one. */
+    Sorts.ids().forEach(function (id) {
+      var tape = Tape(Tape.build(40, 'shuffled'));
+      var frames = T.build(Sorts.get(id).run(tape, { pivot: 'last' }), tape);
+      var jump = 0, prev = 0;
+      frames.forEach(function (f) {
+        jump = Math.max(jump, f.stats.Comparisons - prev);
+        prev = f.stats.Comparisons;
+      });
+      C.ok(jump <= 1, id + ' narrates every comparison it charges (worst beat: ' + jump + ')');
+    });
+
     [8, 30, 64].forEach(function (n) {
       var tape = Tape(Tape.build(n, 'sorted'));
       T.run(Sorts.get('quick').run(tape, { pivot: 'median' }));

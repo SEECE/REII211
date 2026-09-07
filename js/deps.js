@@ -53,7 +53,8 @@
     /* graphs: the shared model and renderer, then the plane over it */
     graph: ['core', 'graph/model.js', 'graph/draw.js', 'graph/traverse.js',
       'graph/shortest.js', 'graph/spanning.js'],
-    'node-plane': ['graph', 'graph/editor.js', 'graph/matrix.js', 'pages/node-plane.js'],
+    'node-plane': ['graph', 'graph/editor.js', 'graph/matrix.js', 'graph/marks.js',
+      'graph/marks-view.js', 'pages/node-plane.js'],
     /* applications: the same graph algorithms on something not drawn as a graph */
     maze: ['core', 'graph/model.js', 'graph/traverse.js', 'maze/grid.js', 'maze/carve.js',
       'maze/draw.js', 'maze/search.js', 'pages/maze.js'],

@@ -39,9 +39,13 @@
       <div class="rail-fields"></div>
     </aside>
 
-    <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it. -->
-    <section class="stage panel" aria-label="The graph">
+    <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it.
+         Two things live here and one is shown, chosen by the rail's View field: the plane (or
+         the adjacency matrix) on the canvas, and the marking table a student writes out for
+         Dijkstra in a test (js/graph/marks-view.js). -->
+    <section class="stage panel" data-view="plane" aria-label="The graph, as a plane, a matrix or a marking table">
       <canvas id="canvas"></canvas>
+      <div class="marks scroller" id="marks" aria-label="The run, one column per node settled"></div>
     </section>
 
     <!-- workbench: the RUN. Head / narration + legend / pinned counts / transport. -->

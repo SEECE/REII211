@@ -115,7 +115,8 @@ but the ids cannot change without changing the script:
 | `#canvas` | `js/core/surface.js` |
 | `#step-legend` | `js/core/legend.js` |
 | `#step-count` `#step-title` `#step-body` `#step-progress` `#step-readout` `#step-prev` `#step-play` `#step-next` `#step-speed` `#step-speed-val` | `js/core/workbench.js` |
-| `#marks` (in the stage) and `#step-views` (in the workbench head) | `js/sorting/marks.js` — **optional**: a page without both is simply left with one view |
+| `#marks` (in the stage) | the marking table — `js/sorting/marks.js` on a sorting page, `js/graph/marks-view.js` on the node plane. **Optional**: a page without it is simply left with one view |
+| `#step-views` (in the workbench head) | `js/sorting/marks.js`, where the view switch is the workbench's |
 
 Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch`
 `.legend-label` `.legend-desc` (legend), `.readout-grid` `.readout-cell` `.readout-key`
@@ -126,11 +127,20 @@ Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch
 
 ## Two views of one stage
 
-A stage may carry a second view of the SAME run. The sorting pages do: the bar graph, and the
-marking table — the run written out one line per pass, which is the answer a student is asked
-for in a test and the one thing a bar graph cannot show them. It is not a second run and not a
-second implementation; the rows come out of the frames the player is already walking
-(`js/sorting/marks.js`), so the table and the bars cannot disagree about what the algorithm did.
+A stage may carry a second view of the SAME run: the drawing, and the **marking table** — the
+run written out the way it is marked on paper, which is the answer a student is asked for in a
+test and the one thing the drawing cannot show them. Two pages carry one, and the shape of the
+table is whatever the shape of the answer is:
+
+| Page | A line of the table is | Built by |
+|---|---|---|
+| the six bar-graph sorts | a ROW per pass — the array after each outer loop closes | `js/sorting/marks.js` |
+| the node plane's Dijkstra | a COLUMN per node coming out of the priority queue | `js/graph/marks.js` + `-view.js` |
+
+It is never a second run and never a second implementation. Every row and every column is read
+off the frames the player is already walking — the sort's `tag` groups, Dijkstra's `focus` and
+`scan` roles — so the table and the drawing cannot disagree about what the algorithm did, and
+neither algorithm file knows a table exists. Both are styled from `css/marks.css`.
 
 **A second view steps with the first.** It is not a summary shown beside the run: the table's
 bottom row holds the frame the bars are drawing at this instant, rows the run has not reached
@@ -141,8 +151,12 @@ Both views live in the stage and exactly one is in the box at a time — `.stage
 gives the other `display: none`, not `visibility: hidden`, because a hidden-but-laid-out
 sibling takes a grid row and shortens the drawing that IS showing.
 
-The switch belongs to the **workbench** (`#step-views`), not the rail. It changes how you read
-the run, not what the problem is — same split as everything else on that side.
+The switch belongs with the run, not with the problem — it changes how you READ the run and
+not what is being run. On a sorting page that means the workbench (`#step-views`), which is
+where the run lives. The node plane puts it in the rail's `View` field instead, because that
+field already existed and already answers exactly this question for the plane and the adjacency
+matrix; a second switch elsewhere on the page for the third answer would be two controls for
+one choice.
 
 ## The ribbon nav
 

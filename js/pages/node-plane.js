@@ -19,7 +19,12 @@
 
   window.NodePlanePage = function () {
     var graph = window.Graph.random(9, 4);
-    var message = null, selected = null, editor = null;
+    var message = null, selected = null, editor = null, marks = null;
+    /* The stage holds two things and shows one: the canvas, and the marking table's DOM. Which
+       is which is css/marks.css reading this attribute, so the swap is a class change and not
+       a second layout. */
+    var stage = document.querySelector('.stage');
+    function setView(v) { if (stage) stage.dataset.view = v; }
     /* Playground hands `rail` to build(), and build() always runs before the first render, so
        this is how render gets at it — `page` does not exist yet during that first pass. */
     var rails = null;
@@ -53,6 +58,7 @@
         { id: 'view', kind: 'select', label: 'View', value: 'plane', options: [
           { value: 'plane', label: 'Plane' },
           { value: 'matrix', label: 'Adjacency matrix' },
+          { value: 'marks', label: 'Marking table — Dijkstra' },
         ] },
         { id: 'tool', kind: 'choice', label: 'Pointer', value: 'build', options: [
           { value: 'build', label: 'Build — add, connect, drag' },
@@ -85,7 +91,7 @@
           refreshStarts(api.rail);
           return;
         }
-        if (id === 'view') { api.repaint(); return false; }
+        if (id === 'view') { setView(value); api.repaint(); return false; }
         if (id === 'tool' || id === 'weight') { if (editor) editor.clear(); return false; }
         message = null;
       },
@@ -105,6 +111,13 @@
 
       render: function (surface, frame, colours) {
         if (!rails || !frame) return;
+        /* The table is the whole run at once, so walking it moves a column rather than
+           redrawing anything — and there is nothing to draw on the canvas while it is hidden.
+           `marks` is still null during the first render, which happens inside Playground. */
+        if (rails.get('view') === 'marks') {
+          if (marks) marks.paint(page.player.index());
+          return;
+        }
         /* The node waiting to be connected is a UI state, not part of the trace, so it is
            overlaid on a COPY — writing it into frame.roles would make it permanent.
 
@@ -162,6 +175,8 @@
       },
     });
 
+    marks = window.GraphMarks.view(page);
+    setView(page.rail.get('view'));
     refreshStarts(page.rail);
     page.rebuild();
     return page;

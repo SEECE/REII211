@@ -1,0 +1,106 @@
+/* The marking table — a run written out the way it is marked on paper, on a stage that would
+   otherwise be a canvas. Two pages carry one: the six bar-graph sorts (js/sorting/marks.js,
+   one row per pass) and the node plane's Dijkstra (js/graph/marks.js, one COLUMN per node
+   coming out of the priority queue). Same table, transposed, because that is how each is
+   written by hand.
+
+   ── two views of one run. Only one is in the box at a time, and the hidden one must be
+   display:none and not merely invisible, or it takes a grid row and shortens the drawing that
+   is showing. The stage's data-view names whichever view it is in — 'bars' and 'marks' on a
+   sorting page, 'plane' / 'matrix' / 'marks' on the node plane — so the rule is written as
+   "anything that is not the table hides the table". ── */
+.stage[data-view='marks'] > canvas,
+.stage[data-view]:not([data-view='marks']) > .marks { display: none; }
+.marks { overflow: auto; min-width: 0; min-height: 0; padding: var(--sp-3); }
+
+/* The table a student writes out in a test: one row per write, one column per cell. It is
+   deliberately plain — the point is that it looks like the answer, not like a widget. */
+.mark-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mark-table th, .mark-table td {
+  padding: 3px 9px;
+  text-align: right;
+  border-bottom: 1px solid var(--grid);
+  white-space: nowrap;
+}
+.mark-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 700;
+  border-bottom: 1px solid var(--ink-soft);
+}
+.mark-table .mark-step {
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 700;
+  text-align: left;
+}
+/* the cells the write actually changed — what a marker circles */
+.mark-table .mark-tag {
+  text-align: left;
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+.mark-table .mark-hit { color: var(--role-move); font-weight: 700; }
+.mark-table .mark-now > * { background: var(--tint); }
+.mark-table .mark-now .mark-step { box-shadow: inset 2px 0 var(--role-focus); }
+.mark-note { margin: var(--sp-3) 0 0; font-size: 11px; color: var(--ink-soft); max-width: 42ch; }
+
+
+/* ── the Dijkstra table (js/graph/marks-view.js) ──
+   Columns grow to the right as nodes are settled, so the node names have to stay put while it
+   is scrolled: the row header is sticky the way the header row already is. */
+.mark-table--wide th.mark-step { min-width: 5.5ch; }
+.mark-table--wide thead th { text-align: center; min-width: 3.5ch; }
+.mark-table--wide td { text-align: center; }
+/* the distance that has just been settled: final, and never moves again */
+.mark-table .mark-final {
+  color: var(--role-done);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1.5px var(--role-done);
+  border-radius: var(--radius-sm);
+}
+
+/* ── the priority queue ──
+   Chips rather than a list, because the point is the ORDER and how a late arrival pushes in
+   ahead of something that has been waiting. */
+.mark-queue { margin-top: var(--sp-4); border-top: 1px solid var(--line); padding-top: var(--sp-3); }
+.queue-strip { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; margin: var(--sp-2) 0; }
+.q-chip {
+  display: inline-flex;
+  gap: 0.45em;
+  padding: 3px 9px;
+  border: 1px solid var(--line-hi);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+/* A chip can be both — discovered this step AND the one that comes out next, which is the
+   whole point of the D-jumps-ahead-of-C example. So the ring is q-next's and the colour is
+   q-new's, and the later rule taking the colour is deliberate rather than an accident of
+   ordering. */
+.q-chip.q-next {
+  border-color: var(--role-focus);
+  color: var(--role-focus);
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--tint-iris);
+}
+.q-chip.q-new { border-color: var(--role-move); color: var(--role-move); }
+.q-chip.q-out { border-color: var(--role-done); color: var(--role-done); font-weight: 700; }
+.q-arrow, .q-empty { font-size: 11px; color: var(--ink-soft); }

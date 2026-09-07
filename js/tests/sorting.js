@@ -41,6 +41,43 @@
       C.ok(jump <= 1, id + ' narrates every comparison it charges (worst beat: ' + jump + ')');
     });
 
+    /* The marking table (js/sorting/marks.js) is the same trace written out the way a student
+       writes it in a test, so the only thing it can get wrong is the LINES. Two claims:
+
+       Every row is an arrangement of the input. This is the one that matters — insertion sort
+       shifts rather than swaps, so the array genuinely passes through [3, 3, 2] mid-copy, and
+       a table that printed that line would be marked wrong. Rows are pass ends, so it cannot.
+
+       And the highlight never runs backwards: at[i] is the row frame i is standing in, so
+       walking the trace forwards must walk the table forwards. */
+    Sorts.ids().forEach(function (id) {
+      ORDERS.forEach(function (order) {
+        var input = Tape.build(24, order), tape = Tape(input);
+        var model = window.Marks.tabulate(T.build(Sorts.get(id).run(tape, { pivot: 'last' }), tape));
+        var want = input.slice().sort(function (a, b) { return a - b; }).join(' ');
+        var smeared = model.rows.filter(function (r) {
+          return r.state.slice().sort(function (a, b) { return a - b; }).join(' ') !== want;
+        });
+        C.equal(smeared.length, 0,
+          id + ' — every ' + order + ' table row is an arrangement of the input');
+        C.equal(model.rows[model.rows.length - 1].state.join(' '), want,
+          id + ' — the last ' + order + ' row is the sorted answer');
+        var back = 0, prev = -1;
+        for (var i = 0; i < model.at.length; i++) {
+          if (model.at[i] < prev || model.at[i] >= model.rows.length) back++;
+          prev = model.at[i];
+        }
+        C.equal(back, 0, id + ' — walking the ' + order + ' trace walks the table forwards');
+      });
+    });
+
+    /* The worked example the file documents itself with. Three rows, not the five the shifts
+       pass through — if this changes, the comment at the top of marks.js is now a lie. */
+    var ex = Tape([3, 1, 2]);
+    C.equal(window.Marks.tabulate(T.build(Sorts.get('insertion').run(ex), ex)).rows.map(function (r) {
+      return r.state.join(' ');
+    }), ['3 1 2', '1 3 2', '1 2 3'], 'insertion sort marks [3,1,2] in three lines');
+
     [8, 30, 64].forEach(function (n) {
       var tape = Tape(Tape.build(n, 'sorted'));
       T.run(Sorts.get('quick').run(tape, { pivot: 'median' }));

@@ -26,7 +26,8 @@
     ],
 
     /* the six bar-graph sorts: one instrumented array, one renderer, one file per algorithm */
-    sorting: ['core', 'sorting/tape.js', 'sorting/bars.js', 'sorting/algorithms.js',
+    sorting: ['core', 'sorting/tape.js', 'sorting/bars.js', 'sorting/marks.js',
+      'sorting/algorithms.js',
       'sorting/selection.js', 'sorting/insertion.js', 'sorting/bubble.js',
       'sorting/exchange.js', 'sorting/merge.js', 'sorting/quick.js', 'pages/sort.js'],
 
@@ -67,7 +68,7 @@
     /* browser-run self-checks (test.html) */
     tests: ['core', 'sorting/tape.js', 'recursion/tree.js', 'recursion/layout.js',
       'recursion/merge.js', 'recursion/quick.js',
-      'sorting/algorithms.js', 'sorting/selection.js',
+      'sorting/algorithms.js', 'sorting/marks.js', 'sorting/selection.js',
       'sorting/insertion.js', 'sorting/bubble.js', 'sorting/exchange.js', 'sorting/merge.js',
       'sorting/quick.js', 'graph/model.js', 'graph/traverse.js', 'graph/shortest.js',
       'graph/spanning.js', 'heuristics/points.js', 'heuristics/nearest.js',

@@ -115,6 +115,7 @@ but the ids cannot change without changing the script:
 | `#canvas` | `js/core/surface.js` |
 | `#step-legend` | `js/core/legend.js` |
 | `#step-count` `#step-title` `#step-body` `#step-progress` `#step-readout` `#step-prev` `#step-play` `#step-next` `#step-speed` `#step-speed-val` | `js/core/workbench.js` |
+| `#marks` (in the stage) and `#step-views` (in the workbench head) | `js/sorting/marks.js` — **optional**: a page without both is simply left with one view |
 
 Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch`
 `.legend-label` `.legend-desc` (legend), `.readout-grid` `.readout-cell` `.readout-key`
@@ -122,6 +123,21 @@ Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch
 `.field-head` `.field-value` `.ctl` `.ctl-range` `.check-row` `.btn` `.btn--*` `.btn-stack`
 (rail), `.nav-top` `.nav-group` `.nav-menu` `.nav-item` `.nav-caret` `.nav-long` `.nav-short`
 (nav), `.card` `.card-title` `.card-sub` `.card-go` `.section-label` `.section-blurb` (home).
+
+## Two views of one stage
+
+A stage may carry a second view of the SAME run. The sorting pages do: the bar graph, and the
+marking table — the run written out one line per pass, which is the answer a student is asked
+for in a test and the one thing a bar graph cannot show them. It is not a second run and not a
+second implementation; the rows come out of the frames the player is already walking
+(`js/sorting/marks.js`), so the table and the bars cannot disagree about what the algorithm did.
+
+Both views live in the stage and exactly one is in the box at a time — `.stage[data-view]`
+gives the other `display: none`, not `visibility: hidden`, because a hidden-but-laid-out
+sibling takes a grid row and shortens the drawing that IS showing.
+
+The switch belongs to the **workbench** (`#step-views`), not the rail. It changes how you read
+the run, not what the problem is — same split as everything else on that side.
 
 ## The ribbon nav
 

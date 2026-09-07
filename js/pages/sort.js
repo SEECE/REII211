@@ -23,6 +23,7 @@
     /* The array survives between runs. It has to: an array you can save, open on another
        sorting page and run again is the only way to compare two sorts on the same input. */
     var values = null;
+    var api = null, marks = null;    // the table view of the same run, where the page carries it
 
     function regenerate(rail) { values = window.Tape.build(rail.get('n'), rail.get('order')); }
 
@@ -34,7 +35,7 @@
       { id: 'complexity', kind: 'note', label: algo.complexity, spacer: true },
     ]);
 
-    return window.Playground({
+    api = window.Playground({
       title: algo.label,
       fields: fields,
       legend: algo.roles,
@@ -70,8 +71,18 @@
         };
       },
 
-      render: function (surface, frame, colours) { window.Bars.draw(surface, frame, colours); },
+      /* Two views of one trace. The table is the whole run at once, so walking it moves a
+         highlight rather than redrawing anything — and there is nothing to draw on the canvas
+         while it is hidden. */
+      render: function (surface, frame, colours) {
+        if (marks && marks.showing()) marks.paint(api.player.index());
+        else window.Bars.draw(surface, frame, colours);
+      },
     });
+
+    /* Only where the page carries the markup for it; the other stages are unaffected. */
+    marks = window.Marks(api, function () { api.repaint(); });
+    return api;
   };
 
   /* The comparison page asks the same question and must ask it in the same words — a rail that

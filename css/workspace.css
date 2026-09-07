@@ -84,6 +84,59 @@
 /* a stage whose content is DOM rather than a canvas (the linked-list memory blocks) */
 .stage--flow { display: block; overflow: auto; padding: var(--sp-4); }
 
+/* ── two views of one run: the bar graph, and the marking table (js/sorting/marks.js).
+   Only one is in the box at a time — the hidden one must be display:none and not merely
+   invisible, or it takes a grid row and shortens the drawing that is showing. ── */
+.stage[data-view='bars'] > .marks,
+.stage[data-view='marks'] > canvas { display: none; }
+.marks { overflow: auto; min-width: 0; min-height: 0; }
+
+/* The table a student writes out in a test: one row per write, one column per cell. It is
+   deliberately plain — the point is that it looks like the answer, not like a widget. */
+.mark-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mark-table th, .mark-table td {
+  padding: 3px 9px;
+  text-align: right;
+  border-bottom: 1px solid var(--grid);
+  white-space: nowrap;
+}
+.mark-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 700;
+  border-bottom: 1px solid var(--ink-soft);
+}
+.mark-table .mark-step {
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 700;
+  text-align: left;
+}
+/* the cells the write actually changed — what a marker circles */
+.mark-table .mark-tag {
+  text-align: left;
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+.mark-table .mark-hit { color: var(--role-move); font-weight: 700; }
+.mark-table .mark-now > * { background: var(--tint); }
+.mark-table .mark-now .mark-step { box-shadow: inset 2px 0 var(--role-focus); }
+.mark-note { margin: var(--sp-3) 0 0; font-size: 11px; color: var(--ink-soft); max-width: 42ch; }
+
 /* ── workbench: head / scrolling narration / pinned readout / transport. Four grid rows, so
    the readout can never ride over the text the way a sticky panel would. ── */
 .workbench {

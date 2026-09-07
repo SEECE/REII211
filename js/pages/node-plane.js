@@ -55,7 +55,10 @@
           { value: 'kruskal', label: "Kruskal's MST" },
         ] },
         { id: 'start', kind: 'select', label: 'Start at', options: [{ value: 'A', label: 'A' }] },
-        { id: 'view', kind: 'select', label: 'View', value: 'plane', options: [
+        /* A strip and not a dropdown. Algorithm and Pointer either side of it show every
+           option at once, so a closed select reading "Plane" looks like a label rather than a
+           choice — the marking table was in it and invisible. */
+        { id: 'view', kind: 'choice', label: 'View', value: 'plane', options: [
           { value: 'plane', label: 'Plane' },
           { value: 'matrix', label: 'Adjacency matrix' },
           { value: 'marks', label: 'Marking table — Dijkstra' },

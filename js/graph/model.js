@@ -148,8 +148,17 @@
         Math.min(0.95, Math.max(0.05, cx + (Math.random() - 0.5) / cols * 0.55)),
         Math.min(0.92, Math.max(0.08, cy + (Math.random() - 0.5) / rows * 0.55)));
     }
-    // a spanning path first, so the graph is always connected and every algorithm has an answer
-    for (i = 1; i < count; i++) g.addEdge(i, Math.floor(Math.random() * i), 1 + Math.floor(Math.random() * 9));
+    /* A spanning tree first, so the graph is always connected and every algorithm has an
+       answer — each node to its NEAREST earlier node, not a random one. A random parent runs a
+       wire from one corner of the plane to the other, and nine of those is the hairball this
+       generator exists to avoid: the extra edges below are already chosen shortest-first, so
+       the random parents were the only long lines in the picture and every crossing on the
+       page came from them. */
+    for (i = 1; i < count; i++) {
+      var near = 0;
+      for (var p = 1; p < i; p++) if (dist(g, [i, p]) < dist(g, [i, near])) near = p;
+      g.addEdge(i, near, 1 + Math.floor(Math.random() * 9));
+    }
     var pool = [];
     for (i = 0; i < count; i++) for (var j = i + 1; j < count; j++) pool.push([i, j]);
     pool.sort(function (p, q) { return dist(g, p) - dist(g, q); });

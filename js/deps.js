@@ -37,8 +37,11 @@
     spectrum: ['sorting', 'compare/race.js', 'compare/lanes.js', 'compare/spectrum.js',
       'pages/spectrum.js'],
 
-    /* the same two sorts drawn as their call tree */
-    recursion: ['core', 'sorting/tape.js', 'recursion/tree.js', 'recursion/layout.js',
+    /* The same two sorts drawn as their call tree. The bar page's quick sort comes with them:
+       js/recursion/quick.js runs ITS partition rather than keeping a second one, so the tree
+       page needs the registry and the file that registers into it. */
+    recursion: ['core', 'sorting/tape.js', 'sorting/algorithms.js', 'sorting/quick.js',
+      'recursion/tree.js', 'recursion/layout.js',
       'recursion/draw.js', 'recursion/merge.js', 'recursion/quick.js', 'pages/recursion.js'],
 
     /* containers: the array/list memory model, and the binary search tree */

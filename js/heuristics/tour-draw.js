@@ -36,12 +36,15 @@
         var ends = k.slice(1).split('-').map(Number);
         var a = at[ends[0]], b = at[ends[1]];
         if (!a || !b) return;
-        ctx.strokeStyle = colours[f.roles[k]];
-        ctx.lineWidth = 2.6;
+        var role = f.roles[k];
+        ctx.strokeStyle = colours[role];
+        ctx.lineWidth = role === 'scan' ? 1.4 : 2.6;
+        ctx.setLineDash(role === 'scan' ? [4, 3] : []);
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
+        ctx.setLineDash([]);
       });
 
       // a pair marked `done`/`scan` with no segment between them still deserves a line

@@ -23,6 +23,11 @@
     if (closed && order.length > 2) out.push('e' + order[order.length - 1] + '-' + order[0]);
     return out;
   }
+  /* A dotted line from `here` to every place not yet visited — the choices the heuristic is
+     actually weighing, drawn before it picks one. */
+  function scanLines(here, candidates) {
+    return candidates.map(function (c) { return 'e' + here + '-' + c; });
+  }
 
   /* Every ordering of 1‥n-1 with point 0 pinned. A tour is a CYCLE, so all n rotations of an
      ordering are the same tour and have the same length; pinning the start throws away n-1 of
@@ -82,9 +87,23 @@
         }
         yield {
           tag: 'greedy',
-          note: 'Measure from ' + label(here) + ' to each of the <b>' + candidates.length +
-            '</b> unvisited points. The nearest is ' + label(best) + '.',
-          roles: R.of({ done: order, path: edges(order), scan: candidates, focus: [here] }),
+          note: 'From ' + label(here) + ', a dotted line to each of the <b>' + candidates.length +
+            '</b> unvisited points — every place the heuristic could go next. Measuring all of ' +
+            'them finds the nearest: ' + label(best) + '.',
+          roles: R.of({
+            done: order, path: edges(order),
+            scan: candidates.concat(scanLines(here, candidates)), focus: [here],
+          }),
+        };
+        yield {
+          tag: 'greedy',
+          note: label(best) + ' wins at <b>' + bestD.toFixed(3) + '</b>. It is chosen only ' +
+            'because it is closest right now, not because it leaves the tour anywhere good — ' +
+            'connect to it and move there.',
+          roles: R.of({
+            done: order, path: edges(order),
+            focus: [here, best, 'e' + here + '-' + best],
+          }),
         };
         total += bestD;
         order.push(best);

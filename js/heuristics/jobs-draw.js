@@ -7,6 +7,18 @@
   'use strict';
   var R = window.Roles;
 
+  /* Spreadsheet-style column labels: 0 -> A, 25 -> Z, 26 -> AA, 51 -> AZ, 52 -> BA... */
+  function label(n) {
+    var s = '';
+    n = n + 1;
+    while (n > 0) {
+      var r = (n - 1) % 26;
+      s = String.fromCharCode(65 + r) + s;
+      n = Math.floor((n - 1) / 26);
+    }
+    return s;
+  }
+
   window.JobsDraw = {
     draw: function (s, frame, colours) {
       if (!s || !frame || !frame.state) return;
@@ -53,7 +65,7 @@
           ctx.fillStyle = colours.ink;
           ctx.font = '600 9.5px ui-sans-serif, system-ui, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(String(job.end - job.start), x + w / 2, y + barH / 2);
+          ctx.fillText(label(job.id), x + w / 2, y + barH / 2);
         }
 
         if (seen[job.row]) return;

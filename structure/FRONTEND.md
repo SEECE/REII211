@@ -115,7 +115,9 @@ but the ids cannot change without changing the script:
 | `#canvas` | `js/core/surface.js` |
 | `#step-legend` | `js/core/legend.js` |
 | `#step-count` `#step-title` `#step-body` `#step-progress` `#step-readout` `#step-prev` `#step-play` `#step-next` `#step-speed` `#step-speed-val` | `js/core/workbench.js` |
-| `#marks` (in the stage) and `#step-views` (in the workbench head) | `js/sorting/marks.js` — **optional**: a page without both is simply left with one view |
+| `#step-restart` | `js/core/workbench.js` — **the one id it will make for itself.** If the page has not declared it, it is created and put at the head of `.transport-row`. A control all seventeen pages want is not seventeen edits; `js/core/files.js` appends the Open/Save control to the rail for the same reason. Declare the id to place it yourself |
+| `#marks` (in the stage) | the marking table — `js/sorting/marks.js` on a sorting page, `js/graph/marks-view.js` on the node plane. **Optional**: a page without it is simply left with one view |
+| `#step-views` (in the workbench head) | `js/sorting/marks.js`, where the view switch is the workbench's |
 
 Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch`
 `.legend-label` `.legend-desc` (legend), `.readout-grid` `.readout-cell` `.readout-key`
@@ -126,11 +128,35 @@ Class names the scripts emit are equally binding: `.legend-item` `.legend-swatch
 
 ## Two views of one stage
 
-A stage may carry a second view of the SAME run. The sorting pages do: the bar graph, and the
-marking table — the run written out one line per pass, which is the answer a student is asked
-for in a test and the one thing a bar graph cannot show them. It is not a second run and not a
-second implementation; the rows come out of the frames the player is already walking
-(`js/sorting/marks.js`), so the table and the bars cannot disagree about what the algorithm did.
+A stage may carry a second view of the SAME run: the drawing, and the **marking table** — the
+run written out the way it is marked on paper, which is the answer a student is asked for in a
+test and the one thing the drawing cannot show them. Two pages carry one, and the shape of the
+table is whatever the shape of the answer is:
+
+| Page | A line of the table is | Built by |
+|---|---|---|
+| the six bar-graph sorts | a ROW per pass — the array after each outer loop closes | `js/sorting/marks.js` |
+| the node plane's Dijkstra | a COLUMN per node coming out of the priority queue | `js/graph/marks.js` + `-view.js` |
+| the node plane's BFS | a ROW per ring — the level tree, start on top | `js/graph/levels.js` + `-draw.js` |
+| the node plane's DFS | a ROW per visit — the line down the page, one column per descent | `js/graph/backtrack.js` + `-draw.js` |
+
+It is never a second run and never a second implementation. Every row and every column is read
+off the frames the player is already walking — the sort's `tag` groups, Dijkstra's `focus` and
+`scan` roles, the searches' `focus` and `move` — so the marking and the drawing cannot disagree about
+what the algorithm did, and no algorithm file knows a marking view exists. The two tables are
+styled from `css/marks.css`.
+
+**A marking view is not necessarily DOM.** What a student writes out for BFS is a TREE, not a
+table, so the level tree is drawn on the canvas the plane was already using — same surface,
+same roles, same colours, no `data-view` swap and no CSS. The rule is that the marking view is
+whatever shape the hand-written answer is; a table is one shape and a drawing is another.
+
+A marking may also be the drawing already on screen with one thing changed. What is handed in
+for Prim and Kruskal is the PLANE with the weights rubbed out and the edges numbered in the
+order they were taken (`js/graph/mst-marks.js`), so it is `GraphDraw` doing the drawing with a
+`labels` map over it rather than a fourth renderer — an edge with an entry shows it in place of
+its weight. Laying the same graph out a second way would have made the sheet and the plane two
+pictures a student has to reconcile, which is the opposite of what the marking is for.
 
 **A second view steps with the first.** It is not a summary shown beside the run: the table's
 bottom row holds the frame the bars are drawing at this instant, rows the run has not reached
@@ -141,8 +167,36 @@ Both views live in the stage and exactly one is in the box at a time — `.stage
 gives the other `display: none`, not `visibility: hidden`, because a hidden-but-laid-out
 sibling takes a grid row and shortens the drawing that IS showing.
 
-The switch belongs to the **workbench** (`#step-views`), not the rail. It changes how you read
-the run, not what the problem is — same split as everything else on that side.
+The switch belongs with the run, not with the problem — it changes how you READ the run and
+not what is being run. On a sorting page that means the workbench (`#step-views`), which is
+where the run lives. The node plane puts it in the rail's `View` field instead, because that
+field already existed and already answers exactly this question for the plane and the adjacency
+matrix; a second switch elsewhere on the page for the third answer would be two controls for
+one choice.
+
+**An edit restarts the run; it does not replace it.** A page whose stage is editable — the node
+plane, the point plane — used to answer an edit by swapping the run for a one-frame
+announcement saying what you had just done. That threw away the run you were watching: add a
+node mid-play and the algorithm was gone until you pressed one again, and every marking view
+went blank, because a one-beat `edit` trace is not a run of anything. An edit now rebuilds the
+real run on the edited subject, and `player.load` pauses the clock and returns to frame zero for
+free. The sentence about what changed goes in the rail's `note` field, which hands its element
+back so a page can rewrite it. The only case that still announces is a subject nothing can be
+run on — an empty plane.
+
+**The pointer means what the view means.** One canvas carries all four drawings, so a click is
+an act on the one in front of you: a position on the plane, a row and a column on the adjacency
+matrix, and nothing at all on a marking — an answer being written out has nothing in it to
+edit, and the rail's pointer controls go with it. Each view owns its own hit testing next to
+its renderer (`GraphDraw.hit`, `MatrixDraw.hit`), never in `js/graph/editor.js`, so what you
+click is what was drawn even after a resize. Everything used to go through the plane's hit
+testing, which is how clicking a matrix cell dropped a node onto the plane.
+
+**One button, whatever the marking is.** The node plane's third option is `Marking view` and
+not `Marking table — Dijkstra` beside `Level tree — BFS`: which marking a run has is a fact
+about the ALGORITHM, so `Algorithm` already answers it and asking twice makes the pair go stale
+the moment you switch one without the other. `js/pages/node-plane.js` resolves the two fields
+into the one `data-view` the stage wears.
 
 ## The ribbon nav
 

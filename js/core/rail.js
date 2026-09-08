@@ -138,7 +138,16 @@
         box.appendChild(stack);
         return stack;
       },
-      note: function (f, box) { box.appendChild(node('p', 'field-note', f.label)); return null; },
+      /* A note hands its element back rather than null: a page whose stage is EDITABLE has
+         something to say after every edit — what it just did to the subject — and the note is
+         where that goes. The run cannot carry it any more; a page that replaces its run with a
+         one-frame announcement to say "you added a node" throws away the run you were watching,
+         which is the bug that made this necessary. */
+      note: function (f, box) {
+        var p = node('p', 'field-note', f.label);
+        box.appendChild(p);
+        return p;
+      },
     };
 
     fields.forEach(function (f) {
@@ -161,7 +170,7 @@
           if (chosen) chosen.click();
           return;
         }
-        if (input.tagName === 'DIV') return;
+        if (input.tagName === 'DIV' || input.tagName === 'P') return;
         input.value = v;
         values[id] = input.type === 'range' || input.type === 'number' ? Number(v) : v;
         input.dispatchEvent(new Event(fires[id] || (input.tagName === 'SELECT' ? 'change' : 'input')));

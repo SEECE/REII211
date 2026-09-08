@@ -21,23 +21,64 @@
 }
 .hero-sub { margin-top: var(--sp-4); font-size: 14.5px; line-height: 1.65; color: var(--text-dim); }
 
-.home-section + .home-section { margin-top: clamp(24px, 4vh, 40px); }
+.home-section + .home-section { margin-top: var(--sp-3); }
 
-.section-label {
+.section-toggle {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.section-toggle::-webkit-details-marker { display: none; }
+.section-toggle:hover { border-color: var(--line-hi); box-shadow: var(--shadow-sm); }
+.home-section[open] > .section-toggle { border-radius: var(--radius) var(--radius) 0 0; }
+
+/* the arrow, drawn as a rotating chevron rather than a glyph so it stays crisp */
+.section-toggle::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  transform: rotate(-45deg);
+  transition: transform var(--dur) var(--ease);
+  flex: none;
+}
+.home-section[open] > .section-toggle::before { transform: rotate(45deg); }
+
+.section-toggle .section-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text);
+}
+.section-count {
+  margin-left: auto;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: var(--sp-2);
+  background: var(--panel-hi);
+  border-radius: var(--radius-pill);
+  padding: 2px var(--sp-2);
 }
-/* the rule that runs out from the label to the edge of the column */
-.section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 
-.section-blurb { font-size: 13px; line-height: 1.6; color: var(--text-faint); margin-bottom: var(--sp-4); max-width: 74ch; }
+.section-blurb {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  margin: var(--sp-3) var(--sp-4) 0;
+  max-width: 74ch;
+}
+.home-section .card-grid { margin: var(--sp-3) var(--sp-4) var(--sp-4); }
 
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-3); }
 

@@ -6,29 +6,37 @@
 (function () {
   'use strict';
 
-  function bruteClosest(set) {
-    var best = Infinity;
-    for (var i = 0; i < set.count(); i++) {
-      for (var j = i + 1; j < set.count(); j++) best = Math.min(best, set.raw(i, j));
+  /* A greedy-edge loop is valid only if it is ONE cycle through every point — every point has
+     exactly two legs, and walking those legs from point 0 visits all n before coming home. Two
+     disjoint triangles both have every point at degree two, and only the walk catches that. */
+  function isSingleCycle(n, edges) {
+    var adj = {};
+    for (var i = 0; i < n; i++) adj[i] = [];
+    edges.forEach(function (e) { adj[e.a].push(e.b); adj[e.b].push(e.a); });
+    for (i = 0; i < n; i++) if (adj[i].length !== 2) return false;
+    var visited = { 0: true }, prev = -1, cur = 0, count = 1;
+    while (count < n) {
+      var next = adj[cur][0] !== prev ? adj[cur][0] : adj[cur][1];
+      if (visited[next]) return false;
+      visited[next] = true; prev = cur; cur = next; count++;
     }
-    return best;
+    return adj[cur].indexOf(0) !== -1;
   }
 
   window.Check.suite('heuristics — tour and closest pair', function () {
     var C = window.Check, T = window.Trace, P = window.PointSet;
 
     for (var trial = 0; trial < 20; trial++) {
-      var set = P.random(2 + (trial % 20));
-      if (set.count() < 2) continue;
+      var set = P.random(3 + (trial % 20));
 
       set.resetCounters();
-      var found = T.run(window.ClosestPair.run(set));
-      C.close(found.distance, bruteClosest(set), 'closest pair is exact (n=' + set.count() + ')');
-      var brute = set.count() * (set.count() - 1) / 2;
-      C.ok(set.stats().Distances <= brute,
-        'pruning never measures more than brute force would (n=' + set.count() + ')');
+      var loop = T.run(window.ClosestPair.run(set));
+      C.equal(loop.edges.length, set.count(), 'the loop has exactly n edges (n=' + set.count() + ')');
+      C.ok(isSingleCycle(set.count(), loop.edges),
+        'greedy edges form one closed loop through every point, not sub-loops (n=' + set.count() + ')');
+      var real = loop.edges.reduce(function (sum, e) { return sum + set.raw(e.a, e.b); }, 0);
+      C.close(real, loop.length, 'the reported loop length is the real one');
 
-      if (set.count() < 3) continue;
       set.resetCounters();
       var tour = T.run(window.NearestTour.run(set, 0));
       C.equal(new Set(tour.order).size, set.count(), 'the tour visits every point once');
@@ -38,14 +46,6 @@
           'the exact tour is never worse than the greedy one');
       }
     }
-
-    /* Points spread along a line: almost every pair should be pruned away unmeasured. */
-    var wide = P();
-    for (var i = 0; i < 16; i++) wide.add(i / 16 + 0.02, 0.5 + (i % 2) * 0.01);
-    wide.resetCounters();
-    T.run(window.ClosestPair.run(wide));
-    C.ok(wide.stats().Distances < 16 * 15 / 2,
-      'sorting first saves measurements (' + wide.stats().Distances + ' of 120)');
   });
 
   window.Check.suite('heuristics — job scheduling', function () {

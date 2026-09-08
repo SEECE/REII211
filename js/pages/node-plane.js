@@ -19,7 +19,24 @@
 
   window.NodePlanePage = function () {
     var graph = window.Graph.random(9, 4);
-    var message = null, selected = null, editor = null;
+    var selected = null, editor = null, marks = null, spoken = null;
+    /* The stage holds two things and shows one: the canvas, and the marking table's DOM. Which
+       is which is css/marks.css reading this attribute, so the swap is a class change and not
+       a second layout.
+
+       The rail offers ONE "Marking view", not one button per algorithm: what a student writes
+       out for Dijkstra is a table and what they draw for BFS is a tree, but that is a fact
+       about the algorithm and not a second thing to choose. So the rail asks "drawing or
+       marking?" and the ALGORITHM decides which marking — which is also why the button does
+       not go stale when you switch algorithms with it already pressed. */
+    var stage = document.querySelector('.stage');
+    var MARKING = { bfs: 'levels', dfs: 'branches', prim: 'mst', kruskal: 'mst' };
+    // Dijkstra is the only one marked as a TABLE; the rest are drawings
+    function viewOf(rail) {
+      var v = rail.get('view');
+      return v === 'marks' ? MARKING[rail.get('algo')] || v : v;
+    }
+    function setView(v) { if (stage) stage.dataset.view = v; }
     /* Playground hands `rail` to build(), and build() always runs before the first render, so
        this is how render gets at it — `page` does not exist yet during that first pass. */
     var rails = null;
@@ -33,7 +50,26 @@
       return found ? found.id : (graph.nodes()[0] || {}).id;
     }
 
-    function* announce(text, roles) { yield { tag: 'edit', note: text, roles: roles || {} }; }
+    function* announce(text) { yield { tag: 'edit', note: text, roles: {} }; }
+
+    /* What just happened, in the rail's note. Editing the graph used to REPLACE the run with a
+       one-frame announcement saying so, which threw away the run you were watching: add a node
+       mid-play and the algorithm was gone until you pressed one again, and every marking view
+       went blank because a one-beat 'edit' trace is not a run of anything. The edit now
+       restarts the algorithm on the edited graph — which is the only thing an edit can honestly
+       mean — and the sentence about it goes here instead. */
+    function say(text) {
+      var note = rails && rails.el('hint');
+      if (note) note.innerHTML = text;
+    }
+    var GUIDE = {
+      plane: 'Click empty space for a node, then one node and another to connect them. Run BFS ' +
+        'and Dijkstra on the same graph and compare the routes.',
+      matrix: 'A cell is an edge: click one to fill it in or clear it, and its mirror image ' +
+        'goes with it. The + row and column past the last node add a node.',
+      marks: 'A marking view is read-only — it is the answer being written out, so the run ' +
+        'writes it as it walks. Edit the graph on the plane or the matrix.',
+    };
 
     var page = window.Playground({
       title: 'Graph',
@@ -50,10 +86,17 @@
           { value: 'kruskal', label: "Kruskal's MST" },
         ] },
         { id: 'start', kind: 'select', label: 'Start at', options: [{ value: 'A', label: 'A' }] },
-        { id: 'view', kind: 'select', label: 'View', value: 'plane', options: [
+        /* A strip and not a dropdown. Algorithm and Pointer either side of it show every
+           option at once, so a closed select reading "Plane" looks like a label rather than a
+           choice — the marking table was in it and invisible. */
+        { id: 'view', kind: 'choice', label: 'View', value: 'plane', options: [
           { value: 'plane', label: 'Plane' },
           { value: 'matrix', label: 'Adjacency matrix' },
+          { value: 'marks', label: 'Marking view' },
         ] },
+        /* Off by default: the edges the search never walked are the ones that make either
+           marking look wrong until a student knows what they are, so they are on request. */
+        { id: 'cross', kind: 'check', label: 'Show the edges the run never took', value: false },
         { id: 'tool', kind: 'choice', label: 'Pointer', value: 'build', options: [
           { value: 'build', label: 'Build — add, connect, drag' },
           { value: 'erase', label: 'Erase — remove a node' },
@@ -61,9 +104,8 @@
         { id: 'weight', kind: 'range', label: 'New edge weight', min: 1, max: 9, value: 4 },
         { id: 'size', kind: 'range', label: 'Generate size', min: 3, max: 20, value: 9 },
         { id: 'generate', kind: 'button', label: 'Generate graph', variant: 'primary' },
-        { id: 'hint', kind: 'note', spacer: true, label:
-          'Click empty space for a node, then one node and another to connect them. Run BFS and ' +
-          'Dijkstra on the same graph and compare the routes.' },
+        // replaced on every view change, and by whatever the last edit did — see say()
+        { id: 'hint', kind: 'note', spacer: true, label: GUIDE.plane },
       ],
 
       file: {
@@ -73,21 +115,22 @@
         open: function (data, name, api) {
           graph = window.Graph.load(data);
           refreshStarts(api.rail);
-          message = 'Opened <b>' + name + '</b> — ' + graph.nodes().length + ' nodes and ' +
-            graph.edges().length + ' edges. Press an algorithm to run it on this graph.';
+          say('Opened <b>' + name + '</b> — ' + graph.nodes().length + ' nodes and ' +
+            graph.edges().length + ' edges, running the algorithm on it now.');
         },
       },
 
       onField: function (id, value, api) {
         if (id === 'generate') {
           graph = window.Graph.random(api.rail.get('size'), Math.round(api.rail.get('size') / 2));
-          message = null;
           refreshStarts(api.rail);
+          spoken = null;                 // a new graph, so the note goes back to the guidance
           return;
         }
-        if (id === 'view') { api.repaint(); return false; }
+        // the marking view is the algorithm's, so only `algo` changing needs a rebuild
+        if (id === 'view') { refreshView(api.rail); api.repaint(); return false; }
+        if (id === 'cross') { api.repaint(); return false; }
         if (id === 'tool' || id === 'weight') { if (editor) editor.clear(); return false; }
-        message = null;
       },
 
       build: function (rail) {
@@ -95,7 +138,14 @@
         var chosen = algo(rail);
         graph.resetCounters();
         rail.show('start', chosen.needsStart !== false && rail.get('algo') !== 'kruskal');
-        if (message) return { subject: graph, gen: announce(message), title: 'Graph' };
+        refreshView(rail);
+        /* An empty plane is the one thing no algorithm can be run on — every other edit, the
+           run is simply rebuilt and starts again from the top. */
+        if (!graph.nodes().length) {
+          return { subject: graph, title: 'Graph',
+            gen: announce('The plane is empty. Click it to put a node down, or press Generate ' +
+              'graph for one to run an algorithm on.') };
+        }
         return {
           subject: graph,
           gen: chosen.run(graph, startNode(rail)),
@@ -105,6 +155,30 @@
 
       render: function (surface, frame, colours) {
         if (!rails || !frame) return;
+        /* The table is the whole run at once, so walking it moves a column rather than
+           redrawing anything — and there is nothing to draw on the canvas while it is hidden.
+           `marks` is still null during the first render, which happens inside Playground. */
+        var view = viewOf(rails);
+        if (view === 'marks') {
+          if (marks) marks.paint(page.player.index());
+          return;
+        }
+        /* The tree is the whole run at once too, but it is a DRAWING and so it goes on the
+           canvas rather than into the table's box — which is why this view keeps the plane's
+           stage rather than swapping to the marks one. */
+        if (view === 'levels' || view === 'branches' || view === 'mst') {
+          var of = view === 'levels' ? window.LevelTree
+            : view === 'branches' ? window.Backtrack : window.MstMarks;
+          var model = of.of(page.frames());
+          var step = model && model.at[Math.max(0,
+            Math.min(model.at.length - 1, page.player.index()))];
+          (view === 'levels' ? window.LevelDraw
+            : view === 'branches' ? window.BacktrackDraw : window.MstMarks)
+            .draw(surface, frame, colours, {
+              model: model, step: step, cross: !!rails.get('cross'),
+            });
+          return;
+        }
         /* The node waiting to be connected is a UI state, not part of the trace, so it is
            overlaid on a COPY — writing it into frame.roles would make it permanent.
 
@@ -119,10 +193,27 @@
           shown.roles = Object.assign({}, frame.roles);
           shown.roles[selected] = 'focus';
         }
-        (rails.get('view') === 'matrix' ? window.MatrixDraw : window.GraphDraw)
-          .draw(surface, shown, colours, { weighted: !!algo(rails).weighted });
+        (view === 'matrix' ? window.MatrixDraw : window.GraphDraw)
+          .draw(surface, shown, colours, { weighted: !!algo(rails).weighted, editable: true });
       },
     });
+
+    /* The stage attribute and the level tree's own option follow from View and Algorithm
+       together, so they are set in one place and from both. */
+    function refreshView(rail) {
+      var v = viewOf(rail);
+      setView(v);
+      rail.show('cross', v === 'levels' || v === 'branches' || v === 'mst');
+      /* A marking is an answer being written out — there is nothing on it to point at, so the
+         controls that only make sense with a pointer go with it. */
+      var editing = v === 'plane' || v === 'matrix';
+      rail.show('tool', editing);
+      rail.show('weight', editing);
+      if (!editing && editor) editor.clear();
+      /* only when the VIEW moved — otherwise the guidance would wipe the sentence an edit just
+         wrote, on the rebuild that edit itself asked for */
+      if (v !== spoken) { spoken = v; say(GUIDE[editing ? v : 'marks']); }
+    }
 
     /* The start-node dropdown is a view of the graph, so it is rebuilt whenever the graph is. */
     function refreshStarts(rail) {
@@ -144,6 +235,16 @@
       graph: function () { return graph; },
       tool: function () { return page.rail.get('tool'); },
       weight: function () { return page.rail.get('weight'); },
+      // what the click MEANS: the plane's geometry, the matrix's, or nothing at all
+      mode: function () { return viewOf(page.rail); },
+      /* Where a node added from the matrix lands on the plane. The matrix has no positions in
+         it, so one has to be invented — a golden-angle spiral from the centre, which spreads
+         without ever putting two nodes in the same place however many are added. */
+      nextSpot: function () {
+        var k = graph.nodes().length, a = k * 2.399963;
+        var rad = Math.min(0.46, 0.09 + 0.035 * Math.sqrt(k));
+        return { x: 0.5 + Math.cos(a) * rad, y: 0.5 + Math.sin(a) * rad };
+      },
       // the first letter nobody is using — counting the nodes hands out a duplicate label
       // as soon as one has been erased, and the Start-at dropdown resolves nodes BY label
       nextLabel: function () {
@@ -156,12 +257,14 @@
       select: function (id) { selected = id; page.repaint(); },
       commit: function (text) {
         selected = null;
-        message = text + ' Press an algorithm to run it on the graph as it stands.';
+        say(text + ' The algorithm is running again from the top on the graph as it stands.');
         refreshStarts(page.rail);
         page.rebuild();
       },
     });
 
+    marks = window.GraphMarks.view(page);
+    refreshView(page.rail);
     refreshStarts(page.rail);
     page.rebuild();
     return page;

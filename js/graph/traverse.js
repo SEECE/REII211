@@ -6,6 +6,24 @@
    that look unrelated. The frontier is shown at every step so a student can see the queue grow
    in rings while the stack dives.
 
+   The flag shows up in two more places and both are the same fact stated again — what a
+   container hands back:
+
+     · which way the neighbours go IN. A queue hands back the oldest, so they go in forwards; a
+       stack hands back the newest, so they go in backwards. Either way the walk takes them in
+       the order the adjacency list is written, which js/graph/model.js keeps in label order.
+     · WHEN a node is marked. A queue marks on the way in, which is what stops the same node
+       being queued twice. A stack marks on the way OUT, and lets a node sit in the container
+       more than once; the spare copies are dropped when they surface.
+
+   That second one is not a nicety. Marking on the way in looks like the same saving, and it
+   breaks depth-first search outright: a node reached early sits at the bottom of the stack
+   crossed off, and the walk goes on standing NEXT TO it, visiting things further away, for the
+   rest of the run — which is the one thing a depth-first search must never do. On the graph
+   this was found with, the walk stood on E, then G, then H, each of them joined to D, and did
+   not visit D until every other node was done. js/tests/graph.js checks the property directly:
+   if the node just visited has an unvisited neighbour, the next node visited is one of them.
+
    Given a `goal`, the walk stops the moment it comes off the container and reports the route it
    took to get there. That is the same walk with an extra `if`, not a second search: a page that
    wants a full traversal leaves the goal out and nothing about the run changes. Whether the
@@ -28,7 +46,7 @@
     /* `added` outlives the iteration that filled it: the nodes shown as just-discovered on one
        beat are ordinary members of the container on the next, and that promotion is the delta. */
     var added = [], previous = null;
-    seen[start] = true;
+    if (breadth) seen[start] = true;              // a stack marks on the way out instead
     var name = breadth ? 'BFS' : 'DFS';
     var hunting = goal != null;
 
@@ -43,6 +61,12 @@
 
     while (container.length) {
       var current = breadth ? container.shift() : container.pop();
+      /* a stack may be holding several copies of one node; the first to surface is the visit
+         and the rest are dropped, which costs a pop and nothing else */
+      if (!breadth) {
+        if (seen[current]) continue;
+        seen[current] = true;
+      }
       g.settle();
       done.push(current);
       order.push(g.node(current).label);
@@ -91,20 +115,36 @@
 
       previous = current;
       added = [];
-      g.neighbours(current).forEach(function (n) {
-        if (seen[n.to]) return;
-        seen[n.to] = true;
+      /* Neighbours go in in the order the container will hand them BACK. A queue hands back
+         the oldest, so they go in forwards; a stack hands back the newest, so they go in
+         backwards. Either way the walk takes A's neighbours in the order the adjacency list
+         writes them — which is label order (js/graph/model.js) — and the visit order on screen
+         is the one a student gets working it out by hand. Feeding a stack forwards made it
+         take the LAST neighbour first, which is right for no adjacency list anybody writes. */
+      var ns = g.neighbours(current);
+      if (!breadth) ns.reverse();
+      ns.forEach(function (n) {
+        if (seen[n.to]) return;                   // BFS: already queued · DFS: already visited
+        if (breadth) seen[n.to] = true;
+        /* Whoever pushed it LAST is where the walk will arrive from, because that copy is the
+           one nearest the top of the stack — so this overwrite is the answer, not a clobber. */
         parent[n.to] = current;
         container.push(n.to);
         added.push(n.to);
       });
+      if (!breadth) added.reverse();     // narrate them in the order they will come out
 
       if (added.length) {
         yield {
           tag: name,
-          note: 'Its unseen neighbours — ' + added.map(function (id) { return label(g, id); }).join(', ') +
-            ' — go into the ' + (breadth ? 'queue' : 'stack') + '. Marking them <b>now</b>, ' +
-            'rather than when they are taken out, is what stops the same node being queued twice.',
+          note: 'Its unvisited neighbours — ' + added.map(function (id) { return label(g, id); }).join(', ') +
+            ' — go into the ' + (breadth ? 'queue' : 'stack') + '. ' + (breadth
+              ? 'Marking them <b>now</b>, rather than when they are taken out, is what stops ' +
+                'the same node being queued twice.'
+              : 'They are <b>not</b> marked yet — a stack marks a node when it comes back out, ' +
+                'so one can sit in there more than once and the spare copies are dropped when ' +
+                'they surface. Crossing them off now would leave the walk standing beside an ' +
+                'unvisited neighbour it had already dismissed, which is not depth-first.'),
           // the visited node stops being the focus here, exactly as it did when this beat
           // restated the whole picture — `done` covers it and nothing overrides it
           delta: R.of({ done: [current], move: added }),

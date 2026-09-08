@@ -17,9 +17,9 @@
 
     function* intro(message) {
       yield {
-        note: message || 'Pick a value and an operation. The structure is kept <b>sorted</b>, ' +
-          'so the same values in the same order end up in very different places in memory ' +
-          'depending on which structure is holding them.',
+        note: message || 'Pick a value and an operation. The array is kept <b>sorted</b> — ' +
+          'inserting means shifting to keep it that way. The list is not: a new node always ' +
+          'lands at the <b>tail</b>, in whatever order you added it, which is the whole trade.',
         roles: {},
       };
     }
@@ -68,9 +68,10 @@
         { id: 'search', kind: 'button', label: 'Search' },
         { id: 'remove', kind: 'button', label: 'Delete' },
         { id: 'clear', kind: 'button', label: 'Clear', variant: 'ghost' },
+        { id: 'autoplay', kind: 'check', label: 'Play automatically', value: true },
         { id: 'hint', kind: 'note', spacer: true, label:
-          'Insert the same handful of values into an array and then into a list, and compare ' +
-          'the Hops and Writes counters.' },
+          'Insert the same handful of values into an array and then into a list — the array ' +
+          'stays sorted, the list keeps arrival order — and compare the Hops and Writes counters.' },
       ],
 
       file: {
@@ -89,6 +90,7 @@
 
       onField: function (id, v, api) {
         var rail = api.rail;
+        if (id === 'autoplay') return false;                  // just a preference, nothing to run
         if (id === 'kind') { kind = v; reset('Switched to the ' + v + ' structure — the block starts empty.'); return; }
         if (id === 'clear') { reset('Cleared.'); return; }
         if (id === 'value') return false;                    // typing a number runs nothing
@@ -96,6 +98,7 @@
         var op = ops()[id === 'remove' ? 'remove' : id];
         if (!op) return false;
         pending = function () { return op(store, target, doubly()); };
+        if (rail.get('autoplay')) { api.rebuild(); api.player.play(); return false; }
       },
 
       build: function (rail) {

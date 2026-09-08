@@ -7,8 +7,11 @@
 
    The delete cases are the reason this file exists rather than being three lines: a leaf just
    goes, a node with one child is replaced by that child, and a node with TWO children cannot
-   be removed at all — its value is overwritten with its in-order successor, and the successor
-   (which by construction has no left child) is deleted instead. */
+   be removed at all — its value is overwritten with a neighbour's and the neighbour is deleted
+   instead. Either neighbour works: the in-order <b>successor</b> (smallest of the right
+   subtree, walk left) or the in-order <b>predecessor</b> (largest of the left subtree, walk
+   right) — both restore the search-tree property, and which one the rail asks for is the mode
+   passed in to `remove`. */
 (function () {
   'use strict';
   var R = window.Roles;
@@ -81,7 +84,7 @@
       };
     },
 
-    remove: function* (tree, value) {
+    remove: function* (tree, value, mode) {
       if (!tree.root()) { yield { note: 'The tree is empty.', roles: {} }; return; }
       var spot = yield* descend(tree, value, 'delete');
       if (!spot.node) {
@@ -91,35 +94,42 @@
       var node = spot.node, parent = spot.parent, side = spot.side;
 
       if (node.left && node.right) {
+        var usePred = mode === 'iop';
+        var name = usePred ? 'predecessor' : 'successor';
+        var startSide = usePred ? 'left' : 'right';    // which of node's children we start from
+        var walkSide = usePred ? 'right' : 'left';     // the direction that keeps improving it
         yield {
           tag: 'two children',
           note: 'This node has <b>both</b> children, so it cannot simply be unhooked — the two ' +
-            'subtrees would have nowhere to go. Instead find its <b>in-order successor</b>: the ' +
-            'smallest value in the right subtree, which is the next value up from this one.',
+            'subtrees would have nowhere to go. Instead find its <b>in-order ' + name + '</b>: ' +
+            'the ' + (usePred ? 'largest value in the left subtree, the next value down from ' +
+              'this one' : 'smallest value in the right subtree, the next value up from this one') + '.',
           roles: R.of({ focus: [node.id], scan: spot.path }),
         };
-        var sParent = node, s = node.right;
-        while (s.left) {
+        var sParent = node, s = node[startSide];
+        while (s[walkSide]) {
           yield {
-            tag: 'successor',
-            note: 'Go as far left as possible from the right child — left is always smaller.',
+            tag: name,
+            note: 'Go as far ' + walkSide + ' as possible from the ' + startSide + ' child — ' +
+              walkSide + ' is always ' + (usePred ? 'bigger' : 'smaller') + '.',
             roles: R.of({ focus: [s.id], scan: spot.path }),
           };
           sParent = s;
-          s = s.left;
+          s = s[walkSide];
         }
         yield {
-          tag: 'successor',
-          note: 'The successor is ' + v(s.value) + '. By construction it has <b>no left child</b>, ' +
-            'so it is one of the easy cases — copy its value up and delete it instead.',
+          tag: name,
+          note: 'The ' + name + ' is ' + v(s.value) + '. By construction it has <b>no ' +
+            walkSide + ' child</b>, so it is one of the easy cases — copy its value up and ' +
+            'delete it instead.',
           roles: R.of({ move: [node.id], focus: [s.id] }),
         };
         tree.overwrite(node, s.value);
-        tree.attach(sParent, sParent === node ? 'right' : 'left', s.right);
+        tree.attach(sParent, sParent === node ? startSide : walkSide, s[startSide]);
         tree.drop();
         yield {
           tag: 'done',
-          note: 'Value copied and the successor unlinked. The search-tree order still holds: ' +
+          note: 'Value copied and the ' + name + ' unlinked. The search-tree order still holds: ' +
             'everything left of ' + v(s.value) + ' is still smaller, everything right still bigger.',
           roles: R.of({ done: [node.id] }),
         };

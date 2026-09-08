@@ -9,6 +9,12 @@
        #step-count #step-title #step-body #step-progress #step-readout
        #step-prev #step-play #step-next #step-speed #step-speed-val
 
+   #step-restart is the one exception: if the page has not declared it, it is made here and put
+   at the head of .transport-row. Seventeen pages carry the same transport markup and a control
+   every one of them wants is not seventeen edits — js/core/files.js appends the Open/Save
+   control to the rail for exactly the same reason. A page that wants it somewhere else declares
+   the id itself and this leaves it alone.
+
    Everything here used to live in the left control panel next to "array size", which is why
    that column did not fit a laptop. Setup on the left, the walk on the right.
 
@@ -30,7 +36,18 @@
       progress: byId('step-progress'), readout: byId('step-readout'),
       prev: byId('step-prev'), play: byId('step-play'), next: byId('step-next'),
       speed: byId('step-speed'), speedVal: byId('step-speed-val'),
+      restart: byId('step-restart'),
     };
+    if (!el.restart && el.prev && el.prev.parentElement) {
+      el.restart = document.createElement('button');
+      el.restart.type = 'button';
+      el.restart.id = 'step-restart';
+      el.restart.className = 'btn btn--soft btn--restart';
+      el.restart.innerHTML = '<span aria-hidden="true">\u21ba</span>';
+      el.restart.title = 'Back to the first step';
+      el.restart.setAttribute('aria-label', 'Restart the walk');
+      el.prev.parentElement.insertBefore(el.restart, el.prev);
+    }
     var heading = (opts && opts.title) || 'Walk the algorithm';
     var shown = {};                  // the last thing each piece was given, so it is not re-given
     var cells = {};                  // the .readout-val of each counter, once the grid exists
@@ -103,6 +120,8 @@
       var now = back + '|' + more + '|' + alone + '|' + player.playing();
       if (now === shown.transport) return;
       shown.transport = now;
+      // nothing to go back to AND nothing running is the only time restarting does nothing
+      if (el.restart) el.restart.disabled = !back && !player.playing();
       if (el.prev) el.prev.disabled = !back;
       if (el.next) el.next.disabled = !more;
       if (el.play) {
@@ -113,6 +132,11 @@
       }
     }
 
+    /* Restart is `goto(0)` and nothing else — the player pauses on its way there, and a trace
+       too long to hold in full lands on the oldest frame it still has (js/core/trace.js). It
+       does not rebuild: the run is the same run, and a page whose SUBJECT changed rebuilds
+       already (js/core/page.js). */
+    if (el.restart) el.restart.addEventListener('click', function () { player.goto(0); });
     if (el.prev) el.prev.addEventListener('click', function () { player.step(-1); });
     if (el.next) el.next.addEventListener('click', function () { player.step(1); });
     if (el.play) el.play.addEventListener('click', function () { player.toggle(); });
@@ -129,6 +153,7 @@
       if (e.key === 'ArrowLeft') player.step(-1);
       else if (e.key === 'ArrowRight') player.step(1);
       else if (e.key === ' ' || e.key === 'Spacebar') player.toggle();
+      else if (e.key === 'r' || e.key === 'R') player.goto(0);
       else return;
       e.preventDefault();
     });

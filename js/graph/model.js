@@ -20,12 +20,31 @@
 
   function key(a, b) { return 'e' + (a < b ? a + '-' + b : b + '-' + a); }
 
+  /* Adjacency is kept in LABEL order, which is the order a student writes the adjacency list
+     out in — so a traversal here takes the neighbours in the order the same traversal takes
+     them on paper, and the visit order the page draws is the one that gets marked. It is a
+     teaching decision and not a detail: with edges kept in the order they were clicked, the
+     same graph gave a different answer depending on which edge you drew first, and nothing on
+     screen said why.
+
+     `numeric` because the grid labels its crossings A1…B12: a plain string compare puts B12
+     before B2 and the walk reads as though it skipped a street. */
+  var order = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' }).compare;
+
   window.Graph = function () {
     var nodes = [], edges = [], adj = {}, extras = {}, snapshot = null;
     var byId = {}, byKey = {};
     var checked = 0, visited = 0, uid = 0;
 
     function dirty() { snapshot = null; }
+
+    /* one end of an edge, filed under `from` at its place in label order. An insertion into a
+       list this short beats re-sorting it, and the whole of Manhattan is 19,000 of these. */
+    function link(from, to, e) {
+      var list = adj[from], entry = { to: to, w: e.w, key: e.key }, i = list.length;
+      while (i > 0 && order(byId[list[i - 1].to].label, byId[to].label) > 0) i--;
+      list.splice(i, 0, entry);
+    }
 
     var api = {
       /* ── building ── */
@@ -46,8 +65,8 @@
         var e = { a: a, b: b, w: w == null ? 1 : w, key: key(a, b) };
         edges.push(e);
         byKey[e.key] = e;
-        adj[a].push({ to: b, w: e.w, key: e.key });
-        adj[b].push({ to: a, w: e.w, key: e.key });
+        link(a, b, e);
+        link(b, a, e);
         dirty();
         return e;
       },
@@ -148,8 +167,17 @@
         Math.min(0.95, Math.max(0.05, cx + (Math.random() - 0.5) / cols * 0.55)),
         Math.min(0.92, Math.max(0.08, cy + (Math.random() - 0.5) / rows * 0.55)));
     }
-    // a spanning path first, so the graph is always connected and every algorithm has an answer
-    for (i = 1; i < count; i++) g.addEdge(i, Math.floor(Math.random() * i), 1 + Math.floor(Math.random() * 9));
+    /* A spanning tree first, so the graph is always connected and every algorithm has an
+       answer — each node to its NEAREST earlier node, not a random one. A random parent runs a
+       wire from one corner of the plane to the other, and nine of those is the hairball this
+       generator exists to avoid: the extra edges below are already chosen shortest-first, so
+       the random parents were the only long lines in the picture and every crossing on the
+       page came from them. */
+    for (i = 1; i < count; i++) {
+      var near = 0;
+      for (var p = 1; p < i; p++) if (dist(g, [i, p]) < dist(g, [i, near])) near = p;
+      g.addEdge(i, near, 1 + Math.floor(Math.random() * 9));
+    }
     var pool = [];
     for (i = 0; i < count; i++) for (var j = i + 1; j < count; j++) pool.push([i, j]);
     pool.sort(function (p, q) { return dist(g, p) - dist(g, q); });

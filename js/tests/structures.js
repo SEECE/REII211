@@ -20,15 +20,18 @@
       var tag = doubly ? 'doubly' : 'singly';
       var list = Store(72);
       [5, 1, 9, 3, 7].forEach(function (v) { T.run(window.ListOps.insert(list, v, doubly)); });
-      C.equal(list.order('list'), [1, 3, 5, 7, 9], tag + ' insert keeps the chain sorted');
-      T.run(window.ListOps.remove(list, 1, doubly));
-      C.equal(list.order('list'), [3, 5, 7, 9], tag + ' removes the head');
-      T.run(window.ListOps.remove(list, 9, doubly));
-      C.equal(list.order('list'), [3, 5, 7], tag + ' removes the tail');
+      C.equal(list.order('list'), [5, 1, 9, 3, 7], tag + ' insert keeps arrival order, unsorted');
       T.run(window.ListOps.remove(list, 5, doubly));
-      C.equal(list.order('list'), [3, 7], tag + ' removes from the middle');
+      C.equal(list.order('list'), [1, 9, 3, 7], tag + ' removes the head');
+      T.run(window.ListOps.remove(list, 7, doubly));
+      C.equal(list.order('list'), [1, 9, 3], tag + ' removes the tail');
+      T.run(window.ListOps.remove(list, 9, doubly));
+      C.equal(list.order('list'), [1, 3], tag + ' removes from the middle');
       T.run(window.ListOps.remove(list, 99, doubly));
-      C.equal(list.order('list'), [3, 7], tag + ' survives removing an absent value');
+      C.equal(list.order('list'), [1, 3], tag + ' survives removing an absent value');
+      T.run(window.ListOps.insert(list, 42, doubly));
+      C.equal(list.order('list'), [1, 3, 42], tag + ' insert always lands at the tail');
+      C.equal(list.at(list.tail()).next, null, tag + ' tail pointer names the actual last node');
       if (!doubly) return;
       var ok = true, prev = null;
       for (var i = list.head(); i != null; i = list.at(i).next) {
@@ -38,14 +41,17 @@
       C.ok(ok, 'doubly linked back pointers stay consistent');
     });
 
-    /* The claim the page is built on: an array search hops nothing, a list search hops a lot. */
+    /* The claim the page is built on: a list insert is free (tail pointer), but its search still
+       hops a lot — an array pays nothing for either, once it is sorted. */
     var a2 = Store(72), l2 = Store(72);
     for (var v = 1; v <= 20; v++) {
       T.run(window.ArrayOps.insert(a2, v));
       T.run(window.ListOps.insert(l2, v, false));
     }
+    C.equal(l2.stats().Hops, 0, 'the list pays no hops to insert at the tail');
+    T.run(window.ListOps.search(l2, 20));
     C.equal(a2.stats().Hops, 0, 'the array never follows a pointer');
-    C.ok(l2.stats().Hops > 0, 'the list pays hops for the same work (' + l2.stats().Hops + ')');
+    C.ok(l2.stats().Hops > 0, 'the list pays hops to search for the same value (' + l2.stats().Hops + ')');
   });
 
   window.Check.suite('structures — binary search tree', function () {

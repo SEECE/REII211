@@ -49,14 +49,6 @@
       ],
     },
     {
-      id: 'applied', label: 'Applications', short: 'Apply',
-      blurb: 'The same graph algorithms again, on something that is not drawn as a graph. A maze and a street map are both nodes and edges wearing a disguise, and finding that out is most of the lesson.',
-      items: [
-        { id: 'manhattan', label: 'Manhattan', note: 'Two pins on a street grid — fewest blocks against shortest route' },
-        { id: 'maze-search', label: 'Maze Search', note: 'BFS against DFS on a generated maze' },
-      ],
-    },
-    {
       id: 'heuristics', label: 'Heuristics', short: 'Heur',
       blurb: 'Problems where the exact answer is too expensive, and a rule of thumb has to be good enough.',
       items: [
@@ -65,9 +57,11 @@
       ],
     },
     {
-      id: 'compare', label: 'Comparisons', short: 'Vs',
-      blurb: 'No walkthrough and nothing to follow step by step — the same input handed to several algorithms at once, to see what choosing between them is actually worth.',
+      id: 'applied-compare', label: 'Applications &amp; Comparisons', short: 'More',
+      blurb: 'Graph algorithms on something that is not drawn as a graph, and several algorithms racing the same input to see what choosing between them is worth.',
       items: [
+        { id: 'manhattan', label: 'Manhattan', note: 'Two pins on a street grid — fewest blocks against shortest route' },
+        { id: 'maze-search', label: 'Maze Search', note: 'BFS against DFS on a generated maze' },
         { id: 'sorting-race', label: 'The Sorting Race', note: 'All six sorts, one array, one budget' },
         { id: 'colour-sort', label: 'The Colour Sort', note: 'The same race over a Hilbert block of hues, one operation at a time' },
       ],

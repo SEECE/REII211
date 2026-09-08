@@ -38,8 +38,8 @@
   --iris-600: #7c3aed;
 
   /* ── chrome ── */
-  --shell: #e6f2f8;
-  --shell-2: #f4fbfd;
+  --shell: #cfe3ec;
+  --shell-2: #e2eff4;
   --panel: #ffffff;
   --panel-hi: #f1f8fb;          /* inset block inside a panel — wells, boards, readouts */
   --line: rgba(14, 116, 144, 0.16);

@@ -65,10 +65,10 @@
     var lane = 1 / studios, headroom = lane * 0.3;
     for (var s = 0; s < studios; s++) {
       var phase = s * lane + Math.random() * headroom;
-      var offers = 2 + Math.floor(Math.random() * 3);
+      var offers = 2 + Math.floor(Math.random() * 3) + Math.floor(span / 6);
       var pos = Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
       for (var k = 0; k < offers && pos < span; k++) {
-        var length = 1 + Math.floor(Math.random() * Math.max(1, Math.round(span / 4)));
+        var length = Math.max(1, Math.floor(Math.random() * 7));
         var start = pos + phase, end = Math.min(span, pos + length + phase);
         jobs.push({ id: jobs.length, studio: STUDIOS[s % STUDIOS.length], row: s,
           start: start, end: end });

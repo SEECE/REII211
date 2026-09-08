@@ -53,18 +53,26 @@
 
   /* Offers from the SAME studio never overlap each other — a studio doesn't hand you two
      conflicting slots for its own film. The overlap that makes the problem worth solving is
-     between studios, which this leaves untouched. */
+     between studios, which this leaves untouched.
+
+     Each studio also gets its own fractional "lane" (a large divisor, one per studio) inside
+     every month, plus a little jitter within that lane (a small divisor, for headroom). Since
+     an offer's end is its start plus a whole number of months, start and end keep the same
+     fraction — so two studios' lanes never land on the same instant, and you're never stuck
+     picking arbitrarily between two bars that tie. */
   window.JobSet.random = function (studios, span) {
     var jobs = [];
+    var lane = 1 / studios, headroom = lane * 0.3;
     for (var s = 0; s < studios; s++) {
+      var phase = s * lane + Math.random() * headroom;
       var offers = 2 + Math.floor(Math.random() * 3);
-      var cursor = Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
-      for (var k = 0; k < offers && cursor < span; k++) {
+      var pos = Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
+      for (var k = 0; k < offers && pos < span; k++) {
         var length = 1 + Math.floor(Math.random() * Math.max(1, Math.round(span / 4)));
-        var end = Math.min(span, cursor + length);
+        var start = pos + phase, end = Math.min(span, pos + length + phase);
         jobs.push({ id: jobs.length, studio: STUDIOS[s % STUDIOS.length], row: s,
-          start: cursor, end: end });
-        cursor = end + Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
+          start: start, end: end });
+        pos = pos + length + Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
       }
     }
     return window.JobSet(jobs, span);

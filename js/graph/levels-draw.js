@@ -39,8 +39,10 @@
       if (!s || !frame) return;
       var model = opts && opts.model;
       if (!model) {
-        note(s, colours, 'The level tree writes out breadth-first search. Choose it under ' +
-          'Algorithm and the queue will build this one ring at a time.');
+        /* Only reachable now with nothing to draw at all — the rail hands this view the BFS
+           run and no other, so a missing tree means a missing graph. */
+        note(s, colours, 'There is no graph to walk yet. Put some nodes on the plane and the ' +
+          'queue will build the level tree one ring at a time.');
         return;
       }
       var ctx = s.ctx;

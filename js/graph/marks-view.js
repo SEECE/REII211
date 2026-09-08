@@ -53,8 +53,12 @@
       model = window.GraphMarks.tabulate(frames);
 
       if (!model) {
-        note('The marking table writes out Dijkstra. Choose it under Algorithm and the run ' +
-          'will fill this in one column at a time.');
+        /* The rail has ONE marking button and the algorithm decides what the marking is, so
+           this note has to say which algorithms have one — the page cannot say it in the
+           button's label any more. BFS never reaches here: it is drawn, not tabled. */
+        note('This run has nothing a marker would write out. Dijkstra fills a column here ' +
+          'for every node that comes out of the priority queue, and breadth-first search ' +
+          'draws its level tree — choose one of those under Algorithm.');
         return;
       }
       if (model.nodes.length > NODES) {

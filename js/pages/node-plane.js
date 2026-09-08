@@ -22,8 +22,18 @@
     var message = null, selected = null, editor = null, marks = null;
     /* The stage holds two things and shows one: the canvas, and the marking table's DOM. Which
        is which is css/marks.css reading this attribute, so the swap is a class change and not
-       a second layout. */
+       a second layout.
+
+       The rail offers ONE "Marking view", not one button per algorithm: what a student writes
+       out for Dijkstra is a table and what they draw for BFS is a tree, but that is a fact
+       about the algorithm and not a second thing to choose. So the rail asks "drawing or
+       marking?" and the ALGORITHM decides which marking — which is also why the button does
+       not go stale when you switch algorithms with it already pressed. */
     var stage = document.querySelector('.stage');
+    function viewOf(rail) {
+      var v = rail.get('view');
+      return v === 'marks' && rail.get('algo') === 'bfs' ? 'levels' : v;
+    }
     function setView(v) { if (stage) stage.dataset.view = v; }
     /* Playground hands `rail` to build(), and build() always runs before the first render, so
        this is how render gets at it — `page` does not exist yet during that first pass. */
@@ -61,8 +71,7 @@
         { id: 'view', kind: 'choice', label: 'View', value: 'plane', options: [
           { value: 'plane', label: 'Plane' },
           { value: 'matrix', label: 'Adjacency matrix' },
-          { value: 'marks', label: 'Marking table — Dijkstra' },
-          { value: 'levels', label: 'Level tree — BFS' },
+          { value: 'marks', label: 'Marking view' },
         ] },
         /* Off by default: the edges BFS never walked are the ones that make a level tree look
            wrong until a student knows what they are, so they are shown on request. */
@@ -98,12 +107,8 @@
           refreshStarts(api.rail);
           return;
         }
-        if (id === 'view') {
-          setView(value);
-          api.rail.show('cross', value === 'levels');
-          api.repaint();
-          return false;
-        }
+        // the marking view is the algorithm's, so only `algo` changing needs a rebuild
+        if (id === 'view') { refreshView(api.rail); api.repaint(); return false; }
         if (id === 'cross') { api.repaint(); return false; }
         if (id === 'tool' || id === 'weight') { if (editor) editor.clear(); return false; }
         message = null;
@@ -114,7 +119,7 @@
         var chosen = algo(rail);
         graph.resetCounters();
         rail.show('start', chosen.needsStart !== false && rail.get('algo') !== 'kruskal');
-        rail.show('cross', rail.get('view') === 'levels');
+        refreshView(rail);
         if (message) return { subject: graph, gen: announce(message), title: 'Graph' };
         return {
           subject: graph,
@@ -128,14 +133,15 @@
         /* The table is the whole run at once, so walking it moves a column rather than
            redrawing anything — and there is nothing to draw on the canvas while it is hidden.
            `marks` is still null during the first render, which happens inside Playground. */
-        if (rails.get('view') === 'marks') {
+        var view = viewOf(rails);
+        if (view === 'marks') {
           if (marks) marks.paint(page.player.index());
           return;
         }
         /* The tree is the whole run at once too, but it is a DRAWING and so it goes on the
            canvas rather than into the table's box — which is why this view keeps the plane's
            stage rather than swapping to the marks one. */
-        if (rails.get('view') === 'levels') {
+        if (view === 'levels') {
           var tree = window.LevelTree.of(page.frames());
           window.LevelDraw.draw(surface, frame, colours, {
             model: tree,
@@ -158,10 +164,18 @@
           shown.roles = Object.assign({}, frame.roles);
           shown.roles[selected] = 'focus';
         }
-        (rails.get('view') === 'matrix' ? window.MatrixDraw : window.GraphDraw)
+        (view === 'matrix' ? window.MatrixDraw : window.GraphDraw)
           .draw(surface, shown, colours, { weighted: !!algo(rails).weighted });
       },
     });
+
+    /* The stage attribute and the level tree's own option follow from View and Algorithm
+       together, so they are set in one place and from both. */
+    function refreshView(rail) {
+      var v = viewOf(rail);
+      setView(v);
+      rail.show('cross', v === 'levels');
+    }
 
     /* The start-node dropdown is a view of the graph, so it is rebuilt whenever the graph is. */
     function refreshStarts(rail) {
@@ -202,7 +216,7 @@
     });
 
     marks = window.GraphMarks.view(page);
-    setView(page.rail.get('view'));
+    refreshView(page.rail);
     refreshStarts(page.rail);
     page.rebuild();
     return page;

@@ -165,6 +165,12 @@ field already existed and already answers exactly this question for the plane an
 matrix; a second switch elsewhere on the page for the third answer would be two controls for
 one choice.
 
+**One button, whatever the marking is.** The node plane's third option is `Marking view` and
+not `Marking table — Dijkstra` beside `Level tree — BFS`: which marking a run has is a fact
+about the ALGORITHM, so `Algorithm` already answers it and asking twice makes the pair go stale
+the moment you switch one without the other. `js/pages/node-plane.js` resolves the two fields
+into the one `data-view` the stage wears.
+
 ## The ribbon nav
 
 **`js/ui/sitemap.js` is the only place a page is named.** Two things render from it: the ribbon

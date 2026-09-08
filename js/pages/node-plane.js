@@ -30,7 +30,8 @@
        marking?" and the ALGORITHM decides which marking — which is also why the button does
        not go stale when you switch algorithms with it already pressed. */
     var stage = document.querySelector('.stage');
-    var MARKING = { bfs: 'levels', dfs: 'branches' };   // the rest are marked as a table
+    var MARKING = { bfs: 'levels', dfs: 'branches', prim: 'mst', kruskal: 'mst' };
+    // Dijkstra is the only one marked as a TABLE; the rest are drawings
     function viewOf(rail) {
       var v = rail.get('view');
       return v === 'marks' ? MARKING[rail.get('algo')] || v : v;
@@ -66,8 +67,8 @@
         'and Dijkstra on the same graph and compare the routes.',
       matrix: 'A cell is an edge: click one to fill it in or clear it, and its mirror image ' +
         'goes with it. The + row and column past the last node add a node.',
-      marks: 'A marking view is read-only — it is the answer being written out. Edit the graph ' +
-        'on the plane or the matrix.',
+      marks: 'A marking view is read-only — it is the answer being written out, so the run ' +
+        'writes it as it walks. Edit the graph on the plane or the matrix.',
     };
 
     var page = window.Playground({
@@ -95,7 +96,7 @@
         ] },
         /* Off by default: the edges the search never walked are the ones that make either
            marking look wrong until a student knows what they are, so they are on request. */
-        { id: 'cross', kind: 'check', label: 'Show the edges the search never took', value: false },
+        { id: 'cross', kind: 'check', label: 'Show the edges the run never took', value: false },
         { id: 'tool', kind: 'choice', label: 'Pointer', value: 'build', options: [
           { value: 'build', label: 'Build — add, connect, drag' },
           { value: 'erase', label: 'Erase — remove a node' },
@@ -165,15 +166,16 @@
         /* The tree is the whole run at once too, but it is a DRAWING and so it goes on the
            canvas rather than into the table's box — which is why this view keeps the plane's
            stage rather than swapping to the marks one. */
-        if (view === 'levels' || view === 'branches') {
-          var of = view === 'levels' ? window.LevelTree : window.Backtrack;
+        if (view === 'levels' || view === 'branches' || view === 'mst') {
+          var of = view === 'levels' ? window.LevelTree
+            : view === 'branches' ? window.Backtrack : window.MstMarks;
           var model = of.of(page.frames());
-          (view === 'levels' ? window.LevelDraw : window.BacktrackDraw)
+          var step = model && model.at[Math.max(0,
+            Math.min(model.at.length - 1, page.player.index()))];
+          (view === 'levels' ? window.LevelDraw
+            : view === 'branches' ? window.BacktrackDraw : window.MstMarks)
             .draw(surface, frame, colours, {
-              model: model,
-              step: model && model.at[Math.max(0,
-                Math.min(model.at.length - 1, page.player.index()))],
-              cross: !!rails.get('cross'),
+              model: model, step: step, cross: !!rails.get('cross'),
             });
           return;
         }
@@ -201,7 +203,7 @@
     function refreshView(rail) {
       var v = viewOf(rail);
       setView(v);
-      rail.show('cross', v === 'levels' || v === 'branches');
+      rail.show('cross', v === 'levels' || v === 'branches' || v === 'mst');
       /* A marking is an answer being written out — there is nothing on it to point at, so the
          controls that only make sense with a pointer go with it. */
       var editing = v === 'plane' || v === 'matrix';

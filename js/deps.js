@@ -54,7 +54,7 @@
     graph: ['core', 'graph/model.js', 'graph/draw.js', 'graph/traverse.js',
       'graph/shortest.js', 'graph/spanning.js'],
     'node-plane': ['graph', 'graph/editor.js', 'graph/matrix.js', 'graph/marks.js',
-      'graph/marks-view.js', 'graph/levels.js', 'graph/levels-draw.js',
+      'graph/marks-view.js', 'graph/mst-marks.js', 'graph/levels.js', 'graph/levels-draw.js',
       'graph/backtrack.js', 'graph/backtrack-draw.js', 'pages/node-plane.js'],
     /* applications: the same graph algorithms on something not drawn as a graph */
     maze: ['core', 'graph/model.js', 'graph/traverse.js', 'maze/grid.js', 'maze/carve.js',

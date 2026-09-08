@@ -56,9 +56,9 @@
         /* The rail has ONE marking button and the algorithm decides what the marking is, so
            this note has to say which algorithms have one — the page cannot say it in the
            button's label any more. BFS never reaches here: it is drawn, not tabled. */
-        note('This run has nothing a marker would write out. Dijkstra fills a column here ' +
-          'for every node that comes out of the priority queue, and breadth-first search ' +
-          'draws its level tree — choose one of those under Algorithm.');
+        note('There is no run to write out yet — put some nodes on the plane. Dijkstra is ' +
+          'marked as a table, one column per node coming out of the priority queue; every ' +
+          'other algorithm here is marked as a drawing and does not reach this box.');
         return;
       }
       if (model.nodes.length > NODES) {

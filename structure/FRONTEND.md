@@ -151,6 +151,13 @@ table, so the level tree is drawn on the canvas the plane was already using — 
 same roles, same colours, no `data-view` swap and no CSS. The rule is that the marking view is
 whatever shape the hand-written answer is; a table is one shape and a drawing is another.
 
+A marking may also be the drawing already on screen with one thing changed. What is handed in
+for Prim and Kruskal is the PLANE with the weights rubbed out and the edges numbered in the
+order they were taken (`js/graph/mst-marks.js`), so it is `GraphDraw` doing the drawing with a
+`labels` map over it rather than a fourth renderer — an edge with an entry shows it in place of
+its weight. Laying the same graph out a second way would have made the sheet and the plane two
+pictures a student has to reconcile, which is the opposite of what the marking is for.
+
 **A second view steps with the first.** It is not a summary shown beside the run: the table's
 bottom row holds the frame the bars are drawing at this instant, rows the run has not reached
 are not on screen, and a line is fixed only on the frame the bars agree with it — which

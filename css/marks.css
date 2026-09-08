@@ -19,7 +19,8 @@
 .stage[data-view='plane'] > canvas,
 .stage[data-view='matrix'] > canvas { cursor: crosshair; }
 .stage[data-view='levels'] > canvas,
-.stage[data-view='branches'] > canvas { cursor: default; }
+.stage[data-view='branches'] > canvas,
+.stage[data-view='mst'] > canvas { cursor: default; }
 
 /* The table a student writes out in a test: one row per write, one column per cell. It is
    deliberately plain — the point is that it looks like the answer, not like a widget. */

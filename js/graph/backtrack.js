@@ -5,17 +5,25 @@
    ORDER it went in, as a line running down the page that stops dead, jumps back to a node it
    has already been to, and starts again one step to the right:
 
-        A
-        C
-        B
-        D          D has nowhere new to go, so the walk retreats — through B, which is where
-     ↰     H       H was found — and carries on there, one column to the right
-     ↰     F
-              G
+        A                            L0
+        C                            L1
+        B          E                 L2
+        D   H                        L3
+            F   G                    L4
 
-   Read it top to bottom and it is the visit order. Read a column and it is one unbroken descent
-   — the "linear part". New branches go RIGHT and every retreat goes LEFT, into a gutter of its
-   own, so the two directions never share a line.
+   A row is a DEPTH, exactly as it is on the level tree: a node sits one row under the node it
+   hangs off, so two children of one node share a row however long the walk spent between them.
+   D and H are both B's, so they are level with each other; E is C's, so it is level with B. A
+   column is one unbroken descent, and reading the columns left to right, each top to bottom, is
+   the visit order — which is also written on each node.
+
+   The row used to be the visit number, which put every node on a row of its own and pushed each
+   new branch a step further down as well as a step across. Two children of one node then sat two
+   rows apart for no reason a student could point at, and the depth — the thing the drawing is
+   about — could not be read off it at all.
+
+   New branches go RIGHT and every retreat goes LEFT, into a gutter of its own, so the two
+   directions never share a line.
 
    A retreat is drawn NODE BY NODE and not as one jump to wherever the walk ends up: coming out
    of D, a recursive search returns through every node between D and B in turn, and "it went
@@ -65,17 +73,21 @@
 
     /* `found[x]` is the node x was discovered from — recorded when it goes into the container,
        which is beats before it comes back out. Where its line hangs from is that node. */
-    var found = {}, seq = [], index = {}, cols = 1;
+    var found = {}, seq = [], index = {}, depth = {}, cols = 1, rows = 1;
     var at = new Array(frames.length), focus = null;
 
     function visit(id) {
       if (index[id] != null) return;                      // one line per node, however often shown
       var last = seq[seq.length - 1];
       var branch = last && found[id] !== last.id;
+      /* the row is the DEPTH — one under whoever it hangs off. The column still marches right
+         on every branch, which is what keeps two descents from ever sharing one. */
+      var d = found[id] == null || depth[found[id]] == null ? 0 : depth[found[id]] + 1;
+      depth[id] = d;
       index[id] = seq.length;
       seq.push({
         id: id, label: byId[id].label, from: found[id] == null ? null : found[id],
-        row: seq.length, col: last ? (branch ? last.col + 1 : last.col) : 0,
+        row: d, col: last ? (branch ? last.col + 1 : last.col) : 0,
         /* a jump back leaves the node before it stranded: that is the dead end, and the
            retreat runs from it up to the node the walk resumes under. `via` is filled in below,
            once the whole line exists to walk back up. */
@@ -83,6 +95,7 @@
       });
       if (branch) last.dead = true;
       cols = Math.max(cols, seq[seq.length - 1].col + 1);
+      rows = Math.max(rows, d + 1);
     }
 
     visit(start);
@@ -106,7 +119,7 @@
     seq.forEach(function (s) { if (s.from != null) tree[window.Graph.edgeKey(s.id, s.from)] = true; });
 
     return {
-      seq: seq, index: index, at: at, start: start, cols: cols, lanes: lanes,
+      seq: seq, index: index, at: at, start: start, cols: cols, rows: rows, lanes: lanes,
       // the edges the walk never travelled along — same idea as the level tree's leftovers
       cross: view.edges.filter(function (e) { return !tree[e.key]; }),
     };
@@ -136,7 +149,8 @@
       }
       // a resume node that is not an ancestor would be a broken tree; draw the one hop and say so
       n.back.via = path[path.length - 1] === n.back.to ? path : [n.back.from, n.back.to];
-      var top = index[n.back.to], low = index[n.back.from], lane = 0;
+      // rows, not visit numbers: two retreats collide when they cover the same DEPTHS
+      var top = seq[index[n.back.to]].row, low = seq[index[n.back.from]].row, lane = 0;
       while (lane < bottom.length && bottom[lane] >= top) lane++;
       bottom[lane] = low;
       n.back.lane = lane;

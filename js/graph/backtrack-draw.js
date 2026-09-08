@@ -1,10 +1,15 @@
 /* The DFS backtrack trace, drawn. Plain script, one global `BacktrackDraw`. The model it
    renders is js/graph/backtrack.js — read that first.
 
-   One row per visit, top to bottom, so the vertical position IS the order. A column is one
-   unbroken descent; every new branch starts a column one step to the RIGHT, so the width of the
-   drawing is the number of times the walk ran out of road. The visit number is in a gutter down
-   the right-hand edge, the way the level tree puts L0/L1 there.
+   A row is a DEPTH and the levels are named down the right-hand edge, the way the level tree
+   names them — a node sits one row under the node it hangs off, so two children of one node are
+   level with each other however long the walk spent between them. A column is one unbroken
+   descent; every new branch starts a column one step to the RIGHT, so the width of the drawing
+   is the number of times the walk ran out of road.
+
+   The visit number rides on each node rather than in the right-hand gutter, because a row is no
+   longer one visit. Reading the columns left to right, each top to bottom, gives the same
+   order — the numbers are there so nobody has to.
 
    Retreats go LEFT, into a gutter of their own, and they never share a line with the branch
    they lead to — which they did when each was routed through the half-column beside its own
@@ -40,10 +45,12 @@
       var gutter = 30, pad = 22;
       /* the retreat gutter, sized to the lanes it has to hold but never taking more than a
          fifth of the drawing away from the thing it is annotating */
-      var laneW = model.lanes ? Math.max(9, Math.min(18, s.w * 0.2 / model.lanes)) : 0;
+      /* Retreats overlap far more often now that a row is a depth, so the gutter has to hold
+         more lanes — but never more than a slice of the drawing it is annotating. */
+      var laneW = model.lanes ? Math.max(5, Math.min(18, s.w * 0.28 / model.lanes)) : 0;
       var left = model.lanes ? model.lanes * laneW + 6 : 0;
       var W = Math.max(1, s.w - pad * 2 - gutter - left), H = Math.max(1, s.h - pad * 2);
-      var colW = W / model.cols, rowH = H / model.seq.length;
+      var colW = W / model.cols, rowH = H / model.rows;
       var r = Math.max(6, Math.min(18, rowH / 2.6, colW / 2.8));
       // lane 0 sits nearest the nodes, so the common shallow retreat keeps the shortest stubs
       function laneX(l) { return pad + left - (l + 0.5) * laneW; }
@@ -52,15 +59,22 @@
         return { x: pad + left + colW * (n.col + 0.5), y: pad + rowH * (n.row + 0.5) };
       });
 
-      /* the visit numbers first, so everything else sits over them */
+      /* the levels first, so everything else sits over them */
       ctx.textBaseline = 'middle';
-      ctx.textAlign = 'right';
-      ctx.font = '700 10px ui-monospace, SFMono-Regular, monospace';
-      model.seq.forEach(function (n, i) {
-        if (i >= shown) return;
+      ctx.font = '700 11px ui-monospace, SFMono-Regular, monospace';
+      for (var row = 0; row < model.rows; row++) {
+        var y = pad + rowH * (row + 0.5);
+        ctx.strokeStyle = colours.grid;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(pad + left, y);
+        ctx.lineTo(s.w - pad, y);
+        ctx.stroke();
         ctx.fillStyle = colours['ink-soft'];
-        ctx.fillText(String(i + 1), s.w - pad + 4, at[i].y);
-      });
+        ctx.textAlign = 'right';
+        ctx.fillText('L' + row, s.w - pad + 4, y);
+      }
 
       function trim(a, b) {                     // b, pulled back to the rim of its circle
         var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
@@ -167,6 +181,15 @@
         }
         ctx.fillStyle = colours.ink;
         ctx.fillText(n.label, p.x, p.y + 0.5);
+      });
+
+      /* the visit number, riding on the node — a row is a depth now, so the order is the one
+         thing the position no longer says on its own */
+      ctx.font = '700 9px ui-monospace, SFMono-Regular, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = colours['ink-soft'];
+      model.seq.forEach(function (n, i) {
+        if (i < shown) ctx.fillText(String(i + 1), at[i].x + r * 0.75, at[i].y - r * 0.8);
       });
     },
   };

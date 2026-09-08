@@ -42,9 +42,15 @@
       /* ── the line ── it is the order the run went in, and nothing is on it twice ── */
       C.equal(model.seq.map(function (s) { return s.id; }), order(g, 0),
         'the line down the page is the visit order (n=' + n + ')');
-      C.equal(model.seq.map(function (s) { return s.row; }),
-        model.seq.map(function (s, i) { return i; }),
-        'one row per visit, in order (n=' + n + ')');
+      /* a row is a DEPTH, so two children of one node are level with each other however long
+         the walk spent between them — which is the whole reason the row stopped being the
+         visit number */
+      var deep = model.seq.filter(function (s) {
+        return s.row !== (s.from == null ? 0 : model.seq[model.index[s.from]].row + 1);
+      });
+      C.equal(deep.length, 0, 'every node sits one row under the node it hangs off (n=' + n + ')');
+      C.equal(model.rows, 1 + Math.max.apply(null, model.seq.map(function (s) { return s.row; })),
+        'and the drawing is as deep as the deepest node (n=' + n + ')');
       C.equal(new Set(model.seq.map(function (s) { return s.id; })).size, model.seq.length,
         'and nothing is drawn twice (n=' + n + ')');
 
@@ -122,6 +128,9 @@
     C.equal(m.seq.map(function (s) { return s.col; }), [0, 0, 0, 0, 1, 1, 2, 3],
       'in four columns — three jumps back, so three steps right');
     C.equal(m.cols, 4, 'and the drawing is four columns wide');
+    C.equal(m.seq.map(function (s) { return s.row; }), [0, 1, 2, 3, 3, 4, 4, 2],
+      'five rows deep, with D and H level under B, F and G level under H, and E level with B');
+    C.equal(m.rows, 5, 'so the drawing is five levels deep, not eight visits tall');
     C.equal(m.seq.filter(function (s) { return s.back; }).map(function (s) {
       return ex.node(s.back.from).label + '>' + ex.node(s.back.to).label;
     }), ['D>B', 'F>H', 'G>C'], 'the jumps back run D→B, F→H and G→C');
@@ -131,10 +140,11 @@
       return s.back.via.map(function (id) { return ex.node(id).label; }).join('');
     }), ['DB', 'FH', 'GHBC'],
       'and each retreat is drawn through every node it goes back past — G to C is four');
+    /* Rows are depths, so these three cover 2–3, 3–4 and 1–4 and every pair of them touches.
+       Three lanes, and the three retreats read as three rather than as one scribble. */
     C.equal(m.seq.filter(function (s) { return s.back; }).map(function (s) { return s.back.lane; }),
-      [0, 0, 1], 'D→B and F→H do not overlap so they share a lane; G→C spans both, so it gets ' +
-      'its own and the three read as three');
-    C.equal(m.lanes, 2, 'which is a two-lane gutter');
+      [0, 1, 2], 'retreats that cover the same levels each get a lane of their own');
+    C.equal(m.lanes, 3, 'which here is a three-lane gutter');
     C.equal(m.cross.length, 0, 'a tree-shaped graph leaves no untravelled edges');
 
     /* One more edge is the dotted case — and it moves the run, which is the point: A now

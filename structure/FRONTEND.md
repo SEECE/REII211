@@ -115,6 +115,7 @@ but the ids cannot change without changing the script:
 | `#canvas` | `js/core/surface.js` |
 | `#step-legend` | `js/core/legend.js` |
 | `#step-count` `#step-title` `#step-body` `#step-progress` `#step-readout` `#step-prev` `#step-play` `#step-next` `#step-speed` `#step-speed-val` | `js/core/workbench.js` |
+| `#step-restart` | `js/core/workbench.js` — **the one id it will make for itself.** If the page has not declared it, it is created and put at the head of `.transport-row`. A control all seventeen pages want is not seventeen edits; `js/core/files.js` appends the Open/Save control to the rail for the same reason. Declare the id to place it yourself |
 | `#marks` (in the stage) | the marking table — `js/sorting/marks.js` on a sorting page, `js/graph/marks-view.js` on the node plane. **Optional**: a page without it is simply left with one view |
 | `#step-views` (in the workbench head) | `js/sorting/marks.js`, where the view switch is the workbench's |
 

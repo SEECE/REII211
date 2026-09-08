@@ -21,8 +21,14 @@
    full-width primary button, which read as decoration: people asked where the step-by-step
    walk had gone while looking straight at it. A run you can WALK is the point of the page,
    so the three buttons are one row of equal thirds and the step ones say what they do. */
-.transport-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.transport-row { display: grid; grid-template-columns: auto repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
 .transport-row > .btn { min-width: 0; }
+
+/* Restart sits at the head of the row at its own width, so the three that walk the trace keep
+   their equal thirds. It is the one button here with no word on it: a fourth label turns the
+   row into four cramped columns, and unlike a bare chevron — which is what this row learned not
+   to do — ↺ is not one of a pair whose meaning depends on the other. */
+.btn--restart { padding-inline: var(--sp-3); font-size: 15px; line-height: 1; }
 
 .btn--step { gap: 4px; font-variant-numeric: tabular-nums; }
 .btn--step .step-arrow { font-size: 15px; line-height: 1; }

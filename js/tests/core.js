@@ -97,6 +97,38 @@
     C.ok(stride[99] > 50, 'while the fastest advances in strides, since the timer cannot');
   });
 
+  /* ── what the transport is TOLD ──
+     `onState` is the only way the buttons learn anything, and it is called from inside the
+     player's own show(). So the question is not "is the player playing" but "what does it SAY
+     it is, at the instant the buttons ask" — and for the whole life of this file those were
+     different answers. play() announced the frame and then armed the timer, so every state the
+     buttons were ever handed was taken during the one moment of the cycle when there was no
+     timer: the Play button said Play for the entire length of a run that was playing, and a
+     Restart button disabled at frame zero stayed disabled once it started. */
+  window.Check.suite('core — what the transport is told', function () {
+    var C = window.Check, said = [];
+    var player = window.Player({ onState: function (p) { said.push(p.playing()); } });
+    player.load([{ note: 'a' }, { note: 'b' }, { note: 'c' }, { note: 'd' }]);
+
+    said = [];
+    player.play();
+    C.ok(said.length > 0, 'pressing play tells the transport something');
+    C.ok(said.every(Boolean), 'and every word of it is that the run is playing', said.join(','));
+
+    said = [];
+    player.pause();
+    C.ok(said.length > 0 && said.every(function (v) { return !v; }),
+      'pausing says the opposite, and nothing else', said.join(','));
+
+    /* Restart is goto(0), which pauses on the way. From the last frame that has to arrive as
+       "not playing, and there is nothing behind you any more". */
+    player.goto(3);
+    C.equal([player.index(), player.playing()], [3, false], 'stepping to the end pauses there');
+    player.goto(0);
+    C.equal([player.index(), player.playing(), player.hasPrev()], [0, false, false],
+      'and restarting lands on the first frame, stopped, with nothing behind it');
+  });
+
   window.Check.suite('core — the Open-or-Save control', function () {
     var C = window.Check;
     if (typeof document === 'undefined' || !window.Files) return;

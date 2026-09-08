@@ -42,14 +42,18 @@
     function show() { if (o.onFrame) o.onFrame(i, frames.at(i)); announce(); }
     function more() { return !!frames.at(i + 1); }
 
+    /* The timer is armed BEFORE the frame is announced, and that order is load-bearing:
+       `playing()` is "is there a timer", and everything that asks — the Play/Pause label, a
+       disabled Restart — asks from inside show(). Announcing first meant every one of those
+       questions was answered during the one instant of the cycle when the timer was null, so
+       the button said Play for the whole of a run that was playing. */
     function tick() {
-      timer = null;
-      if (!more()) { pause(); return; }
+      if (!more()) { timer = null; pause(); return; }
       var pace = paceFor(speed), next = i + pace.stride;
       if (!frames.at(next)) next = Math.max(i + 1, frames.length - 1);   // the end, wherever it is
       i = next;
-      show();
       timer = setTimeout(tick, pace.delay);
+      show();
     }
 
     function play() {
@@ -57,8 +61,8 @@
       // only the first one at this point, and asking is what makes it find the next.
       if (timer || !frames.at(1)) return;
       if (!more()) i = 0;                     // replay rather than sit on a finished trace
-      show();
       timer = setTimeout(tick, paceFor(speed).delay);
+      show();
     }
     function pause() { if (timer) { clearTimeout(timer); timer = null; } announce(); }
 

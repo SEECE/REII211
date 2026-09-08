@@ -136,11 +136,18 @@ table is whatever the shape of the answer is:
 |---|---|---|
 | the six bar-graph sorts | a ROW per pass — the array after each outer loop closes | `js/sorting/marks.js` |
 | the node plane's Dijkstra | a COLUMN per node coming out of the priority queue | `js/graph/marks.js` + `-view.js` |
+| the node plane's BFS | a ROW per ring — the level tree, start on top | `js/graph/levels.js` + `-draw.js` |
 
 It is never a second run and never a second implementation. Every row and every column is read
 off the frames the player is already walking — the sort's `tag` groups, Dijkstra's `focus` and
-`scan` roles — so the table and the drawing cannot disagree about what the algorithm did, and
-neither algorithm file knows a table exists. Both are styled from `css/marks.css`.
+`scan` roles, BFS's `focus` and `move` — so the marking and the drawing cannot disagree about
+what the algorithm did, and no algorithm file knows a marking view exists. The two tables are
+styled from `css/marks.css`.
+
+**A marking view is not necessarily DOM.** What a student writes out for BFS is a TREE, not a
+table, so the level tree is drawn on the canvas the plane was already using — same surface,
+same roles, same colours, no `data-view` swap and no CSS. The rule is that the marking view is
+whatever shape the hand-written answer is; a table is one shape and a drawing is another.
 
 **A second view steps with the first.** It is not a summary shown beside the run: the table's
 bottom row holds the frame the bars are drawing at this instant, rows the run has not reached

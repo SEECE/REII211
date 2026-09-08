@@ -85,8 +85,9 @@
         { id: 'size', kind: 'range', label: 'Generate size', min: 3, max: 20, value: 9 },
         { id: 'generate', kind: 'button', label: 'Generate graph', variant: 'primary' },
         { id: 'hint', kind: 'note', spacer: true, label:
-          'Click empty space for a node, then one node and another to connect them. Run BFS and ' +
-          'Dijkstra on the same graph and compare the routes.' },
+          'On the plane: click empty space for a node, then one node and another to connect ' +
+          'them. On the matrix: click a cell for the edge it stands for, or the + row for a ' +
+          'new node. A marking view is read-only.' },
       ],
 
       file: {
@@ -169,7 +170,7 @@
           shown.roles[selected] = 'focus';
         }
         (view === 'matrix' ? window.MatrixDraw : window.GraphDraw)
-          .draw(surface, shown, colours, { weighted: !!algo(rails).weighted });
+          .draw(surface, shown, colours, { weighted: !!algo(rails).weighted, editable: true });
       },
     });
 
@@ -179,6 +180,13 @@
       var v = viewOf(rail);
       setView(v);
       rail.show('cross', v === 'levels' || v === 'branches');
+      /* A marking is an answer being written out — there is nothing on it to point at, so the
+         controls that only make sense with a pointer go with it. */
+      var editing = v === 'plane' || v === 'matrix';
+      rail.show('tool', editing);
+      rail.show('weight', editing);
+      rail.show('hint', editing);
+      if (!editing && editor) editor.clear();
     }
 
     /* The start-node dropdown is a view of the graph, so it is rebuilt whenever the graph is. */
@@ -201,6 +209,16 @@
       graph: function () { return graph; },
       tool: function () { return page.rail.get('tool'); },
       weight: function () { return page.rail.get('weight'); },
+      // what the click MEANS: the plane's geometry, the matrix's, or nothing at all
+      mode: function () { return viewOf(page.rail); },
+      /* Where a node added from the matrix lands on the plane. The matrix has no positions in
+         it, so one has to be invented — a golden-angle spiral from the centre, which spreads
+         without ever putting two nodes in the same place however many are added. */
+      nextSpot: function () {
+        var k = graph.nodes().length, a = k * 2.399963;
+        var rad = Math.min(0.46, 0.09 + 0.035 * Math.sqrt(k));
+        return { x: 0.5 + Math.cos(a) * rad, y: 0.5 + Math.sin(a) * rad };
+      },
       // the first letter nobody is using — counting the nodes hands out a duplicate label
       // as soon as one has been erased, and the Start-at dropdown resolves nodes BY label
       nextLabel: function () {

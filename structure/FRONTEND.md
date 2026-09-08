@@ -166,6 +166,14 @@ field already existed and already answers exactly this question for the plane an
 matrix; a second switch elsewhere on the page for the third answer would be two controls for
 one choice.
 
+**The pointer means what the view means.** One canvas carries all four drawings, so a click is
+an act on the one in front of you: a position on the plane, a row and a column on the adjacency
+matrix, and nothing at all on a marking — an answer being written out has nothing in it to
+edit, and the rail's pointer controls go with it. Each view owns its own hit testing next to
+its renderer (`GraphDraw.hit`, `MatrixDraw.hit`), never in `js/graph/editor.js`, so what you
+click is what was drawn even after a resize. Everything used to go through the plane's hit
+testing, which is how clicking a matrix cell dropped a node onto the plane.
+
 **One button, whatever the marking is.** The node plane's third option is `Marking view` and
 not `Marking table — Dijkstra` beside `Level tree — BFS`: which marking a run has is a fact
 about the ALGORITHM, so `Algorithm` already answers it and asking twice makes the pair go stale

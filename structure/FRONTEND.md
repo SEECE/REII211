@@ -166,6 +166,16 @@ field already existed and already answers exactly this question for the plane an
 matrix; a second switch elsewhere on the page for the third answer would be two controls for
 one choice.
 
+**An edit restarts the run; it does not replace it.** A page whose stage is editable — the node
+plane, the point plane — used to answer an edit by swapping the run for a one-frame
+announcement saying what you had just done. That threw away the run you were watching: add a
+node mid-play and the algorithm was gone until you pressed one again, and every marking view
+went blank, because a one-beat `edit` trace is not a run of anything. An edit now rebuilds the
+real run on the edited subject, and `player.load` pauses the clock and returns to frame zero for
+free. The sentence about what changed goes in the rail's `note` field, which hands its element
+back so a page can rewrite it. The only case that still announces is a subject nothing can be
+run on — an empty plane.
+
 **The pointer means what the view means.** One canvas carries all four drawings, so a click is
 an act on the one in front of you: a position on the plane, a row and a column on the adjacency
 matrix, and nothing at all on a marking — an answer being written out has nothing in it to

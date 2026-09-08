@@ -19,7 +19,7 @@
 
   window.NodePlanePage = function () {
     var graph = window.Graph.random(9, 4);
-    var message = null, selected = null, editor = null, marks = null;
+    var selected = null, editor = null, marks = null, spoken = null;
     /* The stage holds two things and shows one: the canvas, and the marking table's DOM. Which
        is which is css/marks.css reading this attribute, so the swap is a class change and not
        a second layout.
@@ -49,7 +49,26 @@
       return found ? found.id : (graph.nodes()[0] || {}).id;
     }
 
-    function* announce(text, roles) { yield { tag: 'edit', note: text, roles: roles || {} }; }
+    function* announce(text) { yield { tag: 'edit', note: text, roles: {} }; }
+
+    /* What just happened, in the rail's note. Editing the graph used to REPLACE the run with a
+       one-frame announcement saying so, which threw away the run you were watching: add a node
+       mid-play and the algorithm was gone until you pressed one again, and every marking view
+       went blank because a one-beat 'edit' trace is not a run of anything. The edit now
+       restarts the algorithm on the edited graph — which is the only thing an edit can honestly
+       mean — and the sentence about it goes here instead. */
+    function say(text) {
+      var note = rails && rails.el('hint');
+      if (note) note.innerHTML = text;
+    }
+    var GUIDE = {
+      plane: 'Click empty space for a node, then one node and another to connect them. Run BFS ' +
+        'and Dijkstra on the same graph and compare the routes.',
+      matrix: 'A cell is an edge: click one to fill it in or clear it, and its mirror image ' +
+        'goes with it. The + row and column past the last node add a node.',
+      marks: 'A marking view is read-only — it is the answer being written out. Edit the graph ' +
+        'on the plane or the matrix.',
+    };
 
     var page = window.Playground({
       title: 'Graph',
@@ -84,10 +103,8 @@
         { id: 'weight', kind: 'range', label: 'New edge weight', min: 1, max: 9, value: 4 },
         { id: 'size', kind: 'range', label: 'Generate size', min: 3, max: 20, value: 9 },
         { id: 'generate', kind: 'button', label: 'Generate graph', variant: 'primary' },
-        { id: 'hint', kind: 'note', spacer: true, label:
-          'On the plane: click empty space for a node, then one node and another to connect ' +
-          'them. On the matrix: click a cell for the edge it stands for, or the + row for a ' +
-          'new node. A marking view is read-only.' },
+        // replaced on every view change, and by whatever the last edit did — see say()
+        { id: 'hint', kind: 'note', spacer: true, label: GUIDE.plane },
       ],
 
       file: {
@@ -97,23 +114,22 @@
         open: function (data, name, api) {
           graph = window.Graph.load(data);
           refreshStarts(api.rail);
-          message = 'Opened <b>' + name + '</b> — ' + graph.nodes().length + ' nodes and ' +
-            graph.edges().length + ' edges. Press an algorithm to run it on this graph.';
+          say('Opened <b>' + name + '</b> — ' + graph.nodes().length + ' nodes and ' +
+            graph.edges().length + ' edges, running the algorithm on it now.');
         },
       },
 
       onField: function (id, value, api) {
         if (id === 'generate') {
           graph = window.Graph.random(api.rail.get('size'), Math.round(api.rail.get('size') / 2));
-          message = null;
           refreshStarts(api.rail);
+          spoken = null;                 // a new graph, so the note goes back to the guidance
           return;
         }
         // the marking view is the algorithm's, so only `algo` changing needs a rebuild
         if (id === 'view') { refreshView(api.rail); api.repaint(); return false; }
         if (id === 'cross') { api.repaint(); return false; }
         if (id === 'tool' || id === 'weight') { if (editor) editor.clear(); return false; }
-        message = null;
       },
 
       build: function (rail) {
@@ -122,7 +138,13 @@
         graph.resetCounters();
         rail.show('start', chosen.needsStart !== false && rail.get('algo') !== 'kruskal');
         refreshView(rail);
-        if (message) return { subject: graph, gen: announce(message), title: 'Graph' };
+        /* An empty plane is the one thing no algorithm can be run on — every other edit, the
+           run is simply rebuilt and starts again from the top. */
+        if (!graph.nodes().length) {
+          return { subject: graph, title: 'Graph',
+            gen: announce('The plane is empty. Click it to put a node down, or press Generate ' +
+              'graph for one to run an algorithm on.') };
+        }
         return {
           subject: graph,
           gen: chosen.run(graph, startNode(rail)),
@@ -185,8 +207,10 @@
       var editing = v === 'plane' || v === 'matrix';
       rail.show('tool', editing);
       rail.show('weight', editing);
-      rail.show('hint', editing);
       if (!editing && editor) editor.clear();
+      /* only when the VIEW moved — otherwise the guidance would wipe the sentence an edit just
+         wrote, on the rebuild that edit itself asked for */
+      if (v !== spoken) { spoken = v; say(GUIDE[editing ? v : 'marks']); }
     }
 
     /* The start-node dropdown is a view of the graph, so it is rebuilt whenever the graph is. */
@@ -231,7 +255,7 @@
       select: function (id) { selected = id; page.repaint(); },
       commit: function (text) {
         selected = null;
-        message = text + ' Press an algorithm to run it on the graph as it stands.';
+        say(text + ' The algorithm is running again from the top on the graph as it stands.');
         refreshStarts(page.rail);
         page.rebuild();
       },

@@ -62,6 +62,32 @@
       });
       C.ok(bad === null, 'a column is one descent and every jump steps right (n=' + n + ')', bad);
 
+      /* ── the retreats ── node by node, up the tree, and never two in one lane at one row ──
+         `via` is what the drawing puts an arrowhead on, one per node, so every step of it has
+         to be a real link in the line: the walk retreats THROUGH nodes, it does not teleport. */
+      var torn = null, laneAt = {};
+      model.seq.forEach(function (s) {
+        if (torn || !s.back) return;
+        var via = s.back.via;
+        if (via[0] !== s.back.from) torn = 'a retreat that does not start at the dead end';
+        else if (via[via.length - 1] !== s.back.to) torn = 'a retreat that does not end where the walk carries on';
+        else if (via.length < 2) torn = 'a retreat with no hop in it';
+        via.forEach(function (id, k) {
+          if (torn || !k) return;
+          // each hop is one link of the line: the node before it hangs off this one
+          if (model.seq[model.index[via[k - 1]]].from !== id) torn = 'a retreat that skips a node';
+          if (model.index[id] >= model.index[via[k - 1]]) torn = 'a retreat that does not go up';
+        });
+        for (var row = model.index[s.back.to]; row <= model.index[s.back.from]; row++) {
+          var slot = s.back.lane + ':' + row;
+          if (laneAt[slot]) torn = 'two retreats sharing one lane at row ' + row;
+          laneAt[slot] = true;
+        }
+      });
+      C.ok(torn === null, 'every retreat runs node by node up the line, in a lane of its own (n=' + n + ')', torn);
+      C.ok(model.lanes >= 1 || !model.seq.some(function (s) { return s.back; }),
+        'and the gutter is as wide as it needs to be (n=' + n + ')');
+
       /* ── the links ── you hang off a node you share an edge with, drawn before you ── */
       var loose = model.seq.filter(function (s, i) {
         if (s.from == null) return i > 0;
@@ -101,6 +127,14 @@
     }), ['D>B', 'F>H', 'G>C'], 'the jumps back run D→B, F→H and G→C');
     C.equal(m.seq.filter(function (s) { return s.dead; }).map(function (s) { return s.label; }),
       ['D', 'F', 'G', 'E'], 'and D, F, G and E are where the walk ran out of road');
+    C.equal(m.seq.filter(function (s) { return s.back; }).map(function (s) {
+      return s.back.via.map(function (id) { return ex.node(id).label; }).join('');
+    }), ['DB', 'FH', 'GHBC'],
+      'and each retreat is drawn through every node it goes back past — G to C is four');
+    C.equal(m.seq.filter(function (s) { return s.back; }).map(function (s) { return s.back.lane; }),
+      [0, 0, 1], 'D→B and F→H do not overlap so they share a lane; G→C spans both, so it gets ' +
+      'its own and the three read as three');
+    C.equal(m.lanes, 2, 'which is a two-lane gutter');
     C.equal(m.cross.length, 0, 'a tree-shaped graph leaves no untravelled edges');
 
     /* One more edge is the dotted case — and it moves the run, which is the point: A now

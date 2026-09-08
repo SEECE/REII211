@@ -7,16 +7,21 @@
 
         A
         C
-        E          E has nowhere new to go
-           B       so the walk resumes under C, which is where B was found
-           D
-              H
+        B
+        D          D has nowhere new to go, so the walk retreats — through B, which is where
+     ↰     H       H was found — and carries on there, one column to the right
+     ↰     F
               G
-                 F
 
    Read it top to bottom and it is the visit order. Read a column and it is one unbroken descent
-   — the "linear part". Every step right is a jump back up, drawn as a dashed arrow to the node
-   the walk resumes under.
+   — the "linear part". New branches go RIGHT and every retreat goes LEFT, into a gutter of its
+   own, so the two directions never share a line.
+
+   A retreat is drawn NODE BY NODE and not as one jump to wherever the walk ends up: coming out
+   of D, a recursive search returns through every node between D and B in turn, and "it went
+   back four" is the thing being taught. They are all one occasion, though, so they share one
+   unbroken line — and two retreats whose rows overlap take different lanes in the gutter, or
+   they would draw on top of each other and read as one.
 
    **None of this is worked out here.** The line is read straight off the frames: the visit beat
    says which node came off the stack (`focus`), the beat after it says which nodes that node
@@ -71,8 +76,9 @@
       seq.push({
         id: id, label: byId[id].label, from: found[id] == null ? null : found[id],
         row: seq.length, col: last ? (branch ? last.col + 1 : last.col) : 0,
-        /* a jump back leaves the node before it stranded: that is the dead end, and the arrow
-           runs from it to the node the walk resumes under */
+        /* a jump back leaves the node before it stranded: that is the dead end, and the
+           retreat runs from it up to the node the walk resumes under. `via` is filled in below,
+           once the whole line exists to walk back up. */
         back: branch ? { from: last.id, to: found[id] } : null,
       });
       if (branch) last.dead = true;
@@ -94,15 +100,48 @@
       at[i] = { shown: seq.length, focus: focus };
     }
     if (seq.length) seq[seq.length - 1].dead = true;       // the walk stops there too
+    var lanes = route(seq, index);
 
     var tree = {};
     seq.forEach(function (s) { if (s.from != null) tree[window.Graph.edgeKey(s.id, s.from)] = true; });
 
     return {
-      seq: seq, index: index, at: at, start: start, cols: cols,
+      seq: seq, index: index, at: at, start: start, cols: cols, lanes: lanes,
       // the edges the walk never travelled along — same idea as the level tree's leftovers
       cross: view.edges.filter(function (e) { return !tree[e.key]; }),
     };
+  }
+
+  /* Every retreat, filled out node by node and given a lane in the gutter. Returns how many
+     lanes the gutter needs.
+
+     `via` is the dead end, then every node between it and where the walk resumes, then that
+     node — which is the chain of `from` links, because the node a walk resumes under is always
+     an ancestor of the one it just gave up on. That is the depth-first property stated from the
+     other end, and js/tests/graph.js checks it on the walk itself.
+
+     A lane is free for a retreat if the last retreat put in it finished above this one starts.
+     Lane 0 is the one nearest the nodes, so the common shallow retreat keeps the short stub and
+     only the ones that overlap it are pushed out. */
+  function route(seq, index) {
+    var bottom = [];
+    seq.forEach(function (n) {
+      if (!n.back) return;
+      var path = [n.back.from], at = n.back.from, guard = seq.length;
+      while (at !== n.back.to && guard-- > 0) {
+        var up = seq[index[at]];
+        if (!up || up.from == null) break;
+        at = up.from;
+        path.push(at);
+      }
+      // a resume node that is not an ancestor would be a broken tree; draw the one hop and say so
+      n.back.via = path[path.length - 1] === n.back.to ? path : [n.back.from, n.back.to];
+      var top = index[n.back.to], low = index[n.back.from], lane = 0;
+      while (lane < bottom.length && bottom[lane] >= top) lane++;
+      bottom[lane] = low;
+      n.back.lane = lane;
+    });
+    return bottom.length;
   }
 
   /* Memo of one — the page repaints off the same trace sixty times a second. */

@@ -2,15 +2,20 @@
    renders is js/graph/backtrack.js — read that first.
 
    One row per visit, top to bottom, so the vertical position IS the order. A column is one
-   unbroken descent; every jump back starts a new column one step to the right, so the width of
-   the drawing is the number of times the walk ran out of road. The visit number is in a gutter
-   down the right-hand edge, the way the level tree puts L0/L1 there.
+   unbroken descent; every new branch starts a column one step to the RIGHT, so the width of the
+   drawing is the number of times the walk ran out of road. The visit number is in a gutter down
+   the right-hand edge, the way the level tree puts L0/L1 there.
 
-   Solid lines are edges the walk travelled along. The dashed arrow is the jump BACK — it is not
-   an edge and the walk did not cross it, so it must not look like one. It is routed
-   orthogonally through the half-column of empty space to the left of the dead end, which is
-   clear of every node by construction: there is exactly one node per row, and a node in that
-   column sits on the column centre, half a column further right.
+   Retreats go LEFT, into a gutter of their own, and they never share a line with the branch
+   they lead to — which they did when each was routed through the half-column beside its own
+   dead end, and it made the two directions of the drawing impossible to tell apart.
+
+   Solid lines are edges the walk travelled along. A retreat is dashed, because it is not an
+   edge and the walk did not cross it. It is drawn NODE BY NODE — a stub and an arrowhead into
+   every node between the dead end and where the walk carries on, since "it went back four" is
+   the thing being shown — while one unbroken spine down the gutter says those hops are a single
+   retreat and not four separate ones. Two retreats whose rows overlap get different lanes
+   (js/graph/backtrack.js works out which), so a spine is always one occasion.
 
    Colours come from the frame, exactly as on the plane. */
 (function () {
@@ -33,12 +38,18 @@
       var shown = step.shown;
 
       var gutter = 30, pad = 22;
-      var W = Math.max(1, s.w - pad * 2 - gutter), H = Math.max(1, s.h - pad * 2);
+      /* the retreat gutter, sized to the lanes it has to hold but never taking more than a
+         fifth of the drawing away from the thing it is annotating */
+      var laneW = model.lanes ? Math.max(9, Math.min(18, s.w * 0.2 / model.lanes)) : 0;
+      var left = model.lanes ? model.lanes * laneW + 6 : 0;
+      var W = Math.max(1, s.w - pad * 2 - gutter - left), H = Math.max(1, s.h - pad * 2);
       var colW = W / model.cols, rowH = H / model.seq.length;
-      var r = Math.max(7, Math.min(18, rowH / 2.6, colW / 2.8));
+      var r = Math.max(6, Math.min(18, rowH / 2.6, colW / 2.8));
+      // lane 0 sits nearest the nodes, so the common shallow retreat keeps the shortest stubs
+      function laneX(l) { return pad + left - (l + 0.5) * laneW; }
 
       var at = model.seq.map(function (n) {
-        return { x: pad + colW * (n.col + 0.5), y: pad + rowH * (n.row + 0.5) };
+        return { x: pad + left + colW * (n.col + 0.5), y: pad + rowH * (n.row + 0.5) };
       });
 
       /* the visit numbers first, so everything else sits over them */
@@ -90,30 +101,41 @@
         ctx.stroke();
       });
 
-      /* the jumps back — dashed, arrowed, and routed clear of every node */
-      ctx.setLineDash([4, 4]);
-      ctx.lineWidth = 1.6;
+      /* the retreats — one spine per occasion, one arrowhead per node it goes back through */
       ctx.strokeStyle = colours.reject;
       ctx.fillStyle = colours.reject;
       model.seq.forEach(function (n, i) {
         if (i >= shown || !n.back) return;
-        var d = at[model.index[n.back.from]], t = at[model.index[n.back.to]];
-        var lane = d.x - colW * 0.5;
-        ctx.beginPath();
-        ctx.moveTo(d.x - r - 1, d.y);
-        ctx.lineTo(lane, d.y);
-        ctx.lineTo(lane, t.y);
-        ctx.lineTo(t.x + (t.x > lane ? -r - 4 : r + 4), t.y);
-        ctx.stroke();
-        head(t.x + (t.x > lane ? -r - 3 : r + 3), t.y, t.x > lane ? 1 : -1);
-      });
-      ctx.setLineDash([]);
+        var lane = laneX(n.back.lane);
+        var via = n.back.via.map(function (id) { return at[model.index[id]]; });
+        var d = via[0];
 
-      function head(x, y, dir) {
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(d.x - r - 1, d.y);            // out of the dead end, into the gutter
+        ctx.lineTo(lane, d.y);
+        ctx.lineTo(lane, via[via.length - 1].y); // the spine: all of this is one retreat
+        ctx.stroke();
+
+        for (var k = 1; k < via.length; k++) {   // and back in to every node on the way up
+          ctx.beginPath();
+          ctx.moveTo(lane, via[k].y);
+          ctx.lineTo(via[k].x - r - 4, via[k].y);
+          ctx.stroke();
+          head(via[k].x - r - 3, via[k].y);
+        }
+        ctx.setLineDash([]);
+        ctx.beginPath();                         // a dot where the retreat starts
+        ctx.arc(lane, d.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      function head(x, y) {
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(x - dir * 6, y - 3.5);
-        ctx.lineTo(x - dir * 6, y + 3.5);
+        ctx.lineTo(x - 6, y - 3.5);
+        ctx.lineTo(x - 6, y + 3.5);
         ctx.closePath();
         ctx.fill();
       }

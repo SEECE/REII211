@@ -10,15 +10,17 @@
   'use strict';
 
   /* The same stack walk js/graph/traverse.js performs, written again here: pop, push every
-     unseen neighbour and mark it as it goes in. If this and the trace ever disagree, one of
-     the two is wrong and the drawing is not to be trusted either way. */
+     unseen neighbour BACKWARDS — a stack hands back the newest, so feeding it in reverse is
+     what makes it take the adjacency list forwards — and mark each one as it goes in. If this
+     and the trace ever disagree, one of the two is wrong and the drawing is not to be trusted
+     either way. */
   function order(g, from) {
     var stack = [from], seen = {}, out = [];
     seen[from] = true;
     while (stack.length) {
       var at = stack.pop();
       out.push(at);
-      g.peek(at).forEach(function (e) {
+      g.peek(at).reverse().forEach(function (e) {
         if (seen[e.to]) return;
         seen[e.to] = true;
         stack.push(e.to);
@@ -79,9 +81,10 @@
     }
 
     /* ── the worked example in js/graph/backtrack.js ──
-       E = {(A,C),(B,C),(B,H),(B,D),(C,E),(F,H),(G,H)} from A. The stack hands back A C E, then
-       has nothing new under E and returns B — which was found from C, so the line resumes there
-       one column right. Same again at D and at G. */
+       E = {(A,C),(B,C),(B,H),(B,D),(C,E),(F,H),(G,H)} from A. Adjacency in label order, so the
+       walk descends A C B D; D has nowhere new, and the stack hands back H — found from B, so
+       the line resumes under B one column right. Same again at F and at G. This is the answer
+       the same graph gets worked out by hand, which is the whole point of both orderings. */
     var ex = G(), id = {};
     'ABCDEFGH'.split('').forEach(function (l) { id[l] = ex.addNode(l, 0.5, 0.5); });
     [['A', 'C'], ['B', 'C'], ['B', 'H'], ['B', 'D'], ['C', 'E'], ['F', 'H'], ['G', 'H']]
@@ -89,16 +92,16 @@
     ex.resetCounters();
     var m = B.tabulate(T.build(window.GraphSearch.dfs.run(ex, id.A), ex));
 
-    C.equal(m.seq.map(function (s) { return s.label; }).join(''), 'ACEBDHGF',
-      'the worked example is visited A C E B D H G F');
-    C.equal(m.seq.map(function (s) { return s.col; }), [0, 0, 0, 1, 1, 2, 2, 3],
+    C.equal(m.seq.map(function (s) { return s.label; }).join(''), 'ACBDHFGE',
+      'the worked example is visited A C B D H F G E');
+    C.equal(m.seq.map(function (s) { return s.col; }), [0, 0, 0, 0, 1, 1, 2, 3],
       'in four columns — three jumps back, so three steps right');
     C.equal(m.cols, 4, 'and the drawing is four columns wide');
     C.equal(m.seq.filter(function (s) { return s.back; }).map(function (s) {
       return ex.node(s.back.from).label + '>' + ex.node(s.back.to).label;
-    }), ['E>C', 'D>B', 'G>H'], 'the jumps back run E→C, D→B and G→H');
+    }), ['D>B', 'F>H', 'G>C'], 'the jumps back run D→B, F→H and G→C');
     C.equal(m.seq.filter(function (s) { return s.dead; }).map(function (s) { return s.label; }),
-      ['E', 'D', 'G', 'F'], 'and E, D, G and F are where the walk ran out of road');
+      ['D', 'F', 'G', 'E'], 'and D, F, G and E are where the walk ran out of road');
     C.equal(m.cross.length, 0, 'a tree-shaped graph leaves no untravelled edges');
 
     /* One more edge is the dotted case — and it moves the run, which is the point: A now

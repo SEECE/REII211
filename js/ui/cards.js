@@ -9,22 +9,25 @@
 (function () {
   'use strict';
 
-  function section(group, href) {
+  function section(group, href, isFirst) {
     var cards = group.items.map(function (item) {
       return '<a class="card" href="' + href(item.id) + '">' +
         '<h3 class="card-title">' + item.label + '</h3>' +
         '<p class="card-sub">' + (item.note || '') + '</p>' +
         '<span class="card-go" aria-hidden="true">&rarr;</span></a>';
     }).join('');
-    return '<section class="home-section">' +
-      '<h2 class="section-label">' + group.label + '</h2>' +
+    return '<details class="home-section"' + (isFirst ? ' open' : '') + '>' +
+      '<summary class="section-toggle">' +
+      '<span class="section-label">' + group.label + '</span>' +
+      '<span class="section-count">' + group.items.length + '</span>' +
+      '</summary>' +
       (group.blurb ? '<p class="section-blurb">' + group.blurb + '</p>' : '') +
-      '<div class="card-grid">' + cards + '</div></section>';
+      '<div class="card-grid">' + cards + '</div></details>';
   }
 
   function mount(root) {
     var map = window.SiteMap;
-    root.innerHTML = map.map(function (g) { return section(g, map.href); }).join('');
+    root.innerHTML = map.map(function (g, i) { return section(g, map.href, i === 0); }).join('');
   }
 
   window.SiteCards = function () {

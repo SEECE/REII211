@@ -51,15 +51,20 @@
     }), saved.span);
   };
 
+  /* Offers from the SAME studio never overlap each other — a studio doesn't hand you two
+     conflicting slots for its own film. The overlap that makes the problem worth solving is
+     between studios, which this leaves untouched. */
   window.JobSet.random = function (studios, span) {
     var jobs = [];
     for (var s = 0; s < studios; s++) {
       var offers = 2 + Math.floor(Math.random() * 3);
-      for (var k = 0; k < offers; k++) {
+      var cursor = Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
+      for (var k = 0; k < offers && cursor < span; k++) {
         var length = 1 + Math.floor(Math.random() * Math.max(1, Math.round(span / 4)));
-        var start = Math.floor(Math.random() * Math.max(1, span - length));
+        var end = Math.min(span, cursor + length);
         jobs.push({ id: jobs.length, studio: STUDIOS[s % STUDIOS.length], row: s,
-          start: start, end: start + length });
+          start: cursor, end: end });
+        cursor = end + Math.floor(Math.random() * Math.max(1, Math.round(span / offers)));
       }
     }
     return window.JobSet(jobs, span);

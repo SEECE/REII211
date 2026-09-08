@@ -32,7 +32,7 @@
       fields: [
         { id: 'algo', kind: 'choice', label: 'Algorithm', value: 'tour', options: [
           { value: 'tour', label: 'Nearest neighbour — closed tour' },
-          { value: 'pair', label: 'Closest pair' },
+          { value: 'pair', label: 'Closest pair — a closed loop' },
         ] },
         { id: 'start', kind: 'number', label: 'Tour starts at point', min: 1, max: 99, value: 1 },
         { id: 'size', kind: 'range', label: 'Generate points', min: 3, max: 40, value: 8 },

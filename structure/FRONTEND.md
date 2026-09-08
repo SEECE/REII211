@@ -137,10 +137,11 @@ table is whatever the shape of the answer is:
 | the six bar-graph sorts | a ROW per pass — the array after each outer loop closes | `js/sorting/marks.js` |
 | the node plane's Dijkstra | a COLUMN per node coming out of the priority queue | `js/graph/marks.js` + `-view.js` |
 | the node plane's BFS | a ROW per ring — the level tree, start on top | `js/graph/levels.js` + `-draw.js` |
+| the node plane's DFS | a ROW per visit — the line down the page, one column per descent | `js/graph/backtrack.js` + `-draw.js` |
 
 It is never a second run and never a second implementation. Every row and every column is read
 off the frames the player is already walking — the sort's `tag` groups, Dijkstra's `focus` and
-`scan` roles, BFS's `focus` and `move` — so the marking and the drawing cannot disagree about
+`scan` roles, the searches' `focus` and `move` — so the marking and the drawing cannot disagree about
 what the algorithm did, and no algorithm file knows a marking view exists. The two tables are
 styled from `css/marks.css`.
 

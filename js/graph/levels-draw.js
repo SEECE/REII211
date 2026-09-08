@@ -14,24 +14,6 @@
   'use strict';
   var R = window.Roles;
 
-  function note(s, colours, text) {
-    var ctx = s.ctx;
-    ctx.fillStyle = colours['ink-soft'];
-    ctx.font = '500 13px ui-sans-serif, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    var words = text.split(' '), line = '', y = s.h / 2 - 10;
-    var max = Math.min(s.w - 60, 420);
-    words.forEach(function (w) {
-      if (ctx.measureText(line + ' ' + w).width > max && line) {
-        ctx.fillText(line, s.w / 2, y);
-        y += 19;
-        line = w;
-      } else line = line ? line + ' ' + w : w;
-    });
-    ctx.fillText(line, s.w / 2, y);
-  }
-
   window.LevelDraw = {
     /* opts: { model, step, cross } — the tree, where the run is standing in it, and whether to
        draw the edges the walk never took */
@@ -41,7 +23,7 @@
       if (!model) {
         /* Only reachable now with nothing to draw at all — the rail hands this view the BFS
            run and no other, so a missing tree means a missing graph. */
-        note(s, colours, 'There is no graph to walk yet. Put some nodes on the plane and the ' +
+        window.GraphDraw.note(s, colours, 'There is no graph to walk yet. Put some nodes on the plane and the ' +
           'queue will build the level tree one ring at a time.');
         return;
       }

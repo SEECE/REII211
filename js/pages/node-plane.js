@@ -30,9 +30,10 @@
        marking?" and the ALGORITHM decides which marking — which is also why the button does
        not go stale when you switch algorithms with it already pressed. */
     var stage = document.querySelector('.stage');
+    var MARKING = { bfs: 'levels', dfs: 'branches' };   // the rest are marked as a table
     function viewOf(rail) {
       var v = rail.get('view');
-      return v === 'marks' && rail.get('algo') === 'bfs' ? 'levels' : v;
+      return v === 'marks' ? MARKING[rail.get('algo')] || v : v;
     }
     function setView(v) { if (stage) stage.dataset.view = v; }
     /* Playground hands `rail` to build(), and build() always runs before the first render, so
@@ -73,9 +74,9 @@
           { value: 'matrix', label: 'Adjacency matrix' },
           { value: 'marks', label: 'Marking view' },
         ] },
-        /* Off by default: the edges BFS never walked are the ones that make a level tree look
-           wrong until a student knows what they are, so they are shown on request. */
-        { id: 'cross', kind: 'check', label: 'Show the edges BFS never took', value: false },
+        /* Off by default: the edges the search never walked are the ones that make either
+           marking look wrong until a student knows what they are, so they are on request. */
+        { id: 'cross', kind: 'check', label: 'Show the edges the search never took', value: false },
         { id: 'tool', kind: 'choice', label: 'Pointer', value: 'build', options: [
           { value: 'build', label: 'Build — add, connect, drag' },
           { value: 'erase', label: 'Erase — remove a node' },
@@ -141,13 +142,16 @@
         /* The tree is the whole run at once too, but it is a DRAWING and so it goes on the
            canvas rather than into the table's box — which is why this view keeps the plane's
            stage rather than swapping to the marks one. */
-        if (view === 'levels') {
-          var tree = window.LevelTree.of(page.frames());
-          window.LevelDraw.draw(surface, frame, colours, {
-            model: tree,
-            step: tree && tree.at[Math.max(0, Math.min(tree.at.length - 1, page.player.index()))],
-            cross: !!rails.get('cross'),
-          });
+        if (view === 'levels' || view === 'branches') {
+          var of = view === 'levels' ? window.LevelTree : window.Backtrack;
+          var model = of.of(page.frames());
+          (view === 'levels' ? window.LevelDraw : window.BacktrackDraw)
+            .draw(surface, frame, colours, {
+              model: model,
+              step: model && model.at[Math.max(0,
+                Math.min(model.at.length - 1, page.player.index()))],
+              cross: !!rails.get('cross'),
+            });
           return;
         }
         /* The node waiting to be connected is a UI state, not part of the trace, so it is
@@ -174,7 +178,7 @@
     function refreshView(rail) {
       var v = viewOf(rail);
       setView(v);
-      rail.show('cross', v === 'levels');
+      rail.show('cross', v === 'levels' || v === 'branches');
     }
 
     /* The start-node dropdown is a view of the graph, so it is rebuilt whenever the graph is. */

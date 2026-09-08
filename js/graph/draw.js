@@ -16,6 +16,26 @@
   var R = window.Roles;
 
   window.GraphDraw = {
+    /* A sentence centred on an empty stage — "there is nothing here and this is why". Every
+       view on this page needs one and canvas has no line wrapping, so it lives here with the
+       renderer the others are variations of rather than once per view. */
+    note: function (s, colours, text) {
+      var ctx = s.ctx;
+      ctx.fillStyle = colours['ink-soft'];
+      ctx.font = '500 13px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      var max = Math.min(s.w - 60, 420), lines = [], line = '';
+      text.split(' ').forEach(function (w) {
+        if (line && ctx.measureText(line + ' ' + w).width > max) { lines.push(line); line = w; }
+        else line = line ? line + ' ' + w : w;
+      });
+      lines.push(line);
+      lines.forEach(function (l, i) {
+        ctx.fillText(l, s.w / 2, s.h / 2 - (lines.length - 1) * 9.5 + i * 19);
+      });
+    },
+
     /* opts: { weighted, radius } */
     draw: function (s, frame, colours, opts) {
       if (!s || !frame || !frame.state) return;

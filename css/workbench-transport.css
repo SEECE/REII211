@@ -1,0 +1,71 @@
+/* Workbench — the footer row: speed, and Prev / Play / Next. Part of workbench.css.
+
+   This is the other half of what moved out of the old control panel. Play, step and speed
+   drive the trace, so they sit with the trace rather than next to "how many bars". */
+
+.wb-transport {
+  padding: var(--sp-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  background: var(--panel-hi);
+}
+
+.transport-speed { display: flex; align-items: center; gap: var(--sp-3); }
+.transport-speed .field-label { flex: none; }
+.transport-speed .ctl-range { flex: 1 1 0; }
+.transport-speed .field-value { flex: none; min-width: 42px; text-align: right; }
+
+/* Prev and Next carry the same weight as Play. They used to be two bare chevrons beside a
+   full-width primary button, which read as decoration: people asked where the step-by-step
+   walk had gone while looking straight at it. A run you can WALK is the point of the page,
+   so the three buttons are one row of equal thirds and the step ones say what they do. */
+.transport-row { display: grid; grid-template-columns: auto repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.transport-row > .btn { min-width: 0; }
+
+/* Restart sits at the head of the row at its own width, so the three that walk the trace keep
+   their equal thirds. It is the one button here with no word on it: a fourth label turns the
+   row into four cramped columns, and unlike a bare chevron — which is what this row learned not
+   to do — ↺ is not one of a pair whose meaning depends on the other. */
+.btn--restart { padding-inline: var(--sp-3); font-size: 15px; line-height: 1; }
+
+.btn--step { gap: 4px; font-variant-numeric: tabular-nums; }
+.btn--step .step-arrow { font-size: 15px; line-height: 1; }
+
+/* Play and Pause are one button — a separate Pause would be dead half the time */
+.btn--play { gap: var(--sp-2); }
+.btn--play::before {
+  content: '';
+  width: 0; height: 0;
+  border: 6px solid transparent;
+  border-left-color: currentColor;
+  margin-left: 2px;
+}
+.btn--play[data-playing='true']::before {
+  width: 9px; height: 10px;
+  border: 0;
+  margin-left: 0;
+  background: currentColor;
+  /* two bars from one box, so pause needs no extra element */
+  clip-path: polygon(0 0, 34% 0, 34% 100%, 0 100%, 0 0, 66% 0, 100% 0, 100% 100%, 66% 100%, 66% 0);
+}
+
+/* ← and → walk the trace as well (js/core/workbench.js), and the hint says so without
+   costing a row: it hides itself the moment there is no keyboard to press. */
+.transport-hint {
+  margin: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--text-faint);
+  text-align: center;
+}
+.transport-hint kbd {
+  font: inherit;
+  font-weight: 700;
+  padding: 0 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--panel);
+}
+@media (pointer: coarse) { .transport-hint { display: none; } }

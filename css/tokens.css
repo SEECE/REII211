@@ -1,0 +1,111 @@
+/* Design tokens — the only file to edit to reskin the whole site.
+
+   Three palettes live here and they do NOT mix:
+
+   1. CHROME (light) — the app frame: ribbon, rail, workbench, cards. Aqua leads, sky blue
+      supports it and iris (violet) is the accent of last resort. Use --panel / --text /
+      --line / --aqua-* for anything the student clicks or reads in the UI.
+   2. PAPER — the sheet a visualisation is drawn on: --paper, --ink, --ink-soft, --grid.
+   3. ROLES — what a thing IS while an algorithm runs: idle, scanned, moved, done… Every
+      renderer on the site colours by ROLE, never by a literal. Canvas cannot read a custom
+      property, so js/core/palette.js resolves these once and hands the renderer the values;
+      that is what keeps this file the single point of reskin even for the canvas pages.
+      Renaming a --role-* is therefore a change to palette.js too — the names are a contract.
+
+   Contrast floor: --text-faint is 4.7:1 on --panel, which is the floor for 12px text. */
+:root {
+  color-scheme: light;
+
+  /* ── brand ramps ── */
+  --aqua-50: #ecfeff;
+  --aqua-100: #cffafe;
+  --aqua-200: #a5f3fc;
+  --aqua-300: #67e8f9;
+  --aqua-400: #22d3ee;
+  --aqua-500: #06b6d4;
+  --aqua-600: #0891b2;
+  --aqua-700: #0e7490;
+  --sky-100: #e0f2fe;
+  --sky-200: #bae6fd;
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;
+  --sky-600: #0284c7;
+  --sky-700: #0369a1;
+  --iris-200: #ddd6fe;
+  --iris-300: #c4b5fd;
+  --iris-400: #a78bfa;
+  --iris-500: #8b5cf6;
+  --iris-600: #7c3aed;
+
+  /* ── chrome ── */
+  --shell: #cfe3ec;
+  --shell-2: #e2eff4;
+  --panel: #ffffff;
+  --panel-hi: #f1f8fb;          /* inset block inside a panel — wells, boards, readouts */
+  --line: rgba(14, 116, 144, 0.16);
+  --line-hi: rgba(14, 116, 144, 0.34);
+  --text: #0d2430;
+  --text-dim: #3d5c6b;
+  --text-faint: #5a7686;        /* 4.7:1 on --panel — the floor for 12px secondary text */
+  --danger: #be123c;
+  --tint: rgba(6, 182, 212, 0.10);        /* accent wash on chrome */
+  --tint-hi: rgba(6, 182, 212, 0.18);
+  --tint-iris: rgba(139, 92, 246, 0.13);  /* the chosen state of a choice strip */
+
+  /* ── paper: the sheet a visualisation is drawn on ── */
+  --paper: #ffffff;
+  --ink: #0d2430;
+  --ink-soft: #557485;
+  --ink-faint: #9db6c2;
+  --grid: rgba(14, 116, 144, 0.10);
+
+  /* ── roles: what a thing IS mid-run. js/core/palette.js reads these by name. ── */
+  --role-idle: #94b8c8;         /* untouched data */
+  --role-scan: #0ea5e9;         /* being read or compared right now */
+  --role-focus: #7c3aed;        /* the cursor, the pivot, the node under the head */
+  --role-move: #e11d48;         /* being written, swapped or relinked */
+  --role-done: #0d9488;         /* finalised, will not move again */
+  --role-reject: #cbd5e1;       /* considered and discarded */
+  --role-path: #f59e0b;         /* on the tour, the path or the tree that was chosen */
+  --role-frontier: #22d3ee;     /* discovered, queued, not yet visited */
+  --role-wall: #0f3a4a;         /* blocked — a maze wall, an unusable slot */
+
+  /* ── shape ── */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --radius-pill: 999px;
+
+  /* ── elevation: cool shadows, so nothing on a pale ground looks grey ── */
+  --shadow-sm: 0 1px 2px rgba(14, 116, 144, 0.10);
+  --shadow: 0 6px 20px rgba(14, 116, 144, 0.12);
+  --glow: 0 4px 14px rgba(8, 145, 178, 0.28);
+  --ring: 2px solid var(--iris-600);       /* :focus-visible — reads on chrome AND on paper */
+
+  /* ── spacing (4px base) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* ── layout: the three regions. Collapsing a panel sets its track to 0 (workspace.css). ── */
+  --rail-w: clamp(200px, 16vw, 244px);
+  --wb-w: clamp(300px, 25vw, 392px);
+  --ribbon-h: 52px;
+  --content-max: 1100px;
+
+  /* ── motion ── */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 0.18s;
+
+  /* ── type ── */
+  --font: ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0s; }
+}

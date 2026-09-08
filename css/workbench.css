@@ -1,0 +1,19 @@
+/* The workbench column — the RUN. Four fixed rows (workspace.css sets the grid):
+
+     head       step counter + the step's title                never scrolls
+     scroll     the narration, and the legend that decodes the colours   the only part that scrolls
+     readout    the running counts                             pinned, capped, scrolls itself
+     transport  speed + Prev / Play / Next                     always reachable
+
+   The counts are pinned because they change on every frame and a student watching them should
+   not have to keep the scroll position right. The legend scrolls because it is reference
+   material you read once.
+
+   Split by JOB, and this file carries no rules of its own so a later part can still override
+   an earlier one:
+     -head       the head row and the narration body
+     -readout    the counts table and the legend
+     -transport  the footer row */
+@import url('workbench-head.css');
+@import url('workbench-readout.css');
+@import url('workbench-transport.css');

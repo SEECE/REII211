@@ -1,0 +1,45 @@
+/* The Open-or-Save control (js/core/files.js), part of the controls vocabulary.
+
+   It expands INLINE instead of popping over the button, because the rail is a scroll container
+   and an absolutely-positioned menu would be clipped by it (structure/FRONTEND.md). */
+
+/* No spacer of its own: the page's closing hint already carries .rail-spacer, and a second
+   auto margin would split the free space between the two and leave a gap between them. */
+
+.file-caret {
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-left-color: currentColor;
+  transition: transform var(--dur) var(--ease);
+}
+[aria-expanded='true'] > .file-caret { transform: rotate(90deg); }
+
+.file-actions {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-1);
+  background-color: var(--panel-hi);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.file-action {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-xs);
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.file-action:hover { color: var(--text); background-color: var(--tint); }
+.file-action:focus-within { outline: var(--ring); outline-offset: -2px; }
+.file-action small { display: block; font-size: 10.5px; font-weight: 400; color: var(--text-faint); margin-top: 1px; }
+.file-action + .file-action { border-top: 1px solid var(--line); }

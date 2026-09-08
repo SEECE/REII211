@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#e6f2f8" />
+  <title>Quick sort tree — REII 211</title>
+  <link rel="stylesheet" href="../../css/tokens.css" />
+  <link rel="stylesheet" href="../../css/base.css" />
+  <link rel="stylesheet" href="../../css/ribbon.css" />
+  <link rel="stylesheet" href="../../css/workspace.css" />
+  <link rel="stylesheet" href="../../css/controls.css" />
+  <link rel="stylesheet" href="../../css/workbench.css" />
+</head>
+
+<body class="app">
+  <a class="skip-link" href="#canvas">Skip to the visualisation</a>
+
+  <header class="ribbon">
+    <a class="ribbon-brand" href="../../index.html">
+      <span class="ribbon-mark" aria-hidden="true"></span>
+      <span class="ribbon-name" translate="no">REII&nbsp;211</span>
+    </a>
+    <span class="ribbon-sep" aria-hidden="true"></span>
+    <h1 class="ribbon-title">Quick Sort Tree</h1>
+    <nav class="ribbon-nav" data-nav data-base="../../" data-current="quick-tree" aria-label="Sections"></nav>
+    <div class="ribbon-tools">
+      <button type="button" class="icon-btn icon-btn--rail" data-panel="rail" aria-pressed="true"
+        aria-label="Show or hide the setup panel"><span class="ptg" aria-hidden="true"></span></button>
+      <button type="button" class="icon-btn icon-btn--workbench" data-panel="workbench" aria-pressed="true"
+        aria-label="Show or hide the workbench"><span class="ptg" aria-hidden="true"></span></button>
+    </div>
+  </header>
+
+  <div class="workspace" data-rail="open" data-workbench="open">
+    <!-- rail: the INPUT. js/core/rail.js fills .rail-fields from the page's field list. -->
+    <aside class="rail panel scroller" id="rail" aria-label="Set the problem up">
+      <div class="rail-fields"></div>
+    </aside>
+
+    <!-- stage: the state, drawn. The layout owns this box; the canvas is sized to it. -->
+    <section class="stage panel" aria-label="The recursion, as a call tree">
+      <canvas id="canvas"></canvas>
+    </section>
+
+    <!-- workbench: the RUN. Head / narration + legend / pinned counts / transport. -->
+    <aside class="workbench panel" id="workbench" aria-label="Walk the algorithm">
+      <header class="wb-head">
+        <div class="wb-head-top">
+          <span class="eyebrow">Workbench</span>
+          <span class="step-count" id="step-count"></span>
+        </div>
+        <h2 class="step-title" id="step-title" aria-live="polite"></h2>
+        <div class="step-progress" id="step-progress" aria-hidden="true"><i></i></div>
+      </header>
+
+      <div class="wb-scroll scroller">
+        <div class="step-body" id="step-body"></div>
+        <section class="wb-group">
+          <p class="eyebrow eyebrow--muted">Legend</p>
+          <div class="legend" id="step-legend"></div>
+        </section>
+      </div>
+
+      <div class="wb-readout" id="step-readout"></div>
+
+      <footer class="wb-transport">
+        <div class="transport-speed">
+          <label class="field-label" for="step-speed">Speed</label>
+          <input class="ctl-range" id="step-speed" type="range" min="1" max="100" value="26" />
+          <span class="field-value" id="step-speed-val">26&times;</span>
+        </div>
+        <div class="transport-row">
+          <button type="button" class="btn btn--soft btn--step" id="step-prev" aria-label="Previous step"><span class="step-arrow" aria-hidden="true">&lsaquo;</span><span>Prev</span></button>
+          <button type="button" class="btn btn--primary btn--play" id="step-play"><span>Play</span></button>
+          <button type="button" class="btn btn--soft btn--step" id="step-next" aria-label="Next step"><span>Next</span><span class="step-arrow" aria-hidden="true">&rsaquo;</span></button>
+        </div>
+        <p class="transport-hint">or press <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to step, <kbd>Space</kbd> to play, <kbd>R</kbd> to restart</p>
+      </footer>
+    </aside>
+
+    <button type="button" class="scrim" aria-label="Close the open panel"></button>
+  </div>
+
+  <script src="../../js/deps.js" data-load="recursion"></script>
+  <script>
+    // deps.js appends this page's scripts in order; the load event is when every one of them has run
+    window.addEventListener('load', function () {
+      RecursionPage('quick');
+    });
+  </script>
+  <script src="../../js/ui/sitemap.js"></script>
+  <script src="../../js/ui/nav.js"></script>
+</body>
+
+</html>

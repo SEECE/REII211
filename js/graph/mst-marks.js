@@ -54,5 +54,53 @@
     return { nodes: view.nodes, edges: view.edges, order: order, at: at };
   }
 
-  window.MstMarks = { of: of };
+  /* The sheet, drawn. It is the PLANE — same geometry, same circles, same renderer — with two
+     things changed, and both changes are the marking: an edge is only on the paper once it has
+     been taken, and what is written on it is its number rather than its weight. Nothing new is
+     laid out, so a student can hold the drawing and the sheet in their head as one picture.
+
+     The leftovers are off by default and keep their WEIGHTS when asked for, which is the
+     question the sheet cannot otherwise answer: an edge is missing either because it was dearer
+     than the one that beat it or because it would have closed a cycle, and you cannot see which
+     without the numbers it was competing on.
+
+     opts: { model, step, cross } — the sheet, how many edges are on it, and the leftovers. */
+  function draw(s, frame, colours, opts) {
+    if (!s || !frame) return;
+    var model = opts && opts.model;
+    if (!model) {
+      window.GraphDraw.note(s, colours, 'There is no tree to write out yet. Put some nodes on ' +
+        'the plane and the edges will be numbered here in the order they are taken.');
+      return;
+    }
+    var k = Math.max(0, Math.min(model.order.length, (opts && opts.step) || 0));
+    var taken = model.order.slice(0, k);
+
+    /* An edge just taken is the one under discussion, the rest are the tree, and a node is
+       drawn as reached the moment an edge lands on it — which is why the sheet opens on a
+       plane of bare circles. */
+    var labels = {}, roles = {};
+    taken.forEach(function (e, i) {
+      labels[e.key] = i + 1;
+      roles[e.key] = i === k - 1 ? 'focus' : 'path';
+      roles[e.a] = roles[e.b] = 'done';
+    });
+
+    window.GraphDraw.draw(s, {
+      state: { nodes: model.nodes, edges: opts && opts.cross ? model.edges : taken },
+      roles: roles,
+    }, colours, { weighted: true, labels: labels });
+
+    var ctx = s.ctx;
+    ctx.font = '600 11px ui-sans-serif, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = colours['ink-soft'];
+    ctx.fillText(k
+      ? 'Edge ' + k + ' of ' + model.order.length + ' — total weight ' + taken[k - 1].total
+      : 'No edges yet: the sheet starts as bare nodes and one is numbered onto it each step.',
+      10, 8);
+  }
+
+  window.MstMarks = { of: of, draw: draw };
 })();

@@ -36,7 +36,7 @@
       });
     },
 
-    /* opts: { weighted, radius } */
+    /* opts: { weighted, radius, labels } */
     draw: function (s, frame, colours, opts) {
       if (!s || !frame || !frame.state) return;
       var g = frame.state, ctx = s.ctx;
@@ -44,6 +44,11 @@
       var W = Math.max(1, s.w - pad * 2), H = Math.max(1, s.h - pad * 2);
       var r = (opts && opts.radius) || Math.max(11, Math.min(20, Math.min(W, H) / (g.nodes.length + 6)));
       var weighted = !!(opts && opts.weighted);
+      /* What is written on an edge instead of its weight. The MST marking sheet rubs the
+         weights out and writes the ORDER the edges were taken (js/graph/mst-marks.js); an
+         edge with no entry falls back to the weight, so the leftovers still say what they
+         cost. */
+      var labels = (opts && opts.labels) || null;
       var at = {};
       g.nodes.forEach(function (n) { at[n.id] = { x: pad + n.x * W, y: pad + n.y * H }; });
 
@@ -72,11 +77,12 @@
       }
 
       function weight(p, e, colour) {
-        if (!weighted) return;
+        var text = labels && labels[e.key] != null ? String(labels[e.key])
+          : weighted ? String(e.w) : null;
+        if (text == null) return;
         ctx.font = '700 10px ui-sans-serif, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        var text = String(e.w);
         var half = ctx.measureText(text).width / 2 + 3;
         ctx.fillStyle = colours.paper;
         ctx.fillRect(p.mx - half, p.my - 7, half * 2, 14);

@@ -9,21 +9,20 @@
 (function () {
   'use strict';
 
-  /* The same stack walk js/graph/traverse.js performs, written again here: pop, push every
-     unseen neighbour BACKWARDS — a stack hands back the newest, so feeding it in reverse is
-     what makes it take the adjacency list forwards — and mark each one as it goes in. If this
-     and the trace ever disagree, one of the two is wrong and the drawing is not to be trusted
-     either way. */
+  /* The same stack walk js/graph/traverse.js performs, written again here: pop, drop the copy
+     if that node has already been visited, otherwise mark it and push every unvisited
+     neighbour BACKWARDS — a stack hands back the newest, so feeding it in reverse is what makes
+     it take the adjacency list forwards. If this and the trace ever disagree, one of the two is
+     wrong and the drawing is not to be trusted either way. */
   function order(g, from) {
     var stack = [from], seen = {}, out = [];
-    seen[from] = true;
     while (stack.length) {
       var at = stack.pop();
+      if (seen[at]) continue;
+      seen[at] = true;
       out.push(at);
-      g.peek(at).reverse().forEach(function (e) {
-        if (seen[e.to]) return;
-        seen[e.to] = true;
-        stack.push(e.to);
+      g.peek(at).slice().reverse().forEach(function (e) {
+        if (!seen[e.to]) stack.push(e.to);
       });
     }
     return out;
@@ -111,7 +110,8 @@
     var withCross = B.tabulate(T.build(window.GraphSearch.dfs.run(ex, id.A), ex));
     C.equal(withCross.cross.map(function (e) {
       return ex.node(e.a).label + ex.node(e.b).label;
-    }), ['BC'], 'B—C is kept aside to be drawn dotted: A now stacks B last, so B comes off first');
+    }), ['AC'], 'A—C is kept aside to be drawn dotted: A stacks B last, so B comes off first ' +
+      'and reaches C before A ever gets to look at it');
     C.equal(withCross.seq.length, 8, 'and every node is still on the line exactly once');
 
     /* A run that is not depth-first has no line to draw, and must say so rather than lay out

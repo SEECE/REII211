@@ -7,14 +7,20 @@
 
    The other thing this page can show that the plane cannot: in a PERFECT maze there is exactly
    one route between any two cells, so both searches return the SAME path. They differ only in
-   how much of the maze they had to look at to find it — which is the Visited counter. */
+   how much of the maze they had to look at to find it — which is the Visited counter.
+
+   WHEN a cell is marked follows the container, exactly as it does in js/graph/traverse.js: a
+   queue marks on the way in, a stack marks on the way out and lets a cell sit in the container
+   more than once. Marking on the way in breaks the claim this page is built on — the search
+   stops committing to one corridor the moment two corridors reach the same cell, because the
+   cell is crossed off by whichever got there first and the walk goes on standing beside it. */
 (function () {
   'use strict';
   var R = window.Roles;
 
   function* walk(grid, breadth) {
     var container = [grid.start], seen = {}, parent = {}, done = [];
-    seen[grid.start] = true;
+    if (breadth) seen[grid.start] = true;         // a stack marks on the way out instead
     var name = breadth ? 'BFS' : 'DFS';
 
     yield {
@@ -27,6 +33,11 @@
 
     while (container.length) {
       var at = breadth ? container.shift() : container.pop();
+      // a stack may hold several copies of one cell; the first to surface is the visit
+      if (!breadth) {
+        if (seen[at]) continue;
+        seen[at] = true;
+      }
       done.push(at);
       grid.settle();
       grid.track('Frontier', container.length);
@@ -56,10 +67,12 @@
         roles: R.of({ done: done, frontier: container, focus: [at] }),
       };
 
-      grid.neighbours(at).forEach(function (next) {
-        if (seen[next]) return;
-        seen[next] = true;
-        parent[next] = at;
+      var open = grid.neighbours(at);
+      if (!breadth) open.reverse();               // a stack hands back the newest, so feed it backwards
+      open.forEach(function (next) {
+        if (seen[next]) return;                   // BFS: already queued · DFS: already visited
+        if (breadth) seen[next] = true;
+        parent[next] = at;                        // the last to push it is where the walk arrives from
         container.push(next);
       });
     }

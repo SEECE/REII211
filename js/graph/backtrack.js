@@ -86,7 +86,9 @@
       if (now != null && now !== focus) { focus = now; visit(now); }
       if (focus != null) {
         pickAll(f.roles, 'move').forEach(function (id) {
-          if (found[id] == null && byId[id] && id !== start) found[id] = focus;
+          // the LAST node to push it is the one the walk arrives from, so this keeps writing
+          // until the node is actually taken off and put on the line
+          if (index[id] == null && byId[id] && id !== start) found[id] = focus;
         });
       }
       at[i] = { shown: seq.length, focus: focus };

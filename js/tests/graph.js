@@ -33,6 +33,36 @@
     return d;
   }
 
+  /* The visit order a run took, read back off the `focus` role the frames carry — the same
+     thing the drawings read, so a check here is a check on what the page shows. */
+  function order(g, gen) {
+    var out = [];
+    window.Trace.build(gen, g).forEach(function (f) {
+      for (var k in f.roles) {
+        if (f.roles[k] === 'focus' && out[out.length - 1] !== Number(k)) out.push(Number(k));
+      }
+    });
+    return out;
+  }
+
+  /* The first place a walk left an unvisited neighbour behind to go somewhere further off, or
+     null if it never did. */
+  function strays(g, visited) {
+    var seen = {};
+    for (var i = 0; i < visited.length; i++) {
+      seen[visited[i]] = true;
+      var open = g.peek(visited[i]).filter(function (e) { return !seen[e.to]; });
+      var next = visited[i + 1];
+      if (!open.length || next == null) continue;
+      if (!open.some(function (e) { return e.to === next; })) {
+        return g.node(visited[i]).label + ' left ' +
+          open.map(function (e) { return g.node(e.to).label; }).join('/') +
+          ' open and the walk went to ' + g.node(next).label;
+      }
+    }
+    return null;
+  }
+
   /* Both references are used again by js/tests/frames.js, which checks what the SEARCHES DRAW
      rather than what they answer. One implementation of each, in the file that wrote it. */
   window.GraphRef = { reference: reference, hops: hops };
@@ -52,6 +82,18 @@
         C.equal(order.length, n, kind + ' reaches every node (n=' + n + ')');
         C.equal(new Set(order).size, order.length, kind + ' visits nothing twice (n=' + n + ')');
       });
+
+      /* ── the property that MAKES it depth-first ──
+         Standing on a node with an unvisited neighbour, the next node visited is one of them.
+         Anything else and the walk has wandered off leaving a door open beside it, which is
+         what "depth first" is a promise not to do. Both searches reach every node and neither
+         repeats, so the two checks above pass happily on a walk that is not a DFS at all —
+         this is the one that fails. It was written because js/graph/traverse.js marked a node
+         when it went INTO the stack: a node reached early sat there crossed off while the walk
+         stood next to it for the rest of the run. */
+      g.resetCounters();
+      var stray = strays(g, order(g, window.GraphSearch.dfs.run(g, 0)));
+      C.ok(!stray, 'DFS never leaves an unvisited neighbour to go further away (n=' + n + ')', stray);
 
       g.resetCounters();
       var got = T.run(window.GraphShortest.run(g, 0));

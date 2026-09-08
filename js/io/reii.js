@@ -63,6 +63,8 @@
         });
         if (!(d.head === null || d.head === undefined || (int(d.head, 0, n - 1) && d.cells[d.head])))
           bad('that memory block points its head at an empty slot');
+        if (!(d.tail === null || d.tail === undefined || (int(d.tail, 0, n - 1) && d.cells[d.tail])))
+          bad('that memory block points its tail at an empty slot');
       },
     },
 

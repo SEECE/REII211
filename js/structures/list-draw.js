@@ -91,12 +91,15 @@
         arrow(ctx, boxes[i], boxes[cell.next], colours[R.at(frame.roles, i, 'done')]);
       });
 
-      var head = frame.state.head;
+      var head = frame.state.head, tail = frame.state.tail;
+      ctx.fillStyle = colours.focus;
+      ctx.font = '700 10px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = 'center';
       if (head != null && cells[head]) {
-        ctx.fillStyle = colours.focus;
-        ctx.font = '700 10px ui-sans-serif, system-ui, sans-serif';
-        ctx.textAlign = 'center';
         ctx.fillText('head ▾', boxes[head].x + boxes[head].w / 2, g.top - 10);
+      }
+      if (tail != null && cells[tail] && tail !== head) {
+        ctx.fillText('tail ▾', boxes[tail].x + boxes[tail].w / 2, g.top - 10);
       }
     },
   };

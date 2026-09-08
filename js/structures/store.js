@@ -14,7 +14,7 @@
   'use strict';
 
   window.Store = function (size) {
-    var slots = new Array(size), head = null;
+    var slots = new Array(size), head = null, tail = null;
     var cmp = 0, writes = 0, hops = 0, used = 0;
     var snapshot = null;
 
@@ -50,6 +50,8 @@
       },
       setHead: function (i) { writes++; head = i; dirty(); },
       head: function () { return head; },
+      setTail: function (i) { writes++; tail = i; dirty(); },
+      tail: function () { return tail; },
 
       /* first free slot — a real allocator would keep a free list; scanning is honest enough
          here and shows that a list node lands wherever there happens to be room */
@@ -65,7 +67,7 @@
       /* ── the Trace subject contract ── */
       view: function () {
         if (snapshot) return snapshot;
-        snapshot = { head: head, cells: slots.map(function (s) {
+        snapshot = { head: head, tail: tail, cells: slots.map(function (s) {
           return s ? { value: s.value, next: s.next, prev: s.prev } : null;
         }) };
         return snapshot;
@@ -98,6 +100,7 @@
     var store = window.Store(saved.cells.length);
     saved.cells.forEach(function (c, i) { if (c) store.put(i, c.value, c.next, c.prev); });
     store.setHead(saved.head == null ? null : saved.head);
+    store.setTail(saved.tail == null ? null : saved.tail);
     store.resetCounters();
     return store;
   };

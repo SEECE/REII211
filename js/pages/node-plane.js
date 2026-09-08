@@ -62,7 +62,11 @@
           { value: 'plane', label: 'Plane' },
           { value: 'matrix', label: 'Adjacency matrix' },
           { value: 'marks', label: 'Marking table — Dijkstra' },
+          { value: 'levels', label: 'Level tree — BFS' },
         ] },
+        /* Off by default: the edges BFS never walked are the ones that make a level tree look
+           wrong until a student knows what they are, so they are shown on request. */
+        { id: 'cross', kind: 'check', label: 'Show the edges BFS never took', value: false },
         { id: 'tool', kind: 'choice', label: 'Pointer', value: 'build', options: [
           { value: 'build', label: 'Build — add, connect, drag' },
           { value: 'erase', label: 'Erase — remove a node' },
@@ -94,7 +98,13 @@
           refreshStarts(api.rail);
           return;
         }
-        if (id === 'view') { setView(value); api.repaint(); return false; }
+        if (id === 'view') {
+          setView(value);
+          api.rail.show('cross', value === 'levels');
+          api.repaint();
+          return false;
+        }
+        if (id === 'cross') { api.repaint(); return false; }
         if (id === 'tool' || id === 'weight') { if (editor) editor.clear(); return false; }
         message = null;
       },
@@ -104,6 +114,7 @@
         var chosen = algo(rail);
         graph.resetCounters();
         rail.show('start', chosen.needsStart !== false && rail.get('algo') !== 'kruskal');
+        rail.show('cross', rail.get('view') === 'levels');
         if (message) return { subject: graph, gen: announce(message), title: 'Graph' };
         return {
           subject: graph,
@@ -119,6 +130,18 @@
            `marks` is still null during the first render, which happens inside Playground. */
         if (rails.get('view') === 'marks') {
           if (marks) marks.paint(page.player.index());
+          return;
+        }
+        /* The tree is the whole run at once too, but it is a DRAWING and so it goes on the
+           canvas rather than into the table's box — which is why this view keeps the plane's
+           stage rather than swapping to the marks one. */
+        if (rails.get('view') === 'levels') {
+          var tree = window.LevelTree.of(page.frames());
+          window.LevelDraw.draw(surface, frame, colours, {
+            model: tree,
+            step: tree && tree.at[Math.max(0, Math.min(tree.at.length - 1, page.player.index()))],
+            cross: !!rails.get('cross'),
+          });
           return;
         }
         /* The node waiting to be connected is a UI state, not part of the trace, so it is

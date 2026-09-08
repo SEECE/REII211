@@ -89,6 +89,10 @@
         { id: 'insert', kind: 'button', label: 'Insert', variant: 'primary' },
         { id: 'search', kind: 'button', label: 'Search' },
         { id: 'remove', kind: 'button', label: 'Delete' },
+        { id: 'deleteMode', kind: 'choice', label: 'On two children, use', value: 'ios', options: [
+          { value: 'ios', label: 'Successor (IOS)' },
+          { value: 'iop', label: 'Predecessor (IOP)' },
+        ] },
         { id: 'size', kind: 'range', label: 'Fill size', min: 3, max: 31, value: 15 },
         { id: 'start', kind: 'number', label: 'Start (root)', min: 1, max: 31, value: 8 },
         { id: 'random', kind: 'button', label: 'Fill — shuffled' },
@@ -116,7 +120,7 @@
 
       onField: function (id, v, api) {
         var rail = api.rail;
-        if (id === 'autoplay') return false;                  // just a preference, nothing to run
+        if (id === 'autoplay' || id === 'deleteMode') return false;   // preferences, nothing to run
         if (id === 'clear') { reset('Cleared.'); return; }
         if (id === 'value' || id === 'size' || id === 'start') return false;   // typing runs nothing
         if (id === 'random' || id === 'ordered') {
@@ -126,7 +130,7 @@
           var target = Number.isFinite(rail.get('value')) ? rail.get('value') : Math.floor(Math.random() * 99) + 1;
           var op = window.BSTOps[id === 'remove' ? 'remove' : id];
           if (!op) return false;
-          pending = function () { return op(tree, target); };
+          pending = function () { return op(tree, target, id === 'remove' ? rail.get('deleteMode') : undefined); };
         }
         if (rail.get('autoplay')) { api.rebuild(); api.player.play(); return false; }
       },

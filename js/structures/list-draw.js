@@ -27,18 +27,21 @@
     };
   }
 
-  function arrow(ctx, from, to, colour) {
+  function arrow(ctx, from, to, colour, opts) {
+    opts = opts || {};
     var a = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
     var b = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
-    var lift = Math.min(40, Math.abs(b.x - a.x) * 0.35 + 14);
+    var lift = Math.min(40, Math.abs(b.x - a.x) * 0.35 + 14) + (opts.liftBoost || 0);
+    ctx.save();
     ctx.strokeStyle = colour;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = opts.dashed ? 1.2 : 1.6;
+    if (opts.dashed) ctx.setLineDash([3, 3]);
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.bezierCurveTo(a.x, a.y - lift, b.x, b.y - lift, b.x, b.y);
     ctx.stroke();
-    // head, angled along the curve's last leg
-    var ang = Math.atan2(b.y - (b.y - lift), 0.001 + b.x - b.x) || -Math.PI / 2;
+    ctx.restore();
+    // head, at the arrival end
     ctx.fillStyle = colour;
     ctx.beginPath();
     ctx.moveTo(b.x, b.y);
@@ -46,7 +49,6 @@
     ctx.lineTo(b.x + 4, b.y - 8);
     ctx.closePath();
     ctx.fill();
-    return ang;
   }
 
   window.MemoryDraw = {
@@ -89,6 +91,13 @@
       cells.forEach(function (cell, i) {
         if (!cell || cell.next == null || !cells[cell.next]) return;
         arrow(ctx, boxes[i], boxes[cell.next], colours[R.at(frame.roles, i, 'done')]);
+      });
+
+      // a doubly linked list's back pointers — dashed and arced a little higher than the
+      // forward ones, so both directions stay legible on the same pair of cells
+      cells.forEach(function (cell, i) {
+        if (!cell || cell.prev == null || !cells[cell.prev]) return;
+        arrow(ctx, boxes[i], boxes[cell.prev], colours['ink-faint'], { dashed: true, liftBoost: 10 });
       });
 
       var head = frame.state.head, tail = frame.state.tail;

@@ -12,6 +12,10 @@
 
     function* announce(text) { yield { tag: 'edit', note: text, roles: {} }; }
 
+    function algoOf(rail) {
+      return rail.get('algo') === 'tour' ? window.NearestTour : window.ClosestPair;
+    }
+
     /* What just happened, in the rail's note. Editing the plane used to REPLACE the run with a
        one-frame announcement saying so, which threw away the run you were watching — add a
        point mid-play and the algorithm was gone until you pressed one again. The edit now
@@ -49,6 +53,35 @@
           set = window.PointSet.load(data);
           say('Opened <b>' + name + '</b> — ' + set.count() +
             ' points, running the algorithm on them now.');
+        },
+      },
+
+      /* The plane as a figure for a practical. There are no edges on a point plane until an
+         algorithm draws some, so the segments come out of the run's own role keys — the same
+         `e<a>-<b>` names js/heuristics/tour-draw.js reads, which is why the figure needs no
+         second idea of what the answer was. */
+      latex: {
+        name: function () { return 'points-' + set.count(); },
+        ask: 'The plane as the run leaves it — the closed tour, or the loop the closest pairs ' +
+          'built. Leave it off for the bare scatter to work through by hand.',
+        empty: 'the plane is empty — place a point first',
+        get: function (opts) {
+          if (!set.count()) return null;
+          var run = page.frames();
+          var end = opts.solution && run.length ? run[run.length - 1].roles : null;
+          return window.Latex.plane({
+            nodes: set.view().points.map(function (p) {
+              return { id: p.id, label: String(p.id + 1), x: p.x, y: p.y };
+            }),
+            edges: Object.keys(end || {}).filter(function (k) { return k.charAt(0) === 'e'; })
+              .map(function (k) {
+                var ends = k.slice(1).split('-');
+                return { a: Number(ends[0]), b: Number(ends[1]), key: k };
+              }),
+            roles: end, weighted: false, colours: page.colours,
+            title: end ? algoOf(page.rail).label + ' — the run as it ends'
+              : 'Point plane — ' + set.count() + ' points',
+          });
         },
       },
 

@@ -50,7 +50,11 @@
         xy[n.id] = { x: (p.col + 0.5) * colW, y: rowH * 0.7 + p.depth * rowH };
       });
 
-      ctx.strokeStyle = colours.grid;
+      /* A link between two nodes is `idle` and never `grid`, here and everywhere else on the
+         site: `grid` is the RULING a picture is drawn on, and a link is part of the picture.
+         These were drawn in it, which made a tree of fifteen nodes look like a row of discs
+         with nothing holding them together — and the exported figure inherited it. */
+      ctx.strokeStyle = colours.idle;
       ctx.lineWidth = 1.4;
       each(root, function (n) {
         [n.left, n.right].forEach(function (kid) {

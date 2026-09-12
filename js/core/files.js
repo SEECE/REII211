@@ -29,9 +29,9 @@
     return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'reii';
   }
 
-  function download(text, filename) {
+  function download(text, filename, type) {
     var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.href = URL.createObjectURL(new Blob([text], { type: type || 'application/json' }));
     a.download = filename;
     a.click();
     URL.revokeObjectURL(a.href);
@@ -46,7 +46,8 @@
     var box = node('div', 'field filemenu');
     box.appendChild(node('span', 'field-label', 'File'));
     var btn = node('button', 'btn btn--soft btn--block',
-      '<span class="file-caret" aria-hidden="true"></span> Open or Save');
+      '<span class="file-caret" aria-hidden="true"></span> ' +
+      (o.latex ? 'Open, save or copy' : 'Open or Save'));
     btn.type = 'button';
     btn.setAttribute('aria-expanded', 'false');
     box.appendChild(btn);
@@ -120,6 +121,16 @@
       reader.readAsText(file);
     });
 
+    /* Export to LaTeX, if the page has a figure to write. It is a separate file because it
+       carries a dialog and this one is at the line ceiling — and because it is a different
+       job: a `.reii` is a problem this site reads back, a `.tex` is a picture that leaves. */
+    if (o.latex && window.FilesLatex) {
+      window.FilesLatex({ list: list, latex: o.latex, say: say, show: show });
+    }
+
     return { say: say, close: function () { show(false); } };
   };
+
+  window.Files.node = node;
+  window.Files.slug = slug;
 })();

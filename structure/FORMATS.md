@@ -91,8 +91,97 @@ Two rules that are easy to lose:
    and compare the subject's own `view()` — "it opened" is not the same claim as "it opened as
    the same thing" — plus the refusals that matter for the new shape.
 
+## Out: a figure, as LaTeX
+
+A `.reii` carries a **problem** between the pages of this site. It is not, and should not
+become, a way of getting a *picture* out of one — a student writing up a practical needs a
+figure in their report, and a `.reii` is no use to them at all.
+
+So there is a second, **one-way** export: [../js/io/latex.js](../js/io/latex.js) and
+[../js/io/latex-plane.js](../js/io/latex-plane.js) and
+[../js/io/latex-jobs.js](../js/io/latex-jobs.js) turn what is on the stage into a TikZ figure.
+It is not a `kind`, it does not go through the envelope, and nothing here ever reads one back —
+which is precisely why it is allowed to be a different shape. The control is
+[../js/core/files-latex.js](../js/core/files-latex.js), appended next to Open and Save when a
+page declares a `latex` block ([PAGES.md](PAGES.md)).
+
+**It writes no file — it goes on the clipboard.** The only place a figure ever ends up is
+pasted into a report the student already has open, and a downloaded `.tex` is one more thing to
+find in a downloads folder on the way to the same paste. This is the shape the EERI 124
+visualiser's "Copy LaTeX Diagram" already has, and a student taking both courses should be
+pasting the same kind of block into the same report. `navigator.clipboard` where the browser
+allows it, with the deprecated `execCommand` path behind it — the site has to work over
+`file://`, which is where the async clipboard is least reliable.
+
+**The document is `article`, and the figure is fenced.**
+
+```latex
+% ---- the figure: everything between these two lines drops into your own document ----
+\begin{figure}[!ht]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{tikzpicture}[x=1mm, y=-1mm,
+    ruling/.style={…}, link/.style={…}, lead/.style={…}, disc/.style={…}]
+…
+% ---- end of the figure ----
+```
+
+`article` and not `standalone`, because standalone is not in every TeX install and `article` is.
+The whole document compiles with `pdflatex` untouched, and the fenced block lifts straight out
+into one that already exists — needing only `tikz` and `graphicx` in that document's preamble,
+because everything else it uses it declares itself. **The `1` in
+`\resizebox{1\textwidth}` is the one number that is about the page rather than the picture**, and
+it is the knob: nothing in the writers scales anything to fit, and a tree is drawn compact
+(11 mm a column) rather than drawn big and shrunk, because a picture that is naturally 200 mm
+across arrives with its digits at half the size they were drawn at.
+
+Four pages declare one, and there are three figures between them:
+
+| Page | Figure | Offers the answer? |
+|---|---|---|
+| node plane | the plane, on a ticked 0–100 grid, every node carrying its own `(x, y)` | no |
+| point plane | the same plane, with the tour or the loop drawn on it | yes |
+| job scheduling | the same Gantt chart, one row a studio and one bar an offer | yes |
+| binary search trees | the tree on screen, at the step you paused on | it is the shape |
+
+**The figure is monochrome, and that is a decision, not an omission.** A role says what an
+element is *doing at one moment of a run*. A figure in a report is not a moment of a run — it is
+an answer, and it is going to be printed, photocopied and marked in pen, where hue is the first
+thing to go. So there is no colour in the export at all, no `\definecolor` block and no key:
+**what an answer IS shows as weight**, a heavy line against a light one. Four `tikz` styles at
+the top of every picture are the entire vocabulary — `ruling` the sheet, `link` a line between
+two things, `lead` that same line when the run chose it, `disc` a thing — which is also the
+tuning surface: every line on the figure comes from one of them.
+
+What is drawn heavy is `Latex.chosen(roles)` — whatever the run left in the role `path`, which
+is this site's own name for *on the path, the tour or the tree that was picked*
+([tokens.css](../css/tokens.css), [legend.js](../js/core/legend.js)). A figure therefore never
+has to know which algorithm drew it, and a new algorithm needs no export code at all.
+
+**The plane prints its coordinates, and that is the whole job.** A figure handed in has to be
+readable off the paper, so the unit square is written out as a ruled 0–100 grid with both axes
+ticked and each node labelled with its own pair. The disc is drawn at the **rounded** coordinate,
+so the pair printed beside it cannot disagree with where it sits. Where that pair *goes* is the
+readability of the figure: eight compass points per node, scored against the other nodes, every
+edge sampled along its length, the labels already placed and the edge of the plot — greedily, in
+a fixed order, so the same plane always exports the same picture. `y` is measured **downward**,
+as it is on screen; flipping it would make every exported figure a mirror image of the page it
+came off, and the caption says so in as many words.
+
+**Whether the answer is on the figure is a question about the page, not about the run.** The
+point plane and the scheduling page ask, because on both of them the answer IS the picture — a
+tour, a loop, a row of booked months — so a student wants the bare problem to work through and
+the drawn answer to check it against. The **node plane does not ask, and never draws the
+answer**: what a graph algorithm is handed in as is the marking table or the tree the student
+wrote out themselves, and a plane with the route already on it is the answer sheet rather than
+the question. A BST has no choice at all, because the answer on that page is the shape.
+
+The marking views are never exported either, for the same reason in reverse: they are a second
+drawing of the same trace, and what a practical asks for is the plane.
+
 ## What this deliberately is not
 
-There is no export to anything else, because there is nothing else to export *to*: an array and
-a maze are not artefacts another tool consumes. A `.reii` is for carrying a problem between the
-pages of this site and between a student and a marker, and that is all it has to do.
+There is no third format. An array and a maze are not artefacts another tool consumes, and a
+`.reii` is for carrying a problem between the pages of this site and between a student and a
+marker. The LaTeX export exists because a *figure* is a real artefact with a real consumer; the
+test for a fourth is the same one — name the thing that reads it.

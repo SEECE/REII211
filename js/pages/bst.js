@@ -73,7 +73,7 @@
 
     reset();
 
-    return window.Playground({
+    var page = window.Playground({
       title: 'Binary search tree',
       legend: ['idle', 'scan', 'focus', 'move', 'done', 'reject'],
       legendNotes: {
@@ -118,6 +118,24 @@
         },
       },
 
+      /* A different export from the planes', and deliberately so: a tree has no coordinates
+         to print and no solution to fold in, because the ANSWER on this page is the shape.
+         So there is nothing to ask and nothing to choose — what is written out is the frame on
+         screen, the tree as it stands at the step you paused on, coloured as you see it. */
+      latex: {
+        name: function () { return 'tree-' + tree.stats().Nodes; },
+        empty: 'the tree is empty — insert a value first',
+        get: function () {
+          var frame = page.frame();
+          if (!frame || !frame.state || !frame.state.root) return null;
+          var n = frame.stats || {};
+          return window.Latex.tree({
+            root: frame.state.root,
+            title: 'Binary search tree — ' + n.Nodes + ' nodes, height ' + n.Height,
+          });
+        },
+      },
+
       onField: function (id, v, api) {
         var rail = api.rail;
         if (id === 'autoplay' || id === 'deleteMode') return false;   // preferences, nothing to run
@@ -138,5 +156,7 @@
       build: function () { return { subject: tree, gen: pending() }; },
       render: function (surface, frame, colours) { window.BSTDraw.draw(surface, frame, colours); },
     });
+
+    return page;
   };
 })();

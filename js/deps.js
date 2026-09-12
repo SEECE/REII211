@@ -22,7 +22,8 @@
     core: [
       'core/palette.js', 'core/roles.js', 'core/trace.js', 'core/trace-live.js', 'core/player.js',
       'core/surface.js', 'core/rail.js', 'core/legend.js', 'core/workbench.js',
-      'core/page.js', 'io/reii.js', 'core/files.js', 'ui/shell.js',
+      'core/page.js', 'io/reii.js', 'io/latex.js', 'io/latex-plane.js', 'io/latex-jobs.js',
+      'core/files.js', 'core/files-latex.js', 'ui/shell.js',
     ],
 
     /* the six bar-graph sorts: one instrumented array, one renderer, one file per algorithm */
@@ -80,6 +81,7 @@
       'graph/draw.js', 'graph/matrix.js',
       'heuristics/points.js', 'heuristics/nearest.js',
       'heuristics/closest-pair.js', 'heuristics/jobs.js', 'heuristics/greedy.js',
+      'heuristics/jobs-draw.js',
       'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
       'structures/bst.js', 'structures/bst-ops.js',
       'maze/grid.js', 'maze/carve.js', 'maze/search.js',
@@ -91,7 +93,7 @@
       'tests/graph-mst.js',
       'tests/heuristics.js',
       'tests/structures.js', 'tests/io.js', 'tests/core.js', 'tests/compare.js',
-      'tests/maze.js', 'tests/frames.js', 'tests/view.js',
+      'tests/maze.js', 'tests/frames.js', 'tests/view.js', 'tests/latex.js',
       'tests/spectrum.js', 'tests/city.js', 'tests/osm.js', 'tests/routes.js'],
   };
 

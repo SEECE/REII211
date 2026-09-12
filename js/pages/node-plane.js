@@ -120,6 +120,24 @@
         },
       },
 
+      /* The plane as a figure for a practical: the graph as it stands, every node carrying
+         its own coordinates. The ANSWER is deliberately not offered here — what a student is
+         asked to hand in for a graph algorithm is the marking table or the tree they wrote out
+         themselves, and a figure with the route already drawn on it is the answer sheet, not
+         the question. The point plane does offer it, because there the answer IS the picture. */
+      latex: {
+        name: function () { return 'graph-' + graph.nodes().length; },
+        empty: 'the plane is empty — put a node down first',
+        get: function () {
+          var view = graph.view();
+          if (!view.nodes.length) return null;
+          return window.Latex.plane({
+            nodes: view.nodes, edges: view.edges, weighted: !!algo(page.rail).weighted,
+            title: 'Graph — ' + view.nodes.length + ' nodes, ' + view.edges.length + ' edges',
+          });
+        },
+      },
+
       onField: function (id, value, api) {
         if (id === 'generate') {
           graph = window.Graph.random(api.rail.get('size'), Math.round(api.rail.get('size') / 2));

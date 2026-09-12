@@ -43,3 +43,37 @@
 .file-action:focus-within { outline: var(--ring); outline-offset: -2px; }
 .file-action small { display: block; font-size: 10.5px; font-weight: 400; color: var(--text-faint); margin-top: 1px; }
 .file-action + .file-action { border-top: 1px solid var(--line); }
+
+/* The export options (js/core/files-latex.js). A real <dialog>, so it is in the browser's top
+   layer and the rail's overflow cannot clip it — which is the reason the menu above it had to
+   expand inline and this one does not have to. */
+.file-dialog {
+  width: min(360px, calc(100vw - var(--sp-6)));
+  padding: var(--sp-4);
+  color: var(--text);
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.file-dialog::backdrop { background-color: rgba(13, 36, 48, 0.38); }
+.file-dialog h2 { font-size: 15px; font-weight: 700; margin-bottom: var(--sp-3); }
+
+.file-opt {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: flex-start;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.file-opt input { margin-top: 2px; accent-color: var(--aqua-600); }
+.file-opt small { display: block; font-size: 11px; font-weight: 400; color: var(--text-faint); margin-top: 2px; }
+
+.file-dialog menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}

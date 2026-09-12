@@ -47,7 +47,7 @@
     box.appendChild(node('span', 'field-label', 'File'));
     var btn = node('button', 'btn btn--soft btn--block',
       '<span class="file-caret" aria-hidden="true"></span> ' +
-      (o.latex ? 'Open, save or export' : 'Open or Save'));
+      (o.latex ? 'Open, save or copy' : 'Open or Save'));
     btn.type = 'button';
     btn.setAttribute('aria-expanded', 'false');
     box.appendChild(btn);
@@ -133,5 +133,4 @@
 
   window.Files.node = node;
   window.Files.slug = slug;
-  window.Files.download = download;
 })();

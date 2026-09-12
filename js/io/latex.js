@@ -69,13 +69,16 @@
     return out;
   }
 
-  /* The whole document. `standalone` crops the page to the picture, which is what makes the
-     PDF droppable into a report at any size; the tikzpicture inside it is plain TikZ and can
-     be pasted into an article class without changing a character. */
+  /* The whole document — the same shape the EERI 124 visualiser exports, because a student
+     taking both courses should be pasting the same kind of block into the same report.
+
+     `article` and not `standalone`: standalone is not in every TeX install and article is. The
+     picture is fenced by two comment lines and wrapped in a `figure` inside
+     `\resizebox{1\textwidth}{!}{…}` — one number to tune, and it resizes the whole figure
+     without touching a coordinate. The `\definecolor` lines go INSIDE the fence rather than in
+     the preamble, so the block that is lifted out carries its own colours with it and the only
+     thing the receiving document needs is the two packages. */
   function document_(o) {
-    /* `reiiline` is the untouched role, and it is what every LINK between two things is drawn
-       in — the same line the node plane draws an untouched edge with, so a tree and a graph
-       agree. `reiigrid` is the RULING under the picture and nothing else is drawn in it. */
     var defs = ['\\definecolor{reiiink}{HTML}{' + hex(o.colours.ink) + '}',
       '\\definecolor{reiipaper}{HTML}{' + hex(o.colours.paper) + '}',
       '\\definecolor{reiiline}{HTML}{' + hex(o.colours.idle) + '}',
@@ -85,13 +88,33 @@
     });
     return ['% ' + esc(o.title),
       '%',
-      '% Exported from the REII 211 visualiser. Compile with pdflatex: the document is',
-      '% standalone, so the page crops to the figure itself. To put the figure into a report,',
-      '% copy the \\definecolor lines into your preamble and the tikzpicture into the text.',
+      '% Exported from the REII 211 visualiser. Compiles with pdflatex as it stands.',
+      '% Everything between the two fences below drops straight into a document you already',
+      '% have open — it needs \\usepackage{tikz} and \\usepackage{graphicx} in that preamble.',
+      '% To tune the figure, change the 1 in \\resizebox{1\\textwidth}: it is the only number',
+      '% here that is about the page rather than about the picture.',
       '',
-      '\\documentclass[tikz,border=6pt]{standalone}',
+      '\\documentclass{article}',
+      '\\usepackage{tikz}',
+      '\\usepackage{graphicx}',
       '\\usetikzlibrary{arrows.meta}',
-      ''].concat(defs, ['', '\\begin{document}'], o.body, ['\\end{document}', '']).join('\n');
+      '\\pagestyle{empty}',
+      '',
+      '\\begin{document}',
+      '',
+      '% ---- the figure: everything between these two lines drops into your own document ----',
+    ].concat(defs, [
+      '\\begin{figure}[!ht]',
+      '\\centering',
+      '\\resizebox{1\\textwidth}{!}{%',
+    ], o.body, [
+      '}%',
+      '\\end{figure}',
+      '% ---- end of the figure ----',
+      '',
+      '\\end{document}',
+      '',
+    ]).join('\n');
   }
 
   /* The tree as it stands: in-order position sets the column, depth sets the row. That is the
@@ -125,7 +148,12 @@
     tree: function (o) {
       var root = o.root;
       if (!root) return null;
-      var L = layout(root), dx = 14, dy = 16, r = 4.7, mine = {};
+      /* Spacing is deliberately tight. The figure is resized to the text width whole, so a
+         picture that is naturally 200 mm across arrives with its digits at half the size they
+         were drawn at — the way to keep a tree readable on a page is to draw it compact, not
+         to draw it big and shrink it. At 11 mm a column there is still 2.6 mm of clear paper
+         between two discs, which is what the links need to read as links. */
+      var L = layout(root), dx = 11, dy = 13, r = 4.2, mine = {};
       var at = {}, body = [];
       each(root, function (n) {
         var p = L.pos[n.id];
@@ -133,11 +161,10 @@
         mine[n.id] = (o.roles && o.roles[n.id]) || 'idle';
       });
       var W = L.columns * dx, H = (L.depth + 1.6) * dy;
-      /* A thirty-one node tree is 434 mm across, which is no use on a page. The picture is
-         scaled to the width of a text block rather than squeezed — every circle, every line and
-         every digit in the same proportion — so a wide tree reads as a wide tree that has been
-         made smaller. Width is the only cap needed: a BST is never deeper than it is wide. */
-      var scale = Math.min(1, 170 / (W + 8));
+      /* Nothing here scales the picture to a page: the \resizebox around the figure already
+         fits it to the text width, whole — every circle, every line and every digit in the same
+         proportion — and a thirty-one node tree that is 434 mm wide comes out at the same width
+         as a tree of three. That is the number the student tunes, not one we pick for them. */
 
       body.push('  % links first, then the discs over them — a disc covers the line it ends on');
       each(root, function (n) {
@@ -158,7 +185,7 @@
       var used = rolesUsed(mine);
       return document_({
         title: o.title || 'Binary search tree', colours: o.colours, used: used,
-        body: ['\\begin{tikzpicture}[x=1mm, y=-1mm, scale=' + num(scale) + ', transform shape]']
+        body: ['\\begin{tikzpicture}[x=1mm, y=-1mm]']
           .concat(['  \\node[font=\\bfseries\\small, text=reiiink] at (' + num(W / 2) +
             ',-4) {' + esc(o.title || 'Binary search tree') + '};'], body,
             legend(used, 0, H), ['\\end{tikzpicture}']),

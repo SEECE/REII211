@@ -27,10 +27,28 @@
     var C = window.Check;
 
     var bare = plane(null);
-    C.ok(/\\documentclass\[tikz,border=6pt\]\{standalone\}/.test(bare), 'a compilable preamble');
+    /* `article` and not `standalone` — standalone is not in every TeX install. */
+    C.ok(bare.indexOf('\\documentclass{article}') >= 0, 'a class every TeX install has');
+    ['tikz', 'graphicx'].forEach(function (pkg) {
+      C.ok(bare.indexOf('\\usepackage{' + pkg + '}') >= 0, 'it asks for ' + pkg);
+    });
     C.equal(count(bare, '\\begin{tikzpicture}'), count(bare, '\\end{tikzpicture}'),
       'every picture it opens it closes');
     C.equal(count(bare, '\\begin{tikzpicture}'), 1, 'one picture, not one per node');
+
+    /* The block between the fences is what gets pasted into a report, so it has to be whole on
+       its own: its own colours, its own figure, and a resizebox that is the one number to tune. */
+    var fence = bare.split('% ---- ');
+    C.equal(fence.length, 3, 'the figure is fenced by exactly two comment lines');
+    var lifted = fence[1];
+    C.ok(lifted.indexOf('\\definecolor') >= 0, 'the pasted block carries its own colours');
+    C.ok(lifted.indexOf('\\resizebox{1\\textwidth}{!}{%') >= 0, 'and one width to tune');
+    C.equal(count(lifted, '\\begin{figure}'), count(lifted, '\\end{figure}'),
+      'and closes the figure it opens');
+    C.ok(lifted.indexOf('\\begin{tikzpicture}') >= 0 && lifted.indexOf('\\end{tikzpicture}') >= 0,
+      'and holds the whole picture');
+    C.ok(bare.indexOf('\\definecolor', bare.indexOf('\\begin{document}')) >= 0,
+      'nothing the block needs is stranded in the preamble');
 
     /* The claim the whole plane export rests on: the pair printed beside a node is where the
        node actually sits. 0.9 down the unit square is 90 — measured DOWNWARD, as on screen. */

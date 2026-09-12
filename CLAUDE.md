@@ -53,11 +53,11 @@ walking it faster. Read [structure/RUNTIME.md](structure/RUNTIME.md) before writ
 - **Files** ([js/io/reii.js](js/io/reii.js)) — the `.reii` file. One envelope for all seven
   subjects, where the payload is exactly the subject's `view()`; the control that writes and
   reads it is `js/core/files.js`, appended to the rail by `Playground`. Beside it is the one-way
-  **LaTeX export** (`js/io/latex.js`, `js/io/latex-plane.js`, `js/core/files-latex.js`): the
-  plane or the tree on screen as a TikZ figure — every node's own `(x, y)` printed beside it,
-  the run's answer folded in or left out, onto the CLIPBOARD as an `article` with the picture
-  fenced in a `\resizebox` figure to paste into a report. See
-  [structure/FORMATS.md](structure/FORMATS.md).
+  **LaTeX export** (`js/io/latex.js`, `-plane.js`, `-jobs.js`, `js/core/files-latex.js`): the
+  plane, the tree or the timeline on screen as a **monochrome** TikZ figure — every node's own
+  `(x, y)` printed beside it, the answer shown as line WEIGHT rather than colour, onto the
+  CLIPBOARD as an `article` with the picture fenced in a `\resizebox` figure to paste into a
+  report. See [structure/FORMATS.md](structure/FORMATS.md).
 - **UI** ([js/ui/](js/ui/)) — `sitemap.js` (the only place a page is named), `nav.js`,
   `cards.js`, `shell.js` (panel state, and nothing else).
 - **CSS** ([css/](css/)) — split by scope, ≤200 lines each. **`tokens.css` is the only file to

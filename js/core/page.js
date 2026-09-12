@@ -78,9 +78,14 @@
     };
 
     /* Open or Save, if the page declared what it saves. The rebuild after an open belongs
-       here rather than in eight page scripts — every open is a new problem by definition. */
+       here rather than in eight page scripts — every open is a new problem by definition.
+
+       `latex` rides along in the same control because it is the same menu — it is a SEPARATE
+       block on the page (it exports a picture, not a subject), so it has to be forwarded by
+       name; leaving it behind is how the export action silently never appeared. */
     if (o.file) {
       window.Files(railEl, Object.assign({}, o.file, {
+        latex: o.latex,
         open: function (data, name) { o.file.open(data, name, api); api.rebuild(); },
       }));
     }

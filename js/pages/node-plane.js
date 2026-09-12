@@ -120,6 +120,28 @@
         },
       },
 
+      /* The plane as a figure for a practical: the graph as it stands, every node carrying
+         its own coordinates, with or without the answer the run walked to. The MARKING views
+         are not exported — they are a different drawing of the same trace, and what a student
+         is asked to hand in is the plane. */
+      latex: {
+        name: function () { return 'graph-' + graph.nodes().length; },
+        ask: 'The plane as the run leaves it — the route, the tree, or the order the nodes ' +
+          'were settled in. Leave it off for the bare problem to work through by hand.',
+        empty: 'the plane is empty — put a node down first',
+        get: function (opts) {
+          if (!graph.nodes().length) return null;
+          var run = page.frames(), view = graph.view();
+          var end = opts.solution && run.length ? run[run.length - 1].roles : null;
+          return window.Latex.plane({
+            nodes: view.nodes, edges: view.edges, roles: end,
+            weighted: !!algo(page.rail).weighted, colours: page.colours,
+            title: end ? algo(page.rail).label + ' — the run as it ends'
+              : 'Graph — ' + view.nodes.length + ' nodes, ' + view.edges.length + ' edges',
+          });
+        },
+      },
+
       onField: function (id, value, api) {
         if (id === 'generate') {
           graph = window.Graph.random(api.rail.get('size'), Math.round(api.rail.get('size') / 2));

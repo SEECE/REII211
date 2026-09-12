@@ -98,11 +98,41 @@ become, a way of getting a *picture* out of one — a student writing up a pract
 figure in their report, and a `.reii` is no use to them at all.
 
 So there is a second, **one-way** export: [../js/io/latex.js](../js/io/latex.js) and
-[../js/io/latex-plane.js](../js/io/latex-plane.js) turn what is on the stage into a standalone
-TikZ document. It is not a `kind`, it does not go through the envelope, and nothing here ever
-reads one back — which is precisely why it is allowed to be a different shape. The control is
+[../js/io/latex-plane.js](../js/io/latex-plane.js) turn what is on the stage into a TikZ figure.
+It is not a `kind`, it does not go through the envelope, and nothing here ever reads one back —
+which is precisely why it is allowed to be a different shape. The control is
 [../js/core/files-latex.js](../js/core/files-latex.js), appended next to Open and Save when a
 page declares a `latex` block ([PAGES.md](PAGES.md)).
+
+**It writes no file — it goes on the clipboard.** The only place a figure ever ends up is
+pasted into a report the student already has open, and a downloaded `.tex` is one more thing to
+find in a downloads folder on the way to the same paste. This is the shape the EERI 124
+visualiser's "Copy LaTeX Diagram" already has, and a student taking both courses should be
+pasting the same kind of block into the same report. `navigator.clipboard` where the browser
+allows it, with the deprecated `execCommand` path behind it — the site has to work over
+`file://`, which is where the async clipboard is least reliable.
+
+**The document is `article`, and the figure is fenced.**
+
+```latex
+% ---- the figure: everything between these two lines drops into your own document ----
+\definecolor{…}          ← inside the fence, so the lifted block carries its own colours
+\begin{figure}[!ht]
+\centering
+\resizebox{1\textwidth}{!}{%
+\begin{tikzpicture}[x=1mm, y=-1mm]
+…
+% ---- end of the figure ----
+```
+
+`article` and not `standalone`, because standalone is not in every TeX install and `article` is.
+The whole document compiles with `pdflatex` untouched, and the fenced block lifts straight out
+into one that already exists — needing only `tikz` and `graphicx` in that document's preamble,
+which is why the colours are defined inside the fence rather than above it. **The `1` in
+`\resizebox{1\textwidth}` is the one number that is about the page rather than the picture**, and
+it is the knob: nothing in the writers scales anything to fit, and a tree is drawn compact
+(11 mm a column) rather than drawn big and shrunk, because a picture that is naturally 200 mm
+across arrives with its digits at half the size they were drawn at.
 
 Three pages declare one, and there are two figures between them:
 

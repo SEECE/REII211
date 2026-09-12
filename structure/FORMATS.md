@@ -91,8 +91,51 @@ Two rules that are easy to lose:
    and compare the subject's own `view()` — "it opened" is not the same claim as "it opened as
    the same thing" — plus the refusals that matter for the new shape.
 
+## Out: a figure, as LaTeX
+
+A `.reii` carries a **problem** between the pages of this site. It is not, and should not
+become, a way of getting a *picture* out of one — a student writing up a practical needs a
+figure in their report, and a `.reii` is no use to them at all.
+
+So there is a second, **one-way** export: [../js/io/latex.js](../js/io/latex.js) and
+[../js/io/latex-plane.js](../js/io/latex-plane.js) turn what is on the stage into a standalone
+TikZ document. It is not a `kind`, it does not go through the envelope, and nothing here ever
+reads one back — which is precisely why it is allowed to be a different shape. The control is
+[../js/core/files-latex.js](../js/core/files-latex.js), appended next to Open and Save when a
+page declares a `latex` block ([PAGES.md](PAGES.md)).
+
+Three pages declare one, and there are two figures between them:
+
+| Page | Figure |
+|---|---|
+| node plane, point plane | the plane, on a ticked 0–100 grid, every node carrying its own `(x, y)` |
+| binary search trees | the tree on screen, at the step you paused on |
+
+**The plane prints its coordinates, and that is the whole job.** A figure handed in has to be
+readable off the paper, so the unit square is written out as a ruled 0–100 grid with both axes
+ticked and each node labelled with its own pair. The disc is drawn at the **rounded** coordinate,
+so the pair printed beside it cannot disagree with where it sits. Where that pair *goes* is the
+readability of the figure: eight compass points per node, scored against the other nodes, every
+edge sampled along its length, the labels already placed and the edge of the plot — greedily, in
+a fixed order, so the same plane always exports the same picture. `y` is measured **downward**,
+as it is on screen; flipping it would make every exported figure a mirror image of the page it
+came off, and the caption says so in as many words.
+
+**The plane asks; the tree does not.** A plane has a run behind it, so the dialog offers the
+answer — the roles of the LAST frame of the trace, which is the route, the tree or the tour the
+run walked to — or the bare problem to work through by hand. The marking views are never
+exported: they are a second drawing of the same trace, and what a practical asks for is the
+plane. A BST has no such choice, because the answer on that page *is* the shape.
+
+**Colours are still roles.** The preamble writes one `\definecolor` per role the figure actually
+paints, read from the same `Palette.all()` the canvas is drawn with, and the legend captions come
+out of [../js/core/legend.js](../js/core/legend.js) — so re-skinning the site in `tokens.css`
+re-skins what students hand in, and a printed key cannot caption a colour differently from the
+page it came off.
+
 ## What this deliberately is not
 
-There is no export to anything else, because there is nothing else to export *to*: an array and
-a maze are not artefacts another tool consumes. A `.reii` is for carrying a problem between the
-pages of this site and between a student and a marker, and that is all it has to do.
+There is no third format. An array and a maze are not artefacts another tool consumes, and a
+`.reii` is for carrying a problem between the pages of this site and between a student and a
+marker. The LaTeX export exists because a *figure* is a real artefact with a real consumer; the
+test for a fourth is the same one — name the thing that reads it.

@@ -35,8 +35,19 @@ Playground({
     get:    function () { return graph.view(); },  // or null when there is nothing to save
     open:   function (data, name, api) { … },      // may throw; the message is for a student
   },
+
+  latex: {                                         // optional — Export to LaTeX, same menu
+    name: function () { return 'graph-9'; },       // the filename, slugified for you
+    ask:  'the sentence under the checkbox',       // omit and it exports with no dialog at all
+    get:  function (opts) { return tex; },         // opts.solution; null when there is nothing
+  },
 });
 ```
+
+`latex` is the one-way export — a figure for a report, not a subject this site reads back. It is
+a separate block because it is a separate question: `file.get` hands over the subject, `latex.get`
+hands over a PICTURE of it, and only the page knows whether the answer belongs in the picture.
+Declaring `ask` is what puts the options dialog in front of it. See [FORMATS.md](FORMATS.md).
 
 `file.open` applies the file and nothing else — `Playground` rebuilds afterwards, because every
 open is a new problem by definition. Throwing out of it is how a page refuses a file it cannot

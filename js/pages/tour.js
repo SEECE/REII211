@@ -68,7 +68,8 @@
         get: function (opts) {
           if (!set.count()) return null;
           var run = page.frames();
-          var end = opts.solution && run.length ? run[run.length - 1].roles : null;
+          var end = opts.solution && run.length
+            ? window.Latex.chosen(run[run.length - 1].roles) : null;
           return window.Latex.plane({
             nodes: set.view().points.map(function (p) {
               return { id: p.id, label: String(p.id + 1), x: p.x, y: p.y };
@@ -78,7 +79,7 @@
                 var ends = k.slice(1).split('-');
                 return { a: Number(ends[0]), b: Number(ends[1]), key: k };
               }),
-            roles: end, weighted: false, colours: page.colours,
+            chosen: end, weighted: false,
             title: end ? algoOf(page.rail).label + ' — the run as it ends'
               : 'Point plane — ' + set.count() + ' points',
           });

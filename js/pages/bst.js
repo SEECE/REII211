@@ -130,7 +130,7 @@
           if (!frame || !frame.state || !frame.state.root) return null;
           var n = frame.stats || {};
           return window.Latex.tree({
-            root: frame.state.root, roles: frame.roles, colours: page.colours,
+            root: frame.state.root,
             title: 'Binary search tree — ' + n.Nodes + ' nodes, height ' + n.Height,
           });
         },

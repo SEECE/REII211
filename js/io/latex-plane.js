@@ -8,10 +8,10 @@
    Two decisions are the whole of this file.
 
    **The coordinates are on the page.** A figure handed in has to be readable off the paper, so
-   the unit square is written out as a 0–100 grid with both axes ticked, and every node carries
-   its own (x, y) beside it. The drawn position is the ROUNDED one — the dot sits exactly where
-   the printed pair says it does, because a figure whose label disagrees with its own picture by
-   half a millimetre is a figure a student cannot mark against.
+   the unit square is written out as a ruled 0–100 grid with both axes ticked, and every node
+   carries its own (x, y) beside it. The drawn position is the ROUNDED one — the dot sits exactly
+   where the printed pair says it does, because a figure whose label disagrees with its own
+   picture by half a millimetre is a figure a student cannot mark against.
 
    **y is measured downward**, as it is on the screen the figure came off. Flipping it would
    make every exported picture a mirror image of the page it was exported from, which is a worse
@@ -90,78 +90,77 @@
   function axes() {
     var out = ['  % the unit square as 0-100, ruled and ticked both ways; y counts DOWN'];
     for (var t = 0; t <= SIZE; t += 10) {
-      out.push('  \\draw[reiigrid, very thin] (' + t + ',0) -- (' + t + ',' + SIZE + ')' +
+      out.push('  \\draw[ruling] (' + t + ',0) -- (' + t + ',' + SIZE + ')' +
         ' (0,' + t + ') -- (' + SIZE + ',' + t + ');');
-      out.push('  \\node[above, font=\\tiny, text=reiiink!75] at (' + t + ',0) {' + t + '};');
-      out.push('  \\node[left, font=\\tiny, text=reiiink!75] at (0,' + t + ') {' + t + '};');
+      out.push('  \\node[above, font=\\tiny, text=black!70] at (' + t + ',0) {' + t + '};');
+      out.push('  \\node[left, font=\\tiny, text=black!70] at (0,' + t + ') {' + t + '};');
     }
-    out.push('  \\draw[reiiink!45] (0,0) rectangle (' + SIZE + ',' + SIZE + ');');
-    out.push('  \\draw[-{Stealth[length=2mm]}, reiiink!60] (0,0) -- (' + (SIZE + 9) +
-      ',0) node[right, font=\\footnotesize, text=reiiink] {$x$};');
-    out.push('  \\draw[-{Stealth[length=2mm]}, reiiink!60] (0,0) -- (0,' + (SIZE + 7) +
-      ') node[below, font=\\footnotesize, text=reiiink] {$y$};');
+    out.push('  \\draw[black!45, line width=0.4pt] (0,0) rectangle (' + SIZE + ',' + SIZE + ');');
+    out.push('  \\draw[-{Stealth[length=2mm]}, black!55] (0,0) -- (' + (SIZE + 9) +
+      ',0) node[right, font=\\footnotesize, text=black] {$x$};');
+    out.push('  \\draw[-{Stealth[length=2mm]}, black!55] (0,0) -- (0,' + (SIZE + 7) +
+      ') node[below, font=\\footnotesize, text=black] {$y$};');
     return out;
   }
 
-  /* spec: { nodes, edges, roles, weighted, title, colours } — nodes and edges exactly as a
-     subject's view() states them, roles the map to paint or null for the bare problem. */
+  /* spec: { nodes, edges, chosen, weighted, title } — nodes and edges exactly as a subject's
+     view() states them, `chosen` the set of edge keys the run picked (Latex.chosen) or null for
+     the bare problem. */
   window.Latex.plane = function (o) {
-    var L = window.Latex, nodes = o.nodes || [], edges = o.edges || [], roles = o.roles || null;
-    var at = {}, mine = {};
+    var L = window.Latex, nodes = o.nodes || [], edges = o.edges || [], won = o.chosen || null;
+    var at = {};
     nodes.forEach(function (n) {
       at[n.id] = { x: Math.round(n.x * SIZE), y: Math.round(n.y * SIZE) };
-      mine[n.id] = (roles && roles[n.id]) || 'idle';
     });
     var segs = edges.filter(function (e) { return at[e.a] && at[e.b]; }).map(function (e) {
-      mine[e.key] = (roles && roles[e.key]) || 'idle';
-      return { ax: at[e.a].x, ay: at[e.a].y, bx: at[e.b].x, by: at[e.b].y, e: e };
+      return { ax: at[e.a].x, ay: at[e.a].y, bx: at[e.b].x, by: at[e.b].y, e: e,
+        lead: !!(won && won[e.key]) };
     });
     var r = Math.max(2.8, Math.min(4.6, 26 / Math.sqrt(nodes.length + 4)));
     var font = r >= 4 ? '\\small' : r >= 3.3 ? '\\scriptsize' : '\\tiny';
     var spots = place(nodes, segs, at, r);
     var body = [];
 
-    /* the plain edges first and the coloured ones over them: the route being shown has to be
+    /* the plain segments first and the chosen ones over them: the route being shown has to be
        the line on top, which is the same two passes js/graph/draw.js makes */
-    body.push('  % edges, plain ones first so a coloured route is never drawn under one');
-    [0, 1].forEach(function (pass) {
+    body.push('  % edges, plain ones first so a chosen route is never drawn under one');
+    [false, true].forEach(function (pass) {
       segs.forEach(function (s) {
-        var lead = mine[s.e.key] !== 'idle';
-        if ((lead ? 1 : 0) !== pass) return;
-        body.push('  \\draw[' + L.roleOf(mine, s.e.key) + ', line width=' +
-          (lead ? '1pt' : '0.5pt') + '] (' + s.ax + ',' + s.ay + ') -- (' + s.bx + ',' + s.by + ');');
+        if (s.lead !== pass) return;
+        body.push('  \\draw[' + (s.lead ? 'lead' : 'link') + '] (' + s.ax + ',' + s.ay +
+          ') -- (' + s.bx + ',' + s.by + ');');
       });
     });
     if (o.weighted) {
       segs.forEach(function (s) {
         if (s.e.w == null) return;
-        body.push('  \\node[fill=reiipaper, inner sep=0.7pt, font=\\tiny, text=reiiink] at (' +
+        body.push('  \\node[fill=white, inner sep=0.7pt, font=\\tiny] at (' +
           L.num((s.ax + s.bx) / 2) + ',' + L.num((s.ay + s.by) / 2) + ') {' + L.esc(s.e.w) + '};');
       });
     }
     body.push('  % the discs, then each one\'s own coordinates beside it');
     nodes.forEach(function (n) {
-      var c = L.roleOf(mine, n.id), p = at[n.id];
-      body.push('  \\filldraw[draw=' + c + ', fill=' + c + '!20, line width=0.7pt] (' +
-        p.x + ',' + p.y + ') circle (' + L.num(r) + ');');
-      body.push('  \\node[font=' + font + '\\bfseries, text=reiiink] at (' + p.x + ',' + p.y +
-        ') {' + L.esc(n.label) + '};');
-      body.push('  \\node[font=\\tiny, text=reiiink!80] at (' + L.num(spots[n.id].x) + ',' +
+      var p = at[n.id];
+      body.push('  \\filldraw[disc] (' + p.x + ',' + p.y + ') circle (' + L.num(r) + ');');
+      body.push('  \\node[font=' + font + '\\bfseries] at (' + p.x + ',' + p.y + ') {' +
+        L.esc(n.label) + '};');
+      body.push('  \\node[font=\\tiny, text=black!80] at (' + L.num(spots[n.id].x) + ',' +
         L.num(spots[n.id].y) + ') {' + spots[n.id].text + '};');
     });
 
-    var used = L.rolesUsed(mine);
     var title = o.title || 'Plane';
+    var note = 'Positions are the unit square scaled to 0--100; $y$ is measured downward, ' +
+      'as the page draws it.' + (won ? ' The heavy lines are the answer the run ended on.' : '');
     return L.document({
-      title: title, colours: o.colours, used: used,
-      body: ['\\begin{tikzpicture}[x=1mm, y=-1mm]']
-        .concat(axes(), body,
-          ['  \\node[font=\\bfseries\\small, text=reiiink] at (' + SIZE / 2 + ',-8) {' +
-            L.esc(title) + '};',
-           '  \\node[right, font=\\tiny, text=reiiink!70] at (5,' + (SIZE + 15) +
-            ') {Positions are the unit square scaled to 0--100; $y$ is measured downward, ' +
-            'as the page draws it.};'],
-          L.legend(used, 5, SIZE + 20), ['\\end{tikzpicture}']),
+      title: title,
+      body: L.open().concat(axes(), body,
+        ['  \\node[font=\\bfseries\\small] at (' + SIZE / 2 + ',-8) {' + L.esc(title) + '};',
+         /* `text width` and not a bare node: the caption is one long line, and a node that
+            wide stretches the picture's bounding box — which \resizebox then shrinks the whole
+            plot to fit, so a sentence at the bottom decides how big the figure is. */
+         '  \\node[right, text width=' + (SIZE + 8) + 'mm, align=left, font=\\tiny, ' +
+           'text=black!70] at (0,' + (SIZE + 17) + ') {' + note + '};'],
+        ['\\end{tikzpicture}']),
     });
   };
 })();

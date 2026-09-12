@@ -130,8 +130,9 @@
       });
       var W = L.columns * dx, H = (L.depth + 1.6) * dy;
       /* A thirty-one node tree is 434 mm across, which is no use on a page. The picture is
-         scaled rather than squeezed — every circle, every line and every digit in the same
-         proportion — so a wide tree reads as a wide tree that has been made smaller. */
+         scaled to the width of a text block rather than squeezed — every circle, every line and
+         every digit in the same proportion — so a wide tree reads as a wide tree that has been
+         made smaller. Width is the only cap needed: a BST is never deeper than it is wide. */
       var scale = Math.min(1, 170 / (W + 8));
 
       body.push('  % edges first, then the discs over them — a disc covers the line it ends on');

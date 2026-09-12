@@ -7,7 +7,9 @@
   'use strict';
   var R = window.Roles;
 
-  /* Spreadsheet-style column labels: 0 -> A, 25 -> Z, 26 -> AA, 51 -> AZ, 52 -> BA... */
+  /* Spreadsheet-style column labels: 0 -> A, 25 -> Z, 26 -> AA, 51 -> AZ, 52 -> BA...
+     Exposed as `JobsDraw.label` because js/io/latex-jobs.js names the same offers on the
+     exported figure, and an offer called C on screen and D on paper is worse than no label. */
   function label(n) {
     var s = '';
     n = n + 1;
@@ -20,6 +22,7 @@
   }
 
   window.JobsDraw = {
+    label: label,
     draw: function (s, frame, colours) {
       if (!s || !frame || !frame.state) return;
       var view = frame.state, ctx = s.ctx;

@@ -103,5 +103,24 @@
     C.equal(count(fig, '\\draw[link]'), 4, 'and one line per parent-child link');
     C.equal(window.Latex.tree({ root: null }), null, 'an empty tree exports nothing');
 
+    /* The timeline. Two claims: every offer is on it, and only the taken ones are heavy. */
+    var set = window.JobSet([
+      { id: 0, studio: 'Aurora', row: 0, start: 0, end: 4 },
+      { id: 1, studio: 'Aurora', row: 0, start: 5, end: 9 },
+      { id: 2, studio: 'Bellweather', row: 1, start: 2, end: 7 },
+    ], 12);
+    var frames = window.Trace.build(window.Scheduling.run(set, 'finish'), set);
+    var took = window.Latex.chosen(frames[frames.length - 1].roles);
+    var chart = window.Latex.jobs({ view: set.view(), chosen: took, title: 'Offers' });
+    C.equal(count(chart, 'rectangle ('), 3, 'one bar per offer');
+    C.equal(count(chart, '\\filldraw[lead'), Object.keys(took).length,
+      'and a heavy bar for exactly the offers the rule took');
+    C.ok(chart.indexOf('{Aurora}') >= 0 && chart.indexOf('{Bellweather}') >= 0,
+      'each studio is named once beside its row');
+    C.ok(chart.indexOf('{A}') >= 0 && chart.indexOf('{C}') >= 0,
+      'and the offers carry the names the page gives them');
+    C.equal(count(window.Latex.jobs({ view: set.view(), title: 'Offers' }), '\\filldraw[lead'), 0,
+      'the bare set of offers has nothing heavy on it');
+    C.equal(window.Latex.jobs({ view: { span: 12, jobs: [] } }), null, 'no offers, no figure');
   });
 })();

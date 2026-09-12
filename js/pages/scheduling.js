@@ -9,7 +9,7 @@
   window.SchedulingPage = function () {
     var set = window.JobSet.random(5, 12);
 
-    return window.Playground({
+    var page = window.Playground({
       title: 'Job scheduling',
       legend: window.Scheduling.roles,
       legendNotes: window.Scheduling.notes,
@@ -35,6 +35,29 @@
         open: function (data) { set = window.JobSet.load(data); },
       },
 
+      /* The offers as a figure for a practical — the same Gantt chart, with or without the
+         answer. This page keeps the choice the node plane drops: the offers alone are the
+         question a student schedules by hand, and the offers with the taken ones drawn heavy
+         are what they check their answer against. */
+      latex: {
+        name: function () { return 'offers-' + set.count(); },
+        ask: 'The timeline as the rule leaves it — the offers it accepted, drawn heavy. Leave ' +
+          'it off for the bare set of offers to schedule by hand.',
+        empty: 'there are no offers to draw yet',
+        get: function (opts) {
+          if (!set.count()) return null;
+          var run = page.frames();
+          var end = opts.solution && run.length
+            ? window.Latex.chosen(run[run.length - 1].roles) : null;
+          return window.Latex.jobs({
+            view: set.view(), chosen: end,
+            title: end
+              ? window.Scheduling.rules[page.rail.get('rule')].label + ' — the run as it ends'
+              : 'Job scheduling — ' + set.count() + ' offers over ' + set.span + ' months',
+          });
+        },
+      },
+
       onField: function (id, value, api) {
         // changing the rule re-runs on the same offers; anything else is a new problem
         if (id === 'rule') return;
@@ -52,5 +75,7 @@
 
       render: function (surface, frame, colours) { window.JobsDraw.draw(surface, frame, colours); },
     });
+
+    return page;
   };
 })();

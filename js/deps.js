@@ -22,7 +22,7 @@
     core: [
       'core/palette.js', 'core/roles.js', 'core/trace.js', 'core/trace-live.js', 'core/player.js',
       'core/surface.js', 'core/rail.js', 'core/legend.js', 'core/workbench.js',
-      'core/page.js', 'io/reii.js', 'io/latex.js', 'io/latex-plane.js',
+      'core/page.js', 'io/reii.js', 'io/latex.js', 'io/latex-plane.js', 'io/latex-jobs.js',
       'core/files.js', 'core/files-latex.js', 'ui/shell.js',
     ],
 
@@ -81,6 +81,7 @@
       'graph/draw.js', 'graph/matrix.js',
       'heuristics/points.js', 'heuristics/nearest.js',
       'heuristics/closest-pair.js', 'heuristics/jobs.js', 'heuristics/greedy.js',
+      'heuristics/jobs-draw.js',
       'structures/store.js', 'structures/list-array.js', 'structures/list-linked.js',
       'structures/bst.js', 'structures/bst-ops.js',
       'maze/grid.js', 'maze/carve.js', 'maze/search.js',

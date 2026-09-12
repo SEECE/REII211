@@ -73,8 +73,12 @@
      PDF droppable into a report at any size; the tikzpicture inside it is plain TikZ and can
      be pasted into an article class without changing a character. */
   function document_(o) {
+    /* `reiiline` is the untouched role, and it is what every LINK between two things is drawn
+       in — the same line the node plane draws an untouched edge with, so a tree and a graph
+       agree. `reiigrid` is the RULING under the picture and nothing else is drawn in it. */
     var defs = ['\\definecolor{reiiink}{HTML}{' + hex(o.colours.ink) + '}',
       '\\definecolor{reiipaper}{HTML}{' + hex(o.colours.paper) + '}',
+      '\\definecolor{reiiline}{HTML}{' + hex(o.colours.idle) + '}',
       '\\definecolor{reiigrid}{HTML}{' + hex(o.colours.grid) + '}'];
     (o.used || []).forEach(function (r) {
       defs.push('\\definecolor{role' + r + '}{HTML}{' + hex(o.colours[r]) + '}');
@@ -135,11 +139,11 @@
          made smaller. Width is the only cap needed: a BST is never deeper than it is wide. */
       var scale = Math.min(1, 170 / (W + 8));
 
-      body.push('  % edges first, then the discs over them — a disc covers the line it ends on');
+      body.push('  % links first, then the discs over them — a disc covers the line it ends on');
       each(root, function (n) {
         [n.left, n.right].forEach(function (kid) {
           if (!kid) return;
-          body.push('  \\draw[reiiink!35, line width=0.5pt] (' + num(at[n.id].x) + ',' +
+          body.push('  \\draw[reiiline, line width=0.5pt] (' + num(at[n.id].x) + ',' +
             num(at[n.id].y) + ') -- (' + num(at[kid.id].x) + ',' + num(at[kid.id].y) + ');');
         });
       });

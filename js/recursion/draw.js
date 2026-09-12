@@ -35,8 +35,9 @@
 
       tree.nodes().forEach(function (n) { if (L.has(n.id)) boxes[n.id] = nodeBox(L, W, H, n); });
 
-      // edges first, so a box always sits on top of the line reaching it
-      ctx.strokeStyle = colours.grid;
+      // edges first, so a box always sits on top of the line reaching it; `idle` and not
+      // `grid`, because a link is part of the picture and grid is the sheet it is drawn on
+      ctx.strokeStyle = colours.idle;
       ctx.lineWidth = 1.2;
       tree.nodes().forEach(function (n) {
         if (!state.cells[n.id] || !n.parent || !state.cells[n.parent.id]) return;

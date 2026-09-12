@@ -84,7 +84,10 @@
     [50, 30, 70, 20, 40].forEach(function (v) {
       C.ok(fig.indexOf('{' + v + '}') >= 0, 'the value ' + v + ' is on the figure');
     });
-    C.equal(count(fig, '\\draw[reiiink!35'), 4, 'and one line per parent-child link');
+    C.equal(count(fig, '\\draw[reiiline'), 4, 'and one line per parent-child link');
+    C.ok(fig.indexOf('\\definecolor{reiiline}{HTML}{94B8C8}') >= 0,
+      'a link is drawn in the untouched role, the same as a plain edge on the plane');
+    C.ok(plane(null).indexOf('roleidle, line width=0.5pt') >= 0, 'which is that same line');
     C.equal(window.Latex.tree({ root: null, colours: COLOURS }), null, 'an empty tree exports nothing');
   });
 })();
